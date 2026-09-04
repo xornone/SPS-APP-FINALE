@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { RideCard } from "./RideCard";
-import { isWeekend, withinDays } from "@/lib/format";
+import { WeekDivider } from "./WeekDivider";
+import { fmtWeekLabel, isWeekend, weekKey, withinDays } from "@/lib/format";
 import { getMyRideIds } from "@/lib/myParticipations";
 import type { Participation, Ride } from "@/lib/types";
 
@@ -59,16 +60,20 @@ export function RidesFilterList({
             Aucune sortie ne correspond à ce filtre.
           </p>
         )}
-        {list.map((r) => {
+        {list.map((r, i) => {
           const parts = countsFor(r.id);
+          const wKey = weekKey(r.ride_date);
+          const isNewWeek = i === 0 || weekKey(list[i - 1].ride_date) !== wKey;
           return (
-            <RideCard
-              key={r.id}
-              ride={r}
-              participantCount={parts.length}
-              participantPreview={parts.map((p) => ({ id: p.id, name: p.participant_name }))}
-              isJoined={myRideIds.has(r.id)}
-            />
+            <Fragment key={r.id}>
+              {isNewWeek && <WeekDivider label={fmtWeekLabel(r.ride_date)} />}
+              <RideCard
+                ride={r}
+                participantCount={parts.length}
+                participantPreview={parts.map((p) => ({ id: p.id, name: p.participant_name }))}
+                isJoined={myRideIds.has(r.id)}
+              />
+            </Fragment>
           );
         })}
       </div>

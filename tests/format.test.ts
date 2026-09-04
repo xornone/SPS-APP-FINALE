@@ -6,9 +6,11 @@ import {
   fmtKm,
   fmtM,
   fmtTime,
+  fmtWeekLabel,
   initials,
   isPastDate,
   isWeekend,
+  weekKey,
   withinDays,
 } from "@/lib/format";
 
@@ -80,5 +82,18 @@ describe("fonctions dependantes de la date du jour", () => {
     expect(isWeekend("2026-09-05")).toBe(true); // samedi
     expect(isWeekend("2026-09-06")).toBe(true); // dimanche
     expect(isWeekend("2026-09-09")).toBe(false); // mercredi
+  });
+
+  it("weekKey regroupe les dates d'une meme semaine lundi -> dimanche", () => {
+    // La semaine du vendredi 4 septembre 2026 va du lundi 31 aout au dimanche 6 sept.
+    expect(weekKey("2026-09-01")).toBe("2026-08-31");
+    expect(weekKey("2026-09-04")).toBe("2026-08-31");
+    expect(weekKey("2026-09-06")).toBe("2026-08-31");
+    expect(weekKey("2026-09-07")).toBe("2026-09-07"); // semaine suivante
+  });
+
+  it("fmtWeekLabel affiche la plage lundi -> dimanche, meme a cheval sur deux mois", () => {
+    expect(fmtWeekLabel("2026-09-08")).toBe("7 – 13 septembre"); // meme mois
+    expect(fmtWeekLabel("2026-09-04")).toBe("Cette semaine · 31 août. – 6 sept."); // semaine en cours, a cheval
   });
 });

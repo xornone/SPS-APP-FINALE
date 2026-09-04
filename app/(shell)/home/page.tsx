@@ -1,11 +1,13 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { RideCard } from "@/components/RideCard";
+import { WeekDivider } from "@/components/WeekDivider";
 import { GroupBadge } from "@/components/GroupBadge";
 import { NotifBell } from "@/components/NotifBell";
 import { Icon } from "@/components/Icons";
-import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
+import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime, fmtWeekLabel, isPastDate, weekKey } from "@/lib/format";
 
 export default async function HomePage() {
   const supabase = createClient();
@@ -78,16 +80,20 @@ export default async function HomePage() {
             Aucune autre sortie programmée.
           </p>
         )}
-        {rest.map((r) => {
+        {rest.map((r, i) => {
           const parts = countsFor(r.id);
+          const wKey = weekKey(r.ride_date);
+          const isNewWeek = i === 0 || weekKey(rest[i - 1].ride_date) !== wKey;
           return (
-            <RideCard
-              key={r.id}
-              ride={r}
-              participantCount={parts.length}
-              participantPreview={parts.map((p) => ({ id: p.id, name: p.participant_name }))}
-              isJoined={false}
-            />
+            <Fragment key={r.id}>
+              {isNewWeek && <WeekDivider label={fmtWeekLabel(r.ride_date)} />}
+              <RideCard
+                ride={r}
+                participantCount={parts.length}
+                participantPreview={parts.map((p) => ({ id: p.id, name: p.participant_name }))}
+                isJoined={false}
+              />
+            </Fragment>
           );
         })}
       </div>

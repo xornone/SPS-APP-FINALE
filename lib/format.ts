@@ -71,6 +71,47 @@ export function fmtCommentTime(iso: string): string {
   return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} · ${hh}:${mm}`;
 }
 
+// Lundi de la semaine calendaire (ISO) contenant la date donnee, a minuit.
+function mondayOf(d: Date): Date {
+  const day = d.getDay(); // 0 = dimanche ... 6 = samedi
+  const diff = day === 0 ? -6 : 1 - day;
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+// Cle stable (date du lundi, AAAA-MM-JJ) identifiant la semaine calendaire
+// d'une sortie — sert a regrouper les sorties par semaine (lundi -> dimanche)
+// pour afficher un intercalaire entre chaque semaine dans les listes.
+export function weekKey(iso: string): string {
+  const monday = mondayOf(parseLocalDate(iso));
+  const y = monday.getFullYear();
+  const m = `${monday.getMonth() + 1}`.padStart(2, "0");
+  const d = `${monday.getDate()}`.padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+// Libelle d'intercalaire pour une semaine calendaire (lundi -> dimanche),
+// ex. "8 – 14 septembre" ou "29 sept. – 5 oct." si elle change de mois.
+// Prefixe "Cette semaine · " si la semaine contient la date du jour.
+export function fmtWeekLabel(iso: string): string {
+  const monday = mondayOf(parseLocalDate(iso));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const sameMonth = monday.getMonth() === sunday.getMonth();
+  const thisYear = new Date().getFullYear();
+
+  const startLabel = sameMonth ? `${monday.getDate()}` : `${monday.getDate()} ${MONTHS_SHORT[monday.getMonth()]}.`;
+  const endLabel = `${sunday.getDate()} ${sameMonth ? MONTHS[sunday.getMonth()] : `${MONTHS_SHORT[sunday.getMonth()]}.`}`;
+  const yearSuffix = sunday.getFullYear() !== thisYear ? ` ${sunday.getFullYear()}` : "";
+  const range = `${startLabel} – ${endLabel}${yearSuffix}`;
+
+  const isCurrentWeek = monday.getTime() === mondayOf(new Date()).getTime();
+  return isCurrentWeek ? `Cette semaine · ${range}` : range;
+}
+
 export function initials(name: string): string {
   return name
     .split(" ")
