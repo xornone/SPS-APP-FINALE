@@ -225,13 +225,20 @@ export function RideForm({ ride }: { ride?: Ride }) {
           border-radius: 12px;
           border: 1.5px solid rgba(0, 0, 0, 0.1);
           background: white;
+          color: #150f1c;
           font-size: 13.5px;
           font-family: inherit;
+        }
+        .input::placeholder {
+          color: rgba(21, 15, 28, 0.4);
         }
         .dark .input {
           background: #1a1422;
           border-color: rgba(255, 255, 255, 0.12);
           color: white;
+        }
+        .dark .input::placeholder {
+          color: rgba(255, 255, 255, 0.35);
         }
       `}</style>
     </form>
