@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useState } from "react";
 import { RideCard } from "./RideCard";
 import { WeekDivider } from "./WeekDivider";
-import { fmtWeekLabel, isWeekend, weekKey, withinDays } from "@/lib/format";
+import { fmtWeekLabel, isCurrentWeek, isWeekend, weekKey } from "@/lib/format";
 import { getMyRideIds } from "@/lib/myParticipations";
 import type { Participation, Ride } from "@/lib/types";
 
@@ -32,9 +32,12 @@ export function RidesFilterList({
 
   const countsFor = (rideId: string) => participations.filter((p) => p.ride_id === rideId);
 
+  // "Cette semaine" / "Ce week-end" se basent sur la semaine calendaire en
+  // cours (lundi -> dimanche), pas sur une fenetre glissante de 7 jours qui
+  // deborderait sur la semaine suivante.
   let list = rides;
-  if (filter === "semaine") list = list.filter((r) => withinDays(r.ride_date, 7));
-  else if (filter === "weekend") list = list.filter((r) => withinDays(r.ride_date, 7) && isWeekend(r.ride_date));
+  if (filter === "semaine") list = list.filter((r) => isCurrentWeek(r.ride_date));
+  else if (filter === "weekend") list = list.filter((r) => isCurrentWeek(r.ride_date) && isWeekend(r.ride_date));
   else if (filter === "mine") list = list.filter((r) => myRideIds.has(r.id));
 
   return (

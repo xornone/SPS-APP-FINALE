@@ -8,6 +8,7 @@ import {
   fmtTime,
   fmtWeekLabel,
   initials,
+  isCurrentWeek,
   isPastDate,
   isWeekend,
   weekKey,
@@ -95,5 +96,13 @@ describe("fonctions dependantes de la date du jour", () => {
   it("fmtWeekLabel affiche la plage lundi -> dimanche, meme a cheval sur deux mois", () => {
     expect(fmtWeekLabel("2026-09-08")).toBe("7 – 13 septembre"); // meme mois
     expect(fmtWeekLabel("2026-09-04")).toBe("Cette semaine · 31 août. – 6 sept."); // semaine en cours, a cheval
+  });
+
+  it("isCurrentWeek ne deborde pas sur la semaine suivante (contrairement a une fenetre de 7 jours)", () => {
+    expect(isCurrentWeek("2026-09-01")).toBe(true); // lundi de la semaine en cours
+    expect(isCurrentWeek("2026-09-06")).toBe(true); // dimanche de la semaine en cours
+    expect(isCurrentWeek("2026-09-07")).toBe(false); // lundi suivant — bien que dans 3 jours
+    expect(isCurrentWeek("2026-09-08")).toBe(false); // dans les 7 jours mais semaine suivante
+    expect(isCurrentWeek("2026-08-30")).toBe(false); // dimanche de la semaine precedente
   });
 });

@@ -92,6 +92,14 @@ export function weekKey(iso: string): string {
   return `${y}-${m}-${d}`;
 }
 
+// Vrai si la date donnee tombe dans la semaine calendaire en cours (celle
+// du lundi au dimanche qui contient "aujourd'hui") — utilise par les
+// filtres "Cette semaine" / "Ce week-end", au lieu d'une simple fenetre
+// glissante de 7 jours qui deborderait sur la semaine suivante.
+export function isCurrentWeek(iso: string): boolean {
+  return mondayOf(parseLocalDate(iso)).getTime() === mondayOf(new Date()).getTime();
+}
+
 // Libelle d'intercalaire pour une semaine calendaire (lundi -> dimanche),
 // ex. "8 – 14 septembre" ou "29 sept. – 5 oct." si elle change de mois.
 // Prefixe "Cette semaine · " si la semaine contient la date du jour.
@@ -108,8 +116,7 @@ export function fmtWeekLabel(iso: string): string {
   const yearSuffix = sunday.getFullYear() !== thisYear ? ` ${sunday.getFullYear()}` : "";
   const range = `${startLabel} – ${endLabel}${yearSuffix}`;
 
-  const isCurrentWeek = monday.getTime() === mondayOf(new Date()).getTime();
-  return isCurrentWeek ? `Cette semaine · ${range}` : range;
+  return isCurrentWeek(iso) ? `Cette semaine · ${range}` : range;
 }
 
 export function initials(name: string): string {
