@@ -3,7 +3,7 @@ import { requireAdmin } from "@/lib/adminGuard";
 
 const GROUP_SPEED: Record<string, string> = {
   vert: "24–26 km/h",
-  rouge: "26–27 km/h",
+  rouge: "26–28 km/h",
   violet: "28+ km/h",
 };
 

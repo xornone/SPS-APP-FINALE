@@ -1,9 +1,9 @@
 export type GroupLevel = "vert" | "rouge" | "violet";
 
-export const GROUP_INFO: Record<GroupLevel, { label: string; range: string; hex: string }> = {
-  vert: { label: "Vert", range: "24–26 km/h", hex: "#1F9D63" },
-  rouge: { label: "Rouge", range: "26–27 km/h", hex: "#DC3D3D" },
-  violet: { label: "Violet", range: "28+ km/h", hex: "#7C3AED" },
+export const GROUP_INFO: Record<GroupLevel, { label: string; range: string; flat: string; hex: string }> = {
+  vert: { label: "Vert", range: "24–26 km/h", flat: "≈29–30 km/h sur le plat", hex: "#1F9D63" },
+  rouge: { label: "Rouge", range: "26–28 km/h", flat: "≈33–34 km/h sur le plat", hex: "#DC3D3D" },
+  violet: { label: "Violet", range: "28+ km/h", flat: "≈37–38 km/h sur le plat", hex: "#7C3AED" },
 };
 
 export interface RideGroup {

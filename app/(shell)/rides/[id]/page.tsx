@@ -10,7 +10,7 @@ import { Icon } from "@/components/Icons";
 import { JoinPanel } from "@/components/JoinPanel";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
-import type { GroupLevel } from "@/lib/types";
+import { GROUP_INFO, type GroupLevel } from "@/lib/types";
 
 export default async function RideDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -90,7 +90,10 @@ export default async function RideDetailPage({ params }: { params: { id: string 
             key={g}
             className="flex items-center justify-between rounded-2xl border border-black/[0.06] bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-[#1A1422]"
           >
-            <GroupBadge group={g} />
+            <div className="flex flex-col gap-1">
+              <GroupBadge group={g} />
+              <span className="pl-0.5 text-[10.5px] text-black/40 dark:text-white/40">{GROUP_INFO[g].flat}</span>
+            </div>
             <span className="text-xs text-black/45 dark:text-white/45">
               {groupCounts[g]} participant{groupCounts[g] > 1 ? "s" : ""}
             </span>
@@ -160,7 +163,7 @@ function Stat({ value, label }: { value: string; label: string }) {
 
 function speedRangeLabel(groups: GroupLevel[]): string {
   const lows: Record<GroupLevel, number> = { vert: 24, rouge: 26, violet: 28 };
-  const highs: Record<GroupLevel, number | null> = { vert: 26, rouge: 27, violet: null };
+  const highs: Record<GroupLevel, number | null> = { vert: 26, rouge: 28, violet: null };
   const low = Math.min(...groups.map((g) => lows[g]));
   const hasViolet = groups.includes("violet");
   const high = hasViolet ? "28+" : Math.max(...groups.map((g) => highs[g] || 0));

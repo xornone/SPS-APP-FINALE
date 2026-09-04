@@ -16,7 +16,7 @@ select id, g.group_level, g.target_speed
 from public.rides r
 cross join (values
   ('vert', '24–26 km/h'),
-  ('rouge', '26–27 km/h')
+  ('rouge', '26–28 km/h')
 ) as g(group_level, target_speed)
 where r.title = 'Sortie café – Lattes / Palavas'
 on conflict do nothing;
@@ -26,7 +26,7 @@ select id, g.group_level, g.target_speed
 from public.rides r
 cross join (values
   ('vert', '24–26 km/h'),
-  ('rouge', '26–27 km/h'),
+  ('rouge', '26–28 km/h'),
   ('violet', '28+ km/h')
 ) as g(group_level, target_speed)
 where r.title = 'Sortie dimanche – Pic Saint-Loup'
@@ -36,7 +36,7 @@ insert into public.ride_groups (ride_id, group_level, target_speed)
 select id, g.group_level, g.target_speed
 from public.rides r
 cross join (values
-  ('rouge', '26–27 km/h'),
+  ('rouge', '26–28 km/h'),
   ('violet', '28+ km/h')
 ) as g(group_level, target_speed)
 where r.title = 'Grand tour du Salagou'
