@@ -1,0 +1,1516 @@
+<title>SPS</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --violet-900:#33124F;
+  --violet-700:#5B21B6;
+  --violet-600:#6D28D9;
+  --violet-500:#7C3AED;
+  --violet-400:#A78BFA;
+  --violet-100:#EFE8FC;
+
+  --green:#1F9D63;      --green-soft:#E3F6EC;
+  --red:#DC3D3D;        --red-soft:#FCE7E7;
+  --grp-violet:#7C3AED; --grp-violet-soft:#F1E9FE;
+
+  --text:#150F1C;
+  --text-muted:#6B6478;
+  --text-faint:#9891A1;
+  --surface:#FBF9FC;
+  --surface-alt:#F1EDF6;
+  --surface-card:#FFFFFF;
+  --surface-raised:#FFFFFF;
+  --border:#E6E0EE;
+  --accent:#6D28D9;
+  --accent-strong:#5B21B6;
+  --on-accent:#FFFFFF;
+  --shadow:0 10px 28px -12px rgba(59,22,103,.22);
+  --shadow-sm:0 2px 8px -2px rgba(59,22,103,.14);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --text:#F3EFFA; --text-muted:#AFA7BE; --text-faint:#7C7489;
+    --surface:#130D1A; --surface-alt:#1C1526; --surface-card:#1A1422; --surface-raised:#211930;
+    --border:#2E2439; --accent:#A78BFA; --accent-strong:#C4B0FA; --on-accent:#1B1023;
+    --green-soft:rgba(31,157,99,.2); --red-soft:rgba(220,61,61,.2); --grp-violet-soft:rgba(167,139,250,.2);
+    --shadow:0 10px 30px -12px rgba(0,0,0,.65); --shadow-sm:0 2px 10px -2px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --text:#F3EFFA; --text-muted:#AFA7BE; --text-faint:#7C7489;
+  --surface:#130D1A; --surface-alt:#1C1526; --surface-card:#1A1422; --surface-raised:#211930;
+  --border:#2E2439; --accent:#A78BFA; --accent-strong:#C4B0FA; --on-accent:#1B1023;
+  --green-soft:rgba(31,157,99,.2); --red-soft:rgba(220,61,61,.2); --grp-violet-soft:rgba(167,139,250,.2);
+  --shadow:0 10px 30px -12px rgba(0,0,0,.65); --shadow-sm:0 2px 10px -2px rgba(0,0,0,.5);
+}
+
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--surface);
+  font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--text);
+  min-height:100vh; min-height:100dvh;
+  display:flex; align-items:stretch; justify-content:center;
+  padding:0;
+}
+@media (min-width:481px){
+  body{ background:var(--surface-alt); padding:0; }
+}
+h1,h2,h3,h4{margin:0; text-wrap:balance;}
+p{margin:0;}
+button{font-family:inherit; cursor:pointer;}
+a{color:inherit;}
+::-webkit-scrollbar{width:0;height:0;}
+.hide-scroll{scrollbar-width:none;}
+.hide-scroll::-webkit-scrollbar{display:none;}
+:focus-visible{outline:2px solid var(--violet-400); outline-offset:2px; border-radius:4px;}
+
+.eyebrow{
+  font-family:"Bebas Neue",sans-serif; letter-spacing:.14em; text-transform:uppercase;
+  font-size:12.5px; color:var(--text-faint);
+}
+.num{font-family:"Bebas Neue",sans-serif; letter-spacing:.01em;}
+
+/* ============ APP SHELL ============ */
+.screen{
+  position:relative; width:100%; max-width:480px; min-height:100vh; min-height:100dvh;
+  background:var(--surface); display:flex; flex-direction:column; overflow:hidden;
+}
+@media (min-width:481px){
+  .screen{ box-shadow:0 0 0 1px var(--border); }
+}
+
+.app-content{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;}
+.app-header{
+  padding:6px 20px 14px; display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.app-header h1{font-family:"Bebas Neue",sans-serif; font-size:26px; letter-spacing:.02em;}
+.app-header .back{
+  width:36px; height:36px; border-radius:12px; border:1px solid var(--border); background:var(--surface-card);
+  display:flex; align-items:center; justify-content:center; flex:none;
+}
+.icon-btn{
+  width:38px; height:38px; border-radius:12px; border:1px solid var(--border); background:var(--surface-card);
+  display:flex; align-items:center; justify-content:center; flex:none; position:relative; color:var(--text);
+}
+.icon-btn .dot-badge{position:absolute; top:6px; right:7px; width:7px; height:7px; border-radius:50%; background:var(--red); box-shadow:0 0 0 2px var(--surface-card);}
+
+/* ============ BOTTOM NAV ============ */
+.tabbar{
+  flex:none; display:flex; padding:8px 10px calc(14px + env(safe-area-inset-bottom,0px));
+  background:var(--surface-raised); border-top:1px solid var(--border); gap:2px;
+}
+.tab{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:6px 2px;
+  background:none; border:none; color:var(--text-faint); border-radius:14px;
+}
+.tab svg{width:22px;height:22px;}
+.tab span{font-size:10.5px; font-weight:700; letter-spacing:.01em;}
+.tab.active{color:var(--accent);}
+.tab.active svg{filter:drop-shadow(0 2px 6px rgba(124,58,237,.35));}
+
+/* ============ CARDS / COMPONENTS ============ */
+.section{padding:0 20px 22px;}
+.section-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px;}
+.section-head h2{font-family:"Bebas Neue",sans-serif; font-size:20px; letter-spacing:.02em;}
+.section-head a{font-size:12.5px; font-weight:700; color:var(--accent);}
+
+.hero-card{
+  margin:0 20px 22px; border-radius:26px; padding:22px 20px 20px; position:relative; overflow:hidden;
+  background:linear-gradient(155deg, var(--violet-700) 0%, var(--violet-900) 78%);
+  color:#F4EEFF; box-shadow:var(--shadow);
+}
+.hero-card::after{
+  content:""; position:absolute; inset:0; opacity:.5; pointer-events:none;
+  background:radial-gradient(180px 140px at 88% -10%, rgba(167,139,250,.55), transparent 70%);
+}
+.hero-card .tag{font-size:11.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#CBB8FA; position:relative;}
+.hero-card h3{font-family:"Bebas Neue",sans-serif; font-size:27px; margin:6px 0 4px; position:relative; line-height:1.05;}
+.hero-card .meta{font-size:13px; color:#DACCF7; position:relative; margin-bottom:14px;}
+.hero-stats{display:flex; gap:16px; position:relative; margin-bottom:16px;}
+.hero-stats div{display:flex; flex-direction:column;}
+.hero-stats .num{font-size:22px; line-height:1;}
+.hero-stats .lbl{font-size:10.5px; color:#C6B7EE; text-transform:uppercase; letter-spacing:.06em; margin-top:3px;}
+.hero-groups{display:flex; gap:6px; flex-wrap:wrap; position:relative; margin-bottom:16px;}
+.hero-card .btn-primary{position:relative; width:100%;}
+
+.btn-primary{
+  background:linear-gradient(135deg,var(--violet-500),var(--violet-700)); color:#fff; border:none;
+  padding:13px 18px; border-radius:14px; font-weight:800; font-size:14.5px; letter-spacing:.01em;
+  box-shadow:0 10px 22px -8px rgba(124,58,237,.6);
+}
+.btn-primary.on{background:linear-gradient(135deg,#1F9D63,#177A4C);}
+.btn-secondary{
+  background:var(--surface-alt); color:var(--text); border:1px solid var(--border);
+  padding:12px 16px; border-radius:14px; font-weight:700; font-size:13.5px;
+}
+.btn-ghost-white{background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.25); padding:11px 16px; border-radius:12px; font-weight:700; font-size:13px;}
+.btn-block{width:100%; display:flex; align-items:center; justify-content:center; gap:8px;}
+
+.chips{display:flex; gap:8px; overflow-x:auto; padding:0 20px 16px; scroll-snap-type:x proximity;}
+.chip{
+  flex:none; scroll-snap-align:start; padding:8px 14px; border-radius:999px; border:1px solid var(--border);
+  background:var(--surface-card); font-size:12.5px; font-weight:700; color:var(--text-muted);
+}
+.chip.active{background:var(--accent); border-color:var(--accent); color:var(--on-accent);}
+
+.grp{display:inline-flex; align-items:center; gap:6px; font-size:11.5px; font-weight:800; padding:5px 10px 5px 8px; border-radius:999px;}
+.grp .sw{width:8px;height:8px;border-radius:50%;flex:none;}
+.grp-vert{background:var(--green-soft); color:var(--green);}
+.grp-vert .sw{background:var(--green);}
+.grp-rouge{background:var(--red-soft); color:var(--red);}
+.grp-rouge .sw{background:var(--red);}
+.grp-violet{background:var(--grp-violet-soft); color:var(--grp-violet);}
+.grp-violet .sw{background:var(--grp-violet);}
+.grp.on-dark{background:rgba(255,255,255,.14); color:#fff;}
+.grp.on-dark .sw{background:currentColor;}
+
+.ride-card{
+  background:var(--surface-card); border:1px solid var(--border); border-radius:20px; padding:16px;
+  box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:10px;
+}
+.ride-card + .ride-card{margin-top:12px;}
+.ride-card__top{display:flex; align-items:center; justify-content:space-between; gap:8px;}
+.ride-card__date{font-family:"Bebas Neue",sans-serif; font-size:13px; letter-spacing:.08em; color:var(--accent);}
+.status-pill{font-size:10.5px; font-weight:800; padding:4px 9px; border-radius:999px;}
+.status-pill.going{background:var(--green-soft); color:var(--green);}
+.status-pill.open{background:var(--surface-alt); color:var(--text-faint); border:1px solid var(--border);}
+.ride-card h3{font-size:16.5px; font-weight:800; line-height:1.25;}
+.ride-card__place{font-size:12.5px; color:var(--text-muted); display:flex; align-items:center; gap:5px;}
+.ride-card__stats{display:flex; gap:14px;}
+.ride-card__stats b{font-size:14px;}
+.ride-card__stats .lbl{font-size:10px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em;}
+.ride-card__groups{display:flex; gap:6px; flex-wrap:wrap;}
+.ride-card__foot{display:flex; align-items:center; justify-content:space-between; padding-top:10px; border-top:1px solid var(--border);}
+.avatars-stack{display:flex;}
+.avatars-stack .av{margin-left:-8px; border:2px solid var(--surface-card);}
+.avatars-stack .av:first-child{margin-left:0;}
+.pcount{font-size:12px; color:var(--text-muted); font-weight:600;}
+
+.av{
+  width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:800; color:#fff; flex:none; background:linear-gradient(135deg,var(--violet-500),var(--violet-800,var(--violet-700)));
+}
+.av.lg{width:64px; height:64px; font-size:22px; border-radius:20px;}
+.av.md{width:38px; height:38px; font-size:13px; border-radius:12px;}
+
+.feed-item{display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--border);}
+.feed-item:last-child{border-bottom:none;}
+.feed-item .ico{width:30px;height:30px;border-radius:10px; background:var(--surface-alt); display:flex; align-items:center; justify-content:center; flex:none; color:var(--accent);}
+.feed-item .ico svg{width:16px;height:16px;}
+.feed-item p{font-size:13px; line-height:1.4;}
+.feed-item time{font-size:11px; color:var(--text-faint);}
+
+/* ride detail */
+.detail-hero{padding:14px 20px 0;}
+.detail-hero h1{font-family:"Bebas Neue",sans-serif; font-size:28px; line-height:1.05; margin-bottom:8px;}
+.detail-meta{display:flex; flex-wrap:wrap; gap:12px; font-size:12.5px; color:var(--text-muted); margin-bottom:16px;}
+.detail-meta span{display:flex; align-items:center; gap:5px;}
+.detail-meta svg{width:14px;height:14px; color:var(--accent);}
+
+.map-box{margin:0 20px 16px; border-radius:22px; overflow:hidden; border:1px solid var(--border); background:var(--surface-alt); position:relative;}
+.map-viewport{width:100%; height:220px; overflow:hidden; position:relative; touch-action:none; cursor:grab;}
+.map-viewport.grabbing{cursor:grabbing;}
+.map-canvas{position:absolute; inset:0; will-change:transform; transform-origin:0 0;}
+.map-canvas svg{width:100%; height:100%; display:block;}
+.map-controls{position:absolute; right:10px; bottom:10px; display:flex; flex-direction:column; gap:6px;}
+.map-controls button{
+  width:32px; height:32px; border-radius:10px; border:1px solid var(--border); background:var(--surface-card);
+  color:var(--text); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-sm);
+}
+.map-badge{position:absolute; left:10px; top:10px; background:rgba(20,14,28,.72); color:#fff; font-size:11px; font-weight:700; padding:6px 10px; border-radius:10px; backdrop-filter:blur(4px);}
+.map-legend{position:absolute; left:10px; bottom:10px; display:flex; gap:8px;}
+.map-legend .pt{display:flex; align-items:center; gap:5px; background:rgba(20,14,28,.72); color:#fff; font-size:10.5px; font-weight:700; padding:5px 8px; border-radius:8px; backdrop-filter:blur(4px);}
+.map-legend .pt svg{width:11px;height:11px;}
+
+.elev-box{padding:0 20px 4px;}
+.elev-chart{width:100%; height:70px; display:block;}
+
+.stat-row{display:flex; gap:10px; padding:14px 20px;}
+.stat-tile{flex:1; background:var(--surface-card); border:1px solid var(--border); border-radius:16px; padding:12px 10px; text-align:center;}
+.stat-tile .num{font-size:21px; display:block; line-height:1;}
+.stat-tile .lbl{font-size:10px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.04em; margin-top:4px; display:block;}
+
+.groups-list{display:flex; flex-direction:column; gap:8px; padding:0 20px 6px;}
+.group-row{display:flex; align-items:center; justify-content:space-between; padding:11px 14px; border-radius:14px; border:1px solid var(--border); background:var(--surface-card);}
+.group-row .l{display:flex; align-items:center; gap:10px; font-weight:700; font-size:13.5px;}
+.group-row .sw{width:11px;height:11px;border-radius:50%;}
+.group-row .n{font-size:12px; color:var(--text-muted);}
+
+.desc{padding:16px 20px; font-size:13.5px; line-height:1.65; color:var(--text-muted);}
+.desc h4{font-family:"Bebas Neue",sans-serif; letter-spacing:.06em; font-size:14px; color:var(--text); margin-bottom:8px;}
+
+.join-bar{padding:6px 20px 20px; display:flex; flex-direction:column; gap:10px;}
+.group-pick{display:flex; gap:8px;}
+.group-pick button{
+  flex:1; padding:10px 6px; border-radius:12px; border:1.5px solid var(--border); background:var(--surface-card);
+  font-size:11.5px; font-weight:800; display:flex; flex-direction:column; align-items:center; gap:2px; color:var(--text-muted);
+}
+.group-pick button b{font-size:12.5px;}
+.group-pick button.sel{border-color:currentColor;}
+.group-pick button.gv{color:var(--green);} .group-pick button.gv.sel{background:var(--green-soft);}
+.group-pick button.gr{color:var(--red);} .group-pick button.gr.sel{background:var(--red-soft);}
+.group-pick button.gp{color:var(--grp-violet);} .group-pick button.gp.sel{background:var(--grp-violet-soft);}
+.dl-row{display:flex; gap:10px;}
+.dl-row .btn-secondary{flex:1; display:flex; align-items:center; justify-content:center; gap:7px;}
+
+.participants-head{display:flex; align-items:center; justify-content:space-between; padding:18px 20px 10px;}
+.participants-head h2{font-family:"Bebas Neue",sans-serif; font-size:20px;}
+.group-tally{display:flex; gap:10px; padding:0 20px 14px; flex-wrap:wrap;}
+.group-tally .gt{display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:var(--text-muted);}
+.group-tally .sw{width:8px;height:8px;border-radius:50%;}
+.participant-row{display:flex; align-items:center; gap:11px; padding:9px 20px;}
+.participant-row .name{font-size:13.5px; font-weight:700; flex:1;}
+.participant-row .grp{margin-left:auto;}
+
+/* Profile */
+.profile-head{padding:20px 20px 10px; display:flex; gap:14px; align-items:center;}
+.profile-head h2{font-size:19px; font-weight:800;}
+.profile-head .sub{font-size:12.5px; color:var(--text-muted); margin-top:2px;}
+.profile-badges{display:flex; gap:6px; margin-top:8px;}
+.badge-role{font-size:10px; font-weight:800; padding:4px 9px; border-radius:999px; background:var(--grp-violet-soft); color:var(--accent-strong); text-transform:uppercase; letter-spacing:.04em;}
+.stat-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:16px 20px;}
+.stat-card{background:var(--surface-card); border:1px solid var(--border); border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:3px;}
+.stat-card .num{font-size:24px; display:block; line-height:1;}
+.stat-card .lbl{font-size:11px; color:var(--text-faint); display:block;}
+
+.bars{display:flex; align-items:flex-end; gap:10px; height:90px; padding:10px 6px 0;}
+.bars .bar-col{flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; justify-content:flex-end; height:100%;}
+.bars .bar{width:100%; max-width:26px; border-radius:6px 6px 3px 3px; background:linear-gradient(180deg,var(--violet-400),var(--violet-600));}
+.bars .m{font-size:10px; color:var(--text-faint); font-weight:700;}
+
+.history-row{display:flex; align-items:center; gap:12px; padding:12px 20px; border-bottom:1px solid var(--border);}
+.history-row:last-child{border-bottom:none;}
+.history-row .d{width:44px; flex:none; text-align:center;}
+.history-row .d b{display:block; font-family:"Bebas Neue",sans-serif; font-size:19px; line-height:1;}
+.history-row .d span{display:block; font-size:9.5px; color:var(--text-faint); text-transform:uppercase; margin-top:2px;}
+.history-row .t{flex:1; min-width:0;}
+.history-row .t b{font-size:13px; font-weight:700; display:block;}
+.history-row .t .m{font-size:11.5px; color:var(--text-muted);}
+
+/* Admin */
+.admin-seg{display:flex; margin:0 20px 16px; background:var(--surface-alt); border-radius:14px; padding:4px; gap:2px;}
+.admin-seg button{flex:1; padding:9px; border:none; background:none; border-radius:11px; font-weight:700; font-size:12.5px; color:var(--text-muted);}
+.admin-seg button.active{background:var(--surface-card); color:var(--accent); box-shadow:var(--shadow-sm);}
+.admin-row{display:flex; align-items:center; gap:12px; padding:12px 16px; margin:0 20px 10px; border-radius:16px; background:var(--surface-card); border:1px solid var(--border);}
+.admin-row .t{flex:1; min-width:0;}
+.admin-row .t b{font-size:13.5px; font-weight:800; display:block;}
+.admin-row .t .m{font-size:11.5px; color:var(--text-muted);}
+.admin-row .acts{display:flex; gap:6px;}
+.admin-row .acts button{width:32px; height:32px; border-radius:10px; border:1px solid var(--border); background:var(--surface-alt); display:flex; align-items:center; justify-content:center; color:var(--text-muted);}
+.admin-row .acts button.danger{color:var(--red);}
+.fab{
+  position:absolute; right:20px; bottom:96px; width:52px; height:52px; border-radius:16px; z-index:20;
+  background:linear-gradient(135deg,var(--violet-500),var(--violet-700)); color:#fff; border:none;
+  display:flex; align-items:center; justify-content:center; box-shadow:0 12px 24px -8px rgba(124,58,237,.6);
+}
+
+/* form sheet */
+.form-field{padding:0 20px 14px;}
+.form-field label{display:block; font-size:12px; font-weight:800; color:var(--text-muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.03em;}
+.form-field input[type=text], .form-field input[type=date], .form-field input[type=time], .form-field input[type=number], .form-field textarea{
+  width:100%; padding:12px 13px; border-radius:12px; border:1.5px solid var(--border); background:var(--surface-card);
+  font-family:inherit; font-size:13.5px; color:var(--text);
+}
+.form-field textarea{resize:vertical; min-height:76px; line-height:1.5;}
+.form-2col{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:0 20px 14px;}
+.form-2col .form-field{padding:0;}
+.group-check{display:flex; gap:8px;}
+.group-check label{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:11px 4px; border-radius:12px;
+  border:1.5px solid var(--border); font-size:11px; font-weight:800; text-transform:none; color:var(--text-muted); cursor:pointer;
+}
+.group-check input{display:none;}
+.group-check input:checked + span{color:inherit;}
+.group-check label:has(input:checked){border-color:currentColor;}
+.group-check label.gv{color:var(--green);} .group-check label.gv:has(input:checked){background:var(--green-soft);}
+.group-check label.gr{color:var(--red);} .group-check label.gr:has(input:checked){background:var(--red-soft);}
+.group-check label.gp{color:var(--grp-violet);} .group-check label.gp:has(input:checked){background:var(--grp-violet-soft);}
+.file-drop{
+  margin:0 20px 16px; border:1.5px dashed var(--border); border-radius:16px; padding:18px; text-align:center;
+  background:var(--surface-alt); position:relative;
+}
+.file-drop input[type=file]{position:absolute; inset:0; opacity:0; cursor:pointer;}
+.file-drop .fname{font-size:12.5px; font-weight:700; color:var(--accent); margin-top:6px;}
+
+/* toast */
+.toast-wrap{position:absolute; left:0; right:0; bottom:100px; display:flex; justify-content:center; z-index:80; pointer-events:none;}
+.toast{
+  background:#1B1023; color:#fff; font-size:12.5px; font-weight:700; padding:11px 16px; border-radius:12px;
+  box-shadow:0 12px 26px -10px rgba(0,0,0,.5); display:flex; align-items:center; gap:8px; opacity:0; transform:translateY(8px);
+  transition:opacity .25s, transform .25s;
+}
+.toast.show{opacity:1; transform:translateY(0);}
+
+/* notif panel */
+.notif-panel{
+  position:absolute; top:52px; right:14px; width:280px; background:var(--surface-raised); border:1px solid var(--border);
+  border-radius:18px; box-shadow:var(--shadow); z-index:60; padding:8px; opacity:0; transform:translateY(-6px) scale(.97);
+  pointer-events:none; transition:.16s;
+}
+.notif-panel.open{opacity:1; transform:translateY(0) scale(1); pointer-events:auto;}
+.notif-item{display:flex; gap:10px; padding:9px 8px; border-radius:12px;}
+.notif-item:hover{background:var(--surface-alt);}
+.notif-item .ico{width:28px;height:28px;border-radius:9px;background:var(--grp-violet-soft); color:var(--accent-strong); display:flex; align-items:center; justify-content:center; flex:none;}
+.notif-item p{font-size:12px; line-height:1.4;}
+.notif-item time{font-size:10.5px; color:var(--text-faint);}
+
+.empty{padding:40px 20px; text-align:center; color:var(--text-faint); font-size:13px;}
+
+@keyframes fadeUp{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);}}
+.app-content > *{animation:fadeUp .28s ease both;}
+.app-content > .notif-panel{animation:none;}
+.app-content > .notif-panel:not(.open){opacity:0; pointer-events:none;}
+.app-content > .notif-panel.open{opacity:1;}
+@media (prefers-reduced-motion:reduce){ *{animation:none !important; transition:none !important;} }
+
+/* login gate */
+.login-gate{
+  position:absolute; inset:0; z-index:200; display:flex; flex-direction:column; justify-content:center; gap:22px;
+  padding:36px 26px; background:linear-gradient(165deg, var(--violet-700) 0%, var(--violet-900) 82%); color:#fff;
+  opacity:1; transition:opacity .3s ease, visibility .3s ease; overflow:auto;
+}
+.login-gate.hidden{opacity:0; visibility:hidden; pointer-events:none;}
+.login-gate .lg-mark{display:flex; align-items:center; gap:9px; font-family:"Bebas Neue",sans-serif; font-size:26px; letter-spacing:.06em;}
+.login-gate .lg-mark .dot{width:12px;height:12px;border-radius:50%;background:linear-gradient(135deg,var(--violet-400),#fff); box-shadow:0 0 0 5px rgba(255,255,255,.16);}
+.login-gate h1{font-family:"Bebas Neue",sans-serif; font-size:30px; letter-spacing:.02em; line-height:1.15; margin-top:6px;}
+.login-gate p.lg-sub{font-size:13.5px; color:rgba(255,255,255,.72); line-height:1.5; max-width:32ch;}
+.login-gate .lg-field{display:flex; flex-direction:column; gap:8px; margin-top:6px;}
+.login-gate label{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:rgba(255,255,255,.6);}
+.login-gate input{padding:13px 14px; border-radius:12px; border:1.5px solid rgba(255,255,255,.22); background:rgba(255,255,255,.08); color:#fff; font-size:14px; font-family:inherit;}
+.login-gate input::placeholder{color:rgba(255,255,255,.4);}
+.login-gate input:focus-visible{outline:2px solid #fff; outline-offset:2px;}
+.login-gate .lg-btn{margin-top:4px; padding:13px 16px; border-radius:12px; border:none; background:#fff; color:var(--violet-800,var(--violet-700)); font-weight:800; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;}
+.login-gate .lg-btn:active{transform:scale(.98);}
+.login-gate .lg-note{font-size:11.5px; color:rgba(255,255,255,.5); line-height:1.5;}
+.login-gate .lg-sent-ico{width:52px;height:52px;border-radius:16px; background:rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center; margin-bottom:2px;}
+.login-gate .lg-step{display:none;}
+.login-gate .lg-step.active{display:flex; flex-direction:column; gap:14px;}
+.login-gate .lg-link{background:none; border:none; color:rgba(255,255,255,.65); font-size:12.5px; text-decoration:underline; cursor:pointer; padding:0; text-align:left; width:fit-content;}
+.login-gate .lg-code-input{text-align:center; font-family:"Bebas Neue",sans-serif; font-size:26px; letter-spacing:.4em; padding-left:20px;}
+.login-gate .lg-close{position:absolute; top:18px; right:18px; width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); color:#fff; display:flex; align-items:center; justify-content:center;}
+.login-gate .lg-close:active{transform:scale(.94);}
+
+</style>
+
+<div class="screen">
+  <div class="app-content hide-scroll" id="appContent"></div>
+  <div class="toast-wrap" id="toastWrap"></div>
+  <nav class="tabbar" id="tabbar"></nav>
+
+  <div class="login-gate hidden" id="loginGate">
+    <button type="button" class="lg-close" id="lgClose" aria-label="Fermer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <div class="lg-step active" id="lgStepEmail">
+      <div class="lg-mark"><span class="dot"></span><span>SPS</span></div>
+      <div>
+        <h1>Connexion administrateur</h1>
+        <p class="lg-sub">Réservée à l'administrateur du club. Les membres n'ont pas besoin de compte pour s'inscrire aux sorties.</p>
+      </div>
+      <form id="lgForm" class="lg-field">
+        <label for="lgEmail">Adresse email</label>
+        <input type="email" id="lgEmail" required placeholder="admin@exemple.fr" value="th.tregaro@gmail.com" autocomplete="email">
+        <button type="submit" class="lg-btn">Recevoir mon lien de connexion</button>
+      </form>
+      <p class="lg-note">Aucun mot de passe : un lien de connexion avec un code à 6 chiffres est envoyé par email à l'administrateur, comme sur l'app réelle.</p>
+    </div>
+    <div class="lg-step" id="lgStepSent">
+      <div class="lg-sent-ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2.5"/><path d="M4.5 7 12 12.5 19.5 7"/></svg></div>
+      <div>
+        <h1>Vérifie ta boîte mail</h1>
+        <p class="lg-sub">Un lien de connexion avec un code à 6 chiffres a été envoyé à <b id="lgSentEmail">—</b>.</p>
+      </div>
+      <form id="lgCodeForm" class="lg-field">
+        <label for="lgCode">Code reçu par email</label>
+        <input type="text" id="lgCode" inputmode="numeric" maxlength="6" autocomplete="one-time-code" class="lg-code-input" placeholder="000000">
+        <button type="submit" class="lg-btn">Valider et accéder à l'admin</button>
+      </form>
+      <p class="lg-note" id="lgCodeHint">Code de démonstration : ------</p>
+      <button type="button" class="lg-link" id="lgBackToEmail">Utiliser une autre adresse</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= ICONS ================= */
+const ICONS = {
+  home:'<path d="M4 11.5 12 4l8 7.5" stroke-linejoin="round"/><path d="M6.2 10v9a1 1 0 0 0 1 1h3.1v-6.2h3.4V20h3.1a1 1 0 0 0 1-1v-9"/>',
+  bike:'<circle cx="6" cy="17" r="3.3"/><circle cx="18" cy="17" r="3.3"/><path d="M6 17 9.6 9h4.6l3 8" stroke-linejoin="round"/><path d="M9.6 9 8.2 6H6" /><path d="M12.5 9l2.6 3.7"/><circle cx="9.6" cy="9" r=".9" fill="currentColor" stroke="none"/>',
+  map:'<path d="M9 4.2 4 6.4v14L9 18l6 2.2 5-2.2v-14l-5 2.2-6-2.2Z" stroke-linejoin="round"/><path d="M9 4.2v13.8M15 6.4v13.8"/>',
+  user:'<circle cx="12" cy="8.2" r="3.6"/><path d="M4.5 20c1.4-4.1 4.2-6.1 7.5-6.1s6.1 2 7.5 6.1"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 3.2v2.3M12 18.5v2.3M20.8 12h-2.3M5.5 12H3.2M18.1 5.9l-1.6 1.6M7.5 16.5l-1.6 1.6M18.1 18.1l-1.6-1.6M7.5 7.5 5.9 5.9" stroke-linecap="round"/>',
+  bell:'<path d="M6.2 9.2a5.8 5.8 0 1 1 11.6 0c0 4.2 1.4 5.6 1.4 5.6H4.8s1.4-1.4 1.4-5.6Z" stroke-linejoin="round"/><path d="M9.6 17.4a2.4 2.4 0 0 0 4.8 0"/>',
+  chevL:'<path d="M15 5 8 12l7 7" stroke-linecap="round" stroke-linejoin="round"/>',
+  chevR:'<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>',
+  download:'<path d="M12 4v11" stroke-linecap="round"/><path d="M8 11.5 12 15.5 16 11.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 18.5h13" stroke-linecap="round"/>',
+  plus:'<path d="M12 5v14M5 12h14" stroke-linecap="round"/>',
+  pencil:'<path d="M4.5 19.5 5.3 16 15.8 5.5l3.2 3.2L8.5 19.2l-4 .3Z" stroke-linejoin="round"/>',
+  trash:'<path d="M4.5 7h15M9.5 7V4.5h5V7" stroke-linecap="round"/><path d="M6.5 7.2 7.5 20h9l1-12.8" stroke-linejoin="round"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18" stroke-linecap="round"/>',
+  mountain:'<path d="M3 19 8.6 8l3.6 6 1.7-2.6L21 19Z" stroke-linejoin="round"/>',
+  flag:'<path d="M6.5 4v16" stroke-linecap="round"/><path d="M6.5 5.2h9.8l-2.3 3.3 2.3 3.3H6.5"/>',
+  route:'<circle cx="6" cy="18" r="2.1"/><circle cx="18" cy="6" r="2.1"/><path d="M8 17c5.5-1 4-9 8-10"/>',
+  target:'<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/>',
+  check:'<path d="M5 13l4.5 4.5L19 8" stroke-linecap="round" stroke-linejoin="round"/>',
+  members:'<circle cx="9" cy="8.3" r="3.1"/><circle cx="17" cy="9.3" r="2.5"/><path d="M3.3 19c1.1-3.4 3.2-5 5.7-5s4.6 1.6 5.7 5"/><path d="M15 14.4c2 .2 3.4 1.7 4.2 4.2"/>',
+  gpx:'<rect x="4.5" y="3" width="15" height="18" rx="2.2"/><path d="M8 8.5h8M8 12h8M8 15.5h5"/>',
+  minus:'<path d="M5 12h14" stroke-linecap="round"/>',
+  info:'<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.2" stroke-linecap="round"/><circle cx="12" cy="8.3" r="1" fill="currentColor" stroke="none"/>',
+  external:'<path d="M9 6H6a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 6 19h10a1.5 1.5 0 0 0 1.5-1.5V15" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 4.5h5.5V10M19.3 4.7l-8.6 8.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  trophy:'<path d="M7 4.5h10v5a5 5 0 0 1-10 0v-5Z" stroke-linejoin="round"/><path d="M7 6H4.5v1.5A3.5 3.5 0 0 0 7 10.9M17 6h2.5v1.5A3.5 3.5 0 0 1 17 10.9" stroke-linecap="round"/><path d="M12 14.5v3M9 20h6M9.5 17.5h5" stroke-linecap="round"/>',
+};
+function icon(name, size){size=size||18; return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${ICONS[name]||''}</svg>`;}
+
+/* ================= UTIL ================= */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function seedFromStr(s){let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))|0;return h;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+const MONTHS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+const MONTHS_L=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const DAYS=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+const DAYS_L=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+function d(iso){return new Date(iso+'T00:00:00');}
+function fmtShort(iso){const x=d(iso); return `${DAYS[x.getDay()].replace('.','').toUpperCase()} ${x.getDate()} ${MONTHS[x.getMonth()].replace('.','').toUpperCase()}`;}
+function fmtLong(iso){const x=d(iso); return `${DAYS_L[x.getDay()]} ${x.getDate()} ${MONTHS_L[x.getMonth()]}`;}
+function fmtDayNum(iso){return d(iso).getDate();}
+function fmtMon(iso){return MONTHS[d(iso).getMonth()].replace('.','').toUpperCase();}
+function initials(name){return name.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();}
+function isPast(ride){return d(ride.date) < new Date(new Date().toDateString());}
+function daysUntil(iso){const ms=d(iso)-new Date(new Date().toDateString()); return Math.round(ms/86400000);}
+function within(iso,days){const n=daysUntil(iso); return n>=0 && n<=days;}
+function isWeekendDate(iso){const day=d(iso).getDay(); return day===0||day===6;}
+function fmtKm(v){return (Math.round(v*10)/10).toString().replace('.',',')+' km';}
+function fmtM(v){return Math.round(v)+' m';}
+
+let toastTimer=null;
+function toast(msg,ic){
+  const wrap=document.getElementById('toastWrap');
+  wrap.innerHTML = `<div class="toast show">${ic?icon(ic,15):''}<span>${msg}</span></div>`;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{const t=wrap.querySelector('.toast'); if(t) t.classList.remove('show');},2400);
+}
+
+/* ================= DATA ================= */
+const GROUP_INFO = {
+  vert:{key:'vert',label:'Vert',range:'24–26 km/h',color:'var(--green)',cls:'grp-vert'},
+  rouge:{key:'rouge',label:'Rouge',range:'26–27 km/h',color:'var(--red)',cls:'grp-rouge'},
+  violet:{key:'violet',label:'Violet',range:'28+ km/h',color:'var(--grp-violet)',cls:'grp-violet'},
+};
+
+// Ces "membres" ne sont PAS des comptes : personne ne se connecte en tant
+// que Léa ou Julien. C'est juste un vivier de noms fictifs pour générer des
+// participations réalistes ci-dessous (comme sur l'app réelle, participer
+// à une sortie ne demande qu'un nom, saisi au moment de l'inscription).
+const SEED_NAMES = [
+ {id:'u1', name:'Thomas Trégaro', group:'rouge'},
+ {id:'u2', name:'Camille Roussel', group:'violet'},
+ {id:'u3', name:'Julien Faure', group:'rouge'},
+ {id:'u4', name:'Léa Bonnet', group:'vert'},
+ {id:'u5', name:'Antoine Girard', group:'violet'},
+ {id:'u6', name:'Manon Rey', group:'vert'},
+ {id:'u7', name:'Hugo Perrin', group:'rouge'},
+ {id:'u8', name:'Chloé Meunier', group:'vert'},
+ {id:'u9', name:'Nicolas Blanc', group:'rouge'},
+ {id:'u10', name:'Sarah Delmas', group:'violet'},
+ {id:'u11', name:'Maxime Aubert', group:'rouge'},
+ {id:'u12', name:'Inès Cazal', group:'vert'},
+ {id:'u13', name:'Paul Vidal', group:'violet'},
+ {id:'u14', name:'Emma Roche', group:'vert'},
+ {id:'u15', name:'Baptiste Colin', group:'rouge'},
+ {id:'u16', name:'Clara Fabre', group:'vert'},
+ {id:'u17', name:'Romain Gay', group:'violet'},
+ {id:'u18', name:'Julie Marty', group:'rouge'},
+ {id:'u19', name:'Théo Lacombe', group:'vert'},
+ {id:'u20', name:'Océane Fournier', group:'violet'},
+];
+function seedName(id){ return SEED_NAMES.find(u=>u.id===id).name; }
+function seedGroup(id){ return SEED_NAMES.find(u=>u.id===id).group; }
+let __seedPid = 0;
+function nextSeedId(){ return 'seed-'+(++__seedPid); }
+
+const RIDES_SEED = [
+  {id:'r1', title:'Sortie café – Lattes / Palavas', date:'2026-09-05', time:'08:00', place:'Parking de la Mairie, Lattes', distance:42, elevation:120,
+   groups:['vert'], desc:"Balade tranquille en bord de mer jusqu'à Palavas-les-Flots avec pause café sur le port avant de rentrer par la voie verte. Idéale pour se dérouiller les jambes en douceur, rythme social garanti."},
+  {id:'r2', title:'Sortie du soir – Étang de l\'Or', date:'2026-09-09', time:'18:00', place:'Base nautique, Pérols', distance:35, elevation:90,
+   groups:['vert','rouge'], desc:"Boucle après le travail autour de l'étang de l'Or, parfaite pour la lumière du soir. Deux groupes de vitesse selon les envies, retour avant la nuit."},
+  {id:'r3', title:'Sortie dimanche – Pic Saint-Loup', date:'2026-09-06', time:'08:30', place:'Parking du stade, Saint-Clément-de-Rivière', distance:82, elevation:850,
+   groups:['vert','rouge','violet'], desc:"La classique du club ! Direction le Pic Saint-Loup par les petites routes des contreforts cévenols. Deux ascensions au programme, ravitaillement à Saint-Mathieu-de-Tréviers. Prévoir une chambre à air et de quoi manger."},
+  {id:'r4', title:'Grand tour du Salagou', date:'2026-09-12', time:'07:30', place:'Parking du lac, Clermont-l\'Hérault', distance:108, elevation:1450,
+   groups:['rouge','violet'], desc:"Sortie exigeante autour du lac du Salagou et des ruffes volcaniques. Beaucoup de faux-plats et deux belles bosses. Réservée aux groupes rythmés, prévoir gourdes pleines et barres énergétiques."},
+  {id:'r5', title:'Sortie découverte – Bois de Grammont', date:'2026-09-13', time:'09:00', place:'Entrée du Bois de Grammont, Montpellier', distance:38, elevation:200,
+   groups:['vert'], desc:"Parcours idéal pour les nouveaux membres : peu de dénivelé, allure très souple, on prend le temps de discuter. Parfait pour découvrir le club sans pression."},
+  {id:'r6', title:'Ronde des Gorges de l\'Hérault', date:'2026-09-20', time:'08:00', place:'Parking bas, Saint-Guilhem-le-Désert', distance:95, elevation:1100,
+   groups:['vert','rouge','violet'], desc:"Sortie panoramique le long des gorges avec un passage par le Pont du Diable. Trois groupes proposés, ravitaillement prévu à Gignac. L'une des plus belles sorties de la saison."},
+  {id:'r7', title:'Boucle du Larzac', date:'2026-09-27', time:'08:00', place:'Aire de covoiturage, Gignac', distance:120, elevation:1600,
+   groups:['rouge','violet'], desc:"Grande sortie de fin de mois sur le plateau du Larzac. Montée longue et régulière puis un plateau venteux à négocier en groupe. Réservé aux rouleurs confirmés."},
+  // past
+  {id:'p1', title:'Sortie Cirque de Navacelles', date:'2026-08-23', time:'08:00', place:'Belvédère, Navacelles', distance:88, elevation:1350,
+   groups:['vert','rouge','violet'], desc:"Descente et remontée du cirque, l'une des sorties les plus spectaculaires de l'année."},
+  {id:'p2', title:'Boucle de Sète – Bassin de Thau', date:'2026-08-16', time:'08:00', place:'Gare de Sète', distance:65, elevation:300,
+   groups:['vert','rouge'], desc:"Tour du bassin de Thau avec vue sur les tables conchylicoles, allure modérée."},
+  {id:'p3', title:'Sortie Puechabon – Gorges de la Buèges', date:'2026-08-09', time:'08:00', place:'Parking village, Puéchabon', distance:75, elevation:700,
+   groups:['vert','rouge','violet'], desc:"Petites routes ombragées le long de la Buèges, sortie très appréciée en été."},
+  {id:'p4', title:'Sortie Vallée de l\'Hérault', date:'2026-07-12', time:'08:00', place:'Parking, Gignac', distance:70, elevation:650,
+   groups:['vert','rouge'], desc:"Longue vallée le long du fleuve, quelques relances mais rien de méchant."},
+  {id:'p5', title:'Reprise de saison – Palavas', date:'2026-06-14', time:'08:30', place:'Office de tourisme, Palavas-les-Flots', distance:50, elevation:100,
+   groups:['vert','rouge'], desc:"Première sortie collective de la saison, ambiance conviviale pour se retrouver."},
+];
+
+function ids(str){return str.split(',');}
+const PARTICIPATIONS_SEED = [
+  ...ids('u4,u6,u8,u12,u14,u16,u19,u20,u2').map(id=>({id:nextSeedId(), rideId:'r1', name:seedName(id), group:'vert'})),
+  ...ids('u4,u6,u8,u12,u16').map(id=>({id:nextSeedId(), rideId:'r2', name:seedName(id), group:'vert'})),
+  ...ids('u1,u3,u7,u9,u11,u15,u18').map(id=>({id:nextSeedId(), rideId:'r2', name:seedName(id), group:'rouge'})),
+  ...ids('u4,u6,u8,u12,u14,u16,u19,u2').map(id=>({id:nextSeedId(), rideId:'r3', name:seedName(id), group:'vert'})),
+  ...ids('u1,u3,u7,u9,u11,u15,u18').map(id=>({id:nextSeedId(), rideId:'r3', name:seedName(id), group:'rouge'})),
+  ...ids('u5,u13,u10').map(id=>({id:nextSeedId(), rideId:'r3', name:seedName(id), group:'violet'})),
+  ...ids('u1,u3,u7,u9,u11,u15,u18,u20').map(id=>({id:nextSeedId(), rideId:'r4', name:seedName(id), group:'rouge'})),
+  ...ids('u2,u5,u10,u13,u17,u6').map(id=>({id:nextSeedId(), rideId:'r4', name:seedName(id), group:'violet'})),
+  ...ids('u4,u6,u8,u12,u14,u16,u19').map(id=>({id:nextSeedId(), rideId:'r5', name:seedName(id), group:'vert'})),
+  ...ids('u4,u6,u8,u12,u14,u16').map(id=>({id:nextSeedId(), rideId:'r6', name:seedName(id), group:'vert'})),
+  ...ids('u1,u3,u7,u9,u11,u15').map(id=>({id:nextSeedId(), rideId:'r6', name:seedName(id), group:'rouge'})),
+  ...ids('u2,u5,u10,u13').map(id=>({id:nextSeedId(), rideId:'r6', name:seedName(id), group:'violet'})),
+  ...ids('u1,u3,u7,u9,u11,u15').map(id=>({id:nextSeedId(), rideId:'r7', name:seedName(id), group:'rouge'})),
+  ...ids('u2,u5,u10,u13').map(id=>({id:nextSeedId(), rideId:'r7', name:seedName(id), group:'violet'})),
+  // past
+  ...ids('u1,u3,u7,u9,u11,u15,u4,u6,u8,u12,u2,u5,u13').map(id=>({id:nextSeedId(), rideId:'p1', name:seedName(id), group:id==='u1'?'rouge':(['u4','u6','u8','u12'].includes(id)?'vert':(['u2','u5','u13'].includes(id)?'violet':'rouge'))})),
+  ...ids('u1,u3,u7,u4,u6,u8,u12,u14,u9,u11,u18').map(id=>({id:nextSeedId(), rideId:'p2', name:seedName(id), group:id==='u1'?'rouge':(['u4','u6','u8','u12','u14'].includes(id)?'vert':'rouge')})),
+  ...ids('u1,u3,u7,u9,u4,u6,u8,u2,u5,u13,u15').map(id=>({id:nextSeedId(), rideId:'p3', name:seedName(id), group:id==='u1'?'rouge':(['u4','u6','u8'].includes(id)?'vert':(['u2','u5','u13'].includes(id)?'violet':'rouge'))})),
+  ...ids('u1,u3,u4,u6,u9,u18').map(id=>({id:nextSeedId(), rideId:'p4', name:seedName(id), group:id==='u1'?'rouge':(['u4','u6'].includes(id)?'vert':'rouge')})),
+  ...ids('u1,u4,u6,u8,u3,u9').map(id=>({id:nextSeedId(), rideId:'p5', name:seedName(id), group:id==='u1'?'rouge':(['u4','u6','u8'].includes(id)?'vert':'rouge')})),
+];
+
+const FEED_SEED = [
+  {ic:'plus', text:'Nouvelle sortie publiée : <b>Ronde des Gorges de l\'Hérault</b>', time:'Hier'},
+  {ic:'members', text:'<b>Julien Faure</b> a rejoint Grand tour du Salagou', time:'Il y a 2 h'},
+  {ic:'route', text:'Le parcours de <b>Boucle du Larzac</b> a été mis à jour', time:'Il y a 1 j'},
+  {ic:'members', text:'18 participants inscrits pour <b>Pic Saint-Loup</b>', time:'Il y a 1 j'},
+  {ic:'plus', text:'Nouvelle sortie publiée : <b>Grand tour du Salagou</b>', time:'Il y a 3 j'},
+];
+
+const NOTIFS_SEED = [
+  {ic:'plus', text:'Nouvelle sortie SPS publiée : Grand tour du Salagou', time:'Il y a 3 j'},
+  {ic:'bell', text:'Sortie dans 24 heures : Pic Saint-Loup', time:'Il y a 5 h'},
+  {ic:'route', text:'Modification du parcours : Ronde des Gorges de l\'Hérault', time:'Il y a 1 j'},
+  {ic:'x', text:'Sortie annulée : Sortie du 2 août (météo)', time:'2 août'},
+];
+
+/* ================= STATE ================= */
+const ADMIN_EMAIL = 'th.tregaro@gmail.com'; // un seul compte admin pour tout le club
+let DB = {rides:JSON.parse(JSON.stringify(RIDES_SEED)), participations:JSON.parse(JSON.stringify(PARTICIPATIONS_SEED))};
+let view = {tab:'home'};
+let notifOpen = false;
+let rideGpxCache = {}; // rideId -> {points, elevation}
+let pendingGpx = null; // for admin form
+let authed = false; // session admin (l'unique compte administrateur du club)
+let gateOpen = false;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem('sps-demo-state-v1');
+    if(raw){
+      const s = JSON.parse(raw);
+      if(s.rides) DB.rides = s.rides;
+      if(s.participations) DB.participations = s.participations;
+      if(s.authed) authed = s.authed;
+    }
+  }catch(e){}
+}
+function saveState(){
+  try{ localStorage.setItem('sps-demo-state-v1', JSON.stringify({rides:DB.rides, participations:DB.participations, authed})); }catch(e){}
+}
+
+/* ---- "Mes participations" : suivi par navigateur, sans compte -----------
+   Ce n'est pas un mécanisme de sécurité côté démo (tout tourne en mémoire
+   locale), mais ça reproduit exactement le rôle du client_token de l'app
+   réelle : seul CE navigateur "sait" quelles inscriptions lui appartiennent,
+   et peut donc les modifier ou les retirer. --------------------------- */
+const MYPARTS_KEY = 'sps-my-participations-v1';
+const LASTNAME_KEY = 'sps-last-name-v1';
+function loadMyParts(){
+  try{ const raw = localStorage.getItem(MYPARTS_KEY); return raw ? JSON.parse(raw) : {}; }catch(e){ return {}; }
+}
+function saveMyParts(map){
+  try{ localStorage.setItem(MYPARTS_KEY, JSON.stringify(map)); }catch(e){}
+}
+function getMyParticipation(rideId){
+  const map = loadMyParts();
+  const rec = map[rideId];
+  if(!rec) return null;
+  const stillExists = DB.participations.some(p=>p.id===rec.participationId && p.rideId===rideId);
+  if(!stillExists){ delete map[rideId]; saveMyParts(map); return null; }
+  return rec;
+}
+function setMyParticipation(rideId, rec){ const map=loadMyParts(); map[rideId]=rec; saveMyParts(map); }
+function clearMyParticipation(rideId){ const map=loadMyParts(); delete map[rideId]; saveMyParts(map); }
+function getMyRideIds(){
+  const map = loadMyParts();
+  return Object.keys(map).filter(rideId => DB.participations.some(p=>p.id===map[rideId].participationId));
+}
+function getLastUsedName(){ try{ return localStorage.getItem(LASTNAME_KEY) || ''; }catch(e){ return ''; } }
+function setLastUsedName(name){ try{ localStorage.setItem(LASTNAME_KEY, name); }catch(e){} }
+
+function rideParticipants(rideId){ return DB.participations.filter(p=>p.rideId===rideId); }
+function rideCounts(rideId){
+  const list = rideParticipants(rideId);
+  const c = {vert:0,rouge:0,violet:0};
+  list.forEach(p=>c[p.group]++);
+  return {total:list.length, ...c};
+}
+function rideById(id){ return DB.rides.find(r=>r.id===id); }
+function upcomingRides(){ return DB.rides.filter(r=>!isPast(r)).sort((a,b)=>d(a.date)-d(b.date)); }
+function pastRides(){ return DB.rides.filter(r=>isPast(r)).sort((a,b)=>d(b.date)-d(a.date)); }
+
+/* ================= ROUTE / GPX GENERATION ================= */
+function genRideGeo(ride){
+  if(rideGpxCache[ride.id]) return rideGpxCache[ride.id];
+  const seed = seedFromStr(ride.id + ride.title);
+  const rnd = mulberry32(seed);
+  const n = 30;
+  const cx=500, cy=480;
+  const baseR = 250 + rnd()*90;
+  const points=[];
+  for(let i=0;i<=n;i++){
+    const a = (i/n)*Math.PI*2;
+    const wob = Math.sin(a*3.1 + seed%7) * 55 + (rnd()-0.5)*40;
+    const r = baseR + wob;
+    points.push({x: cx + Math.cos(a)*r, y: cy + Math.sin(a)*r*0.7});
+  }
+  // elevation
+  const raw=[0];
+  for(let i=1;i<=n;i++){
+    const t=i/n;
+    const climb = Math.max(0, Math.sin(t*Math.PI*2.4)+Math.sin(t*Math.PI*5.3)*0.3);
+    raw.push(raw[i-1] + (rnd()-0.32)*4 + climb*6);
+  }
+  const min = Math.min(...raw);
+  const shifted = raw.map(v=>v-min+45);
+  let gain=0; for(let i=1;i<shifted.length;i++){const dl=shifted[i]-shifted[i-1]; if(dl>0) gain+=dl;}
+  const scale = gain>0 ? ride.elevation/gain : 1;
+  const scaled=[shifted[0]];
+  for(let i=1;i<shifted.length;i++){ scaled.push(scaled[i-1] + (shifted[i]-shifted[i-1])*scale); }
+  const geo = {points, elevation:scaled};
+  rideGpxCache[ride.id] = geo;
+  return geo;
+}
+function smoothPath(pts){
+  if(pts.length<2) return '';
+  let pstr = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+  for(let i=1;i<pts.length-1;i++){
+    const mx=(pts[i].x+pts[i+1].x)/2, my=(pts[i].y+pts[i+1].y)/2;
+    pstr += ` Q ${pts[i].x.toFixed(1)} ${pts[i].y.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)}`;
+  }
+  const last = pts[pts.length-1];
+  pstr += ` L ${last.x.toFixed(1)} ${last.y.toFixed(1)}`;
+  return pstr;
+}
+function contourPaths(seed){
+  const rnd = mulberry32(seed+99);
+  let out = [];
+  for(let c=0;c<4;c++){
+    const cx=500+ (rnd()-.5)*300, cy=480+(rnd()-.5)*300;
+    const r = 120 + c*140 + rnd()*40;
+    const n=16; let pts=[];
+    for(let i=0;i<=n;i++){
+      const a=(i/n)*Math.PI*2;
+      const rr = r + Math.sin(a*3+c)*24;
+      pts.push({x:cx+Math.cos(a)*rr, y:cy+Math.sin(a)*rr*0.7});
+    }
+    out.push(smoothPath(pts)+' Z');
+  }
+  return out;
+}
+function mapSVG(ride, opts){
+  opts = opts||{};
+  const geo = genRideGeo(ride);
+  const pts = geo.points;
+  const start = pts[0];
+  let peakIdx=0; for(let i=1;i<geo.elevation.length;i++){ if(geo.elevation[i]>geo.elevation[peakIdx]) peakIdx=i; }
+  const peak = pts[peakIdx];
+  const seed = seedFromStr(ride.id+ride.title);
+  const contours = contourPaths(seed);
+  return `<svg viewBox="0 0 1000 960" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="routeGrad-${ride.id}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--violet-400)"/>
+        <stop offset="100%" stop-color="var(--violet-700)"/>
+      </linearGradient>
+      <pattern id="grid-${ride.id}" width="46" height="46" patternUnits="userSpaceOnUse">
+        <path d="M 46 0 L 0 0 0 46" fill="none" stroke="var(--border)" stroke-width="1"/>
+      </pattern>
+    </defs>
+    <rect width="1000" height="960" fill="var(--surface-alt)"/>
+    <rect width="1000" height="960" fill="url(#grid-${ride.id})" opacity="0.6"/>
+    ${contours.map(p=>`<path d="${p}" fill="none" stroke="var(--border)" stroke-width="3" opacity="0.9"/>`).join('')}
+    <path d="${smoothPath(pts)}" fill="none" stroke="url(#routeGrad-${ride.id})" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="${smoothPath(pts)}" fill="none" stroke="#fff" stroke-width="2" stroke-opacity=".35" stroke-linecap="round" stroke-linejoin="round"/>
+    <g>
+      <circle cx="${peak.x}" cy="${peak.y}" r="15" fill="var(--surface-card)" stroke="var(--grp-violet)" stroke-width="3"/>
+      <g transform="translate(${peak.x-7.5},${peak.y-7.5})" stroke="var(--grp-violet)" fill="none" stroke-width="1.8">${ICONS.mountain}</g>
+    </g>
+    <g>
+      <circle cx="${start.x}" cy="${start.y}" r="16" fill="var(--green)"/>
+      <g transform="translate(${start.x-7},${start.y-7.5})" stroke="#fff" fill="none" stroke-width="2">${ICONS.flag}</g>
+    </g>
+  </svg>`;
+}
+function elevSVG(ride){
+  const geo = genRideGeo(ride);
+  const el = geo.elevation;
+  const min = Math.min(...el), max = Math.max(...el);
+  const w=300,h=70,pad=4;
+  const pts = el.map((v,i)=>{
+    const x = (i/(el.length-1))*w;
+    const y = h-pad - ((v-min)/(max-min||1))*(h-pad*2);
+    return `${x.toFixed(1)},${y.toFixed(1)}`;
+  });
+  const line = 'M '+pts.join(' L ');
+  const area = line + ` L ${w},${h} L 0,${h} Z`;
+  return `<svg class="elev-chart" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+    <defs><linearGradient id="elevGrad-${ride.id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="var(--violet-500)" stop-opacity=".38"/>
+      <stop offset="100%" stop-color="var(--violet-500)" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${area}" fill="url(#elevGrad-${ride.id})"/>
+    <path d="${line}" fill="none" stroke="var(--violet-500)" stroke-width="2"/>
+  </svg>`;
+}
+
+/* ============ GPX parsing (real, client-side) ============ */
+function haversine(lat1,lon1,lat2,lon2){
+  const R=6371, toRad=x=>x*Math.PI/180;
+  const dLat=toRad(lat2-lat1), dLon=toRad(lon2-lon1);
+  const a=Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function parseGPX(text){
+  const xml = new DOMParser().parseFromString(text,'application/xml');
+  if(xml.querySelector('parsererror')) return null;
+  let nodes = Array.from(xml.querySelectorAll('trkpt'));
+  if(!nodes.length) nodes = Array.from(xml.querySelectorAll('rtept'));
+  if(!nodes.length) return null;
+  const raw = nodes.map(n=>{
+    const lat=parseFloat(n.getAttribute('lat')), lon=parseFloat(n.getAttribute('lon'));
+    const eleN = n.querySelector('ele');
+    const ele = eleN ? parseFloat(eleN.textContent) : null;
+    return {lat,lon,ele};
+  }).filter(p=>!isNaN(p.lat)&&!isNaN(p.lon));
+  if(raw.length<2) return null;
+  let dist=0;
+  for(let i=1;i<raw.length;i++) dist += haversine(raw[i-1].lat,raw[i-1].lon,raw[i].lat,raw[i].lon);
+  let gain=0, hasEle = raw.every(p=>p.ele!==null);
+  if(hasEle){ for(let i=1;i<raw.length;i++){ const dl=raw[i].ele-raw[i-1].ele; if(dl>0) gain+=dl; } }
+  const lats=raw.map(p=>p.lat), lons=raw.map(p=>p.lon);
+  const minLat=Math.min(...lats), maxLat=Math.max(...lats), minLon=Math.min(...lons), maxLon=Math.max(...lons);
+  const latSpan=(maxLat-minLat)||0.001, lonSpan=(maxLon-minLon)||0.001;
+  const scale = Math.min(760/latSpan, 760/lonSpan);
+  const points = raw.map(p=>({
+    x: 500 + (p.lon-(minLon+lonSpan/2))*scale,
+    y: 480 - (p.lat-(minLat+latSpan/2))*scale
+  }));
+  let elevArr;
+  if(hasEle){
+    const emin=Math.min(...raw.map(p=>p.ele));
+    elevArr = raw.map(p=>p.ele-emin+40);
+  } else {
+    elevArr = points.map((_,i)=>40+Math.sin(i/points.length*Math.PI*3)*20);
+  }
+  return {points, elevation:elevArr, distanceKm:dist, gainM:gain, hasEle};
+}
+
+/* ================= RENDER: SHELL ================= */
+// L'onglet Admin est toujours visible (comme dans l'app réelle) : c'est la
+// tentative d'y accéder qui déclenche la connexion, pas sa présence dans la
+// barre — il n'y a plus de rôle "membre / admin" par personne.
+const TABS = [
+  {id:'home', label:'Accueil', icon:'home'},
+  {id:'rides', label:'Sorties', icon:'bike'},
+  {id:'map', label:'Carte', icon:'map'},
+  {id:'classement', label:'Classement', icon:'trophy'},
+  {id:'admin', label:'Admin', icon:'gear'},
+];
+function renderTabbar(){
+  const bar = document.getElementById('tabbar');
+  const active = view.tab==='ride' ? view.fromTab : (view.tab==='adminForm' ? 'admin' : view.tab);
+  bar.innerHTML = TABS.map(t=>`
+    <button class="tab ${active===t.id?'active':''}" data-nav="${t.id}">
+      ${icon(t.icon,22)}<span>${t.label}</span>
+    </button>`).join('');
+}
+function goto(tab, extra){
+  view = Object.assign({tab}, extra||{});
+  notifOpen=false;
+  render();
+  document.getElementById('appContent').scrollTop=0;
+}
+
+function render(){
+  renderTabbar();
+  const el = document.getElementById('appContent');
+  if(view.tab==='home') el.innerHTML = renderHome();
+  else if(view.tab==='rides') el.innerHTML = renderRides();
+  else if(view.tab==='map') el.innerHTML = renderMap();
+  else if(view.tab==='classement') el.innerHTML = renderClassement();
+  else if(view.tab==='admin') el.innerHTML = renderAdmin();
+  else if(view.tab==='ride') el.innerHTML = renderRideDetail(view.id);
+  else if(view.tab==='adminForm') el.innerHTML = renderAdminForm(view.id);
+  wireDynamic();
+}
+
+/* ================= HOME ================= */
+function rideCardHTML(ride, opts){
+  opts=opts||{};
+  const counts = rideCounts(ride.id);
+  const mine = getMyParticipation(ride.id);
+  const parts = rideParticipants(ride.id).slice(0,4);
+  return `<article class="ride-card" data-open-ride="${ride.id}">
+    <div class="ride-card__top">
+      <span class="ride-card__date">${fmtShort(ride.date)} · ${ride.time}</span>
+      ${mine ? `<span class="status-pill going">Inscrit ✓</span>` : `<span class="status-pill open">Ouvert</span>`}
+    </div>
+    <h3>${ride.title}</h3>
+    <div class="ride-card__place">${icon('target',13)} ${ride.place}</div>
+    <div class="ride-card__stats">
+      <div><b>${fmtKm(ride.distance)}</b> <span class="lbl">distance</span></div>
+      <div><b>${fmtM(ride.elevation)}</b> <span class="lbl">D+</span></div>
+    </div>
+    <div class="ride-card__groups">${ride.groups.map(g=>groupChip(g)).join('')}</div>
+    <div class="ride-card__foot">
+      <div class="avatars-stack">${parts.map(p=>`<span class="av" style="${avStyle(p.name)}">${initials(p.name)}</span>`).join('')}</div>
+      <span class="pcount">${counts.total} participant${counts.total>1?'s':''}</span>
+    </div>
+  </article>`;
+}
+function groupChip(g){ const info=GROUP_INFO[g]; return `<span class="grp ${info.cls}"><span class="sw"></span>${info.label} · ${info.range}</span>`; }
+function speedRangeLabel(ride){
+  const lows = ride.groups.map(g=>parseInt(GROUP_INFO[g].range,10));
+  const hasViolet = ride.groups.includes('violet');
+  const highs = ride.groups.filter(g=>g!=='violet').map(g=>parseInt(GROUP_INFO[g].range.split(/[–]/)[1],10));
+  const low = Math.min(...lows);
+  const high = hasViolet ? '28+' : Math.max(...highs);
+  return `${low}–${high}`;
+}
+// seed = un nom de participant : ainsi une même personne garde la même
+// couleur d'avatar d'une sortie à l'autre, sans avoir besoin de compte.
+function avStyle(seed){
+  const h = seedFromStr(seed);
+  const hues=['#7C3AED,#5B21B6','#A78BFA,#7C3AED','#5B21B6,#33124F'];
+  const g = hues[Math.abs(h)%hues.length];
+  return `background:linear-gradient(135deg,${g.split(',')[0]},${g.split(',')[1]})`;
+}
+
+function renderHome(){
+  const up = upcomingRides();
+  const next = up[0];
+  const list = up.slice(1,5);
+  return `
+  <div class="app-header">
+    <div>
+      <h1>Bonjour 👋</h1>
+    </div>
+    <button class="icon-btn" id="notifBtn">${icon('bell',18)}<span class="dot-badge"></span></button>
+  </div>
+  <div class="notif-panel ${notifOpen?'open':''}" id="notifPanel">
+    ${NOTIFS_SEED.map(n=>`<div class="notif-item"><span class="ico">${icon(n.ic,14)}</span><div><p>${n.text}</p><time>${n.time}</time></div></div>`).join('')}
+  </div>
+  ${next ? `
+  <div class="section" style="padding-top:2px;">
+    <div class="section-head"><h2>Prochaine sortie</h2></div>
+  </div>
+  <div class="hero-card" data-open-ride="${next.id}">
+    <span class="tag">${daysUntil(next.date)===0?"Aujourd'hui":daysUntil(next.date)===1?'Demain':fmtLong(next.date)}</span>
+    <h3>${next.title}</h3>
+    <div class="meta">${next.time} · ${next.place}</div>
+    <div class="hero-stats">
+      <div><span class="num">${fmtKm(next.distance)}</span><span class="lbl">Distance</span></div>
+      <div><span class="num">${fmtM(next.elevation)}</span><span class="lbl">D+</span></div>
+      <div><span class="num">${rideCounts(next.id).total}</span><span class="lbl">Participants</span></div>
+    </div>
+    <div class="hero-groups">${next.groups.map(g=>`<span class="grp on-dark"><span class="sw" style="background:${GROUP_INFO[g].color}"></span>${GROUP_INFO[g].label}</span>`).join('')}</div>
+    <button class="btn-primary btn-block" data-open-ride="${next.id}">Voir la sortie ${icon('chevR',15)}</button>
+  </div>` : ''}
+  <div class="section">
+    <div class="section-head"><h2>Les prochaines sorties</h2><a data-nav="rides">Tout voir</a></div>
+    ${list.map(r=>rideCardHTML(r)).join('') || '<div class="empty">Aucune autre sortie programmée.</div>'}
+  </div>
+  <div class="section">
+    <div class="section-head"><h2>Activité SPS</h2></div>
+    <div style="background:var(--surface-card); border:1px solid var(--border); border-radius:18px; padding:4px 14px;">
+      ${FEED_SEED.map(f=>`<div class="feed-item"><span class="ico">${icon(f.ic,15)}</span><div><p>${f.text}</p><time>${f.time}</time></div></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+/* ================= RIDES LIST ================= */
+let ridesFilter='toutes';
+function renderRides(){
+  const all = upcomingRides();
+  let list = all;
+  if(ridesFilter==='semaine') list = all.filter(r=>within(r.date,7));
+  else if(ridesFilter==='weekend') list = all.filter(r=>within(r.date,7)&&isWeekendDate(r.date));
+  else if(ridesFilter==='mine'){ const mineIds=new Set(getMyRideIds()); list = all.filter(r=>mineIds.has(r.id)); }
+  return `
+  <div class="app-header"><h1>Sorties</h1></div>
+  <div class="chips hide-scroll">
+    ${[['toutes','Toutes'],['semaine','Cette semaine'],['weekend','Ce week-end'],['mine','Mes sorties']].map(([k,l])=>
+      `<button class="chip ${ridesFilter===k?'active':''}" data-filter="${k}">${l}</button>`).join('')}
+  </div>
+  <div class="section" style="padding-top:2px;">
+    ${list.length? list.map(r=>rideCardHTML(r)).join('') : `<div class="empty">${icon('bike',26)}<br><br>Aucune sortie ne correspond à ce filtre.</div>`}
+  </div>`;
+}
+
+/* ================= MAP TAB ================= */
+let mapSelectedRide = null;
+function renderMap(){
+  const all = upcomingRides();
+  if(!mapSelectedRide || !all.find(r=>r.id===mapSelectedRide)) mapSelectedRide = all[0] ? all[0].id : null;
+  const ride = rideById(mapSelectedRide);
+  return `
+  <div class="app-header"><h1>Carte</h1></div>
+  <div class="chips hide-scroll">
+    ${all.map(r=>`<button class="chip ${mapSelectedRide===r.id?'active':''}" data-map-select="${r.id}">${r.title.split('–')[0].trim()}</button>`).join('')}
+  </div>
+  ${ride ? `
+  <div class="section" style="padding-top:2px;">
+    <h3 style="font-size:16px; font-weight:800; margin-bottom:2px;">${ride.title}</h3>
+    <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">${fmtLong(ride.date)} · ${ride.time} · ${ride.place}</p>
+  </div>
+  ${mapBoxHTML(ride,'mapTab')}
+  <div class="stat-row" style="padding-top:0;">
+    <div class="stat-tile"><span class="num">${fmtKm(ride.distance)}</span><span class="lbl">Distance</span></div>
+    <div class="stat-tile"><span class="num">${fmtM(ride.elevation)}</span><span class="lbl">D+</span></div>
+    <div class="stat-tile"><span class="num">${rideCounts(ride.id).total}</span><span class="lbl">Participants</span></div>
+  </div>
+  <div class="section" style="padding-top:0;">
+    <div class="dl-row">
+      <button class="btn-secondary" data-gpx-download="${ride.id}">${icon('download',15)} Télécharger le GPX</button>
+      <button class="btn-secondary" data-strava-open="${ride.id}">${icon('external',15)} Strava</button>
+    </div>
+    <div class="dl-row" style="margin-top:10px;">
+      <button class="btn-secondary" data-open-ride="${ride.id}">${icon('route',15)} Ouvrir la sortie</button>
+    </div>
+  </div>` : `<div class="empty">Aucune sortie à venir pour le moment.</div>`}
+  `;
+}
+function mapBoxHTML(ride, tag){
+  return `
+  <div class="map-box">
+    <div class="map-viewport" id="mv-${tag}" data-ride="${ride.id}">
+      <div class="map-canvas" id="mc-${tag}">${mapSVG(ride)}</div>
+      <div class="map-badge">${icon('route',12)} Tracé du parcours</div>
+      <div class="map-legend">
+        <span class="pt">${icon('flag',11)} Départ</span>
+        <span class="pt">${icon('mountain',11)} Point haut</span>
+      </div>
+      <div class="map-controls">
+        <button data-zoom="in-${tag}">${icon('plus',15)}</button>
+        <button data-zoom="out-${tag}">${icon('minus',15)}</button>
+        <button data-zoom="reset-${tag}">${icon('target',15)}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+const mapState = {};
+function initMapPanZoom(tag){
+  const vp = document.getElementById('mv-'+tag);
+  const cv = document.getElementById('mc-'+tag);
+  if(!vp||!cv) return;
+  let st = mapState[tag] || {scale:1, x:0, y:0};
+  mapState[tag]=st;
+  function apply(){ cv.style.transform = `translate(${st.x}px,${st.y}px) scale(${st.scale})`; }
+  apply();
+  let dragging=false, lastX=0,lastY=0;
+  vp.onpointerdown=(e)=>{ dragging=true; lastX=e.clientX; lastY=e.clientY; vp.classList.add('grabbing'); vp.setPointerCapture(e.pointerId); };
+  vp.onpointermove=(e)=>{ if(!dragging) return; st.x += (e.clientX-lastX); st.y += (e.clientY-lastY); lastX=e.clientX; lastY=e.clientY; apply(); };
+  vp.onpointerup=()=>{ dragging=false; vp.classList.remove('grabbing'); };
+  vp.onpointerleave=()=>{ dragging=false; vp.classList.remove('grabbing'); };
+  vp.onwheel=(e)=>{ e.preventDefault(); st.scale = clamp(st.scale + (e.deltaY<0?0.12:-0.12), 0.6, 3); apply(); };
+  document.querySelectorAll(`[data-zoom="in-${tag}"]`).forEach(b=>b.onclick=()=>{ st.scale=clamp(st.scale+0.25,0.6,3); apply(); });
+  document.querySelectorAll(`[data-zoom="out-${tag}"]`).forEach(b=>b.onclick=()=>{ st.scale=clamp(st.scale-0.25,0.6,3); apply(); });
+  document.querySelectorAll(`[data-zoom="reset-${tag}"]`).forEach(b=>b.onclick=()=>{ st.scale=1; st.x=0; st.y=0; apply(); });
+}
+
+/* ================= RIDE DETAIL ================= */
+function renderRideDetail(id){
+  const ride = rideById(id);
+  if(!ride) return `<div class="empty">Sortie introuvable.</div>`;
+  const mine = getMyParticipation(id);
+  const counts = rideCounts(id);
+  const past = isPast(ride);
+  const parts = rideParticipants(id).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  return `
+  <div class="app-header">
+    <button class="back" data-nav-back>${icon('chevL',18)}</button>
+    <div style="flex:1"></div>
+    <button class="icon-btn" data-gpx-download="${ride.id}">${icon('download',17)}</button>
+  </div>
+  <div class="detail-hero">
+    <h1>${ride.title}</h1>
+    <div class="detail-meta">
+      <span>${icon('bell',14)} ${fmtLong(ride.date)}</span>
+      <span>${icon('target',14)} ${ride.time}</span>
+      <span>${icon('route',14)} ${ride.place}</span>
+    </div>
+  </div>
+  ${mapBoxHTML(ride,'detail')}
+  <div class="elev-box">${elevSVG(ride)}</div>
+  <div class="stat-row">
+    <div class="stat-tile"><span class="num">${fmtKm(ride.distance)}</span><span class="lbl">Distance</span></div>
+    <div class="stat-tile"><span class="num">${fmtM(ride.elevation)}</span><span class="lbl">D+</span></div>
+    <div class="stat-tile"><span class="num" style="font-size:17px;">${speedRangeLabel(ride)}</span><span class="lbl">km/h</span></div>
+  </div>
+  <div class="section" style="padding-top:0; padding-bottom:6px;">
+    <div class="section-head"><h2>Groupes</h2></div>
+  </div>
+  <div class="groups-list">
+    ${ride.groups.map(g=>{const info=GROUP_INFO[g]; const c=counts[g];
+      return `<div class="group-row"><div class="l"><span class="sw" style="background:${info.color}"></span>${info.label} — ${info.range}</div><span class="n">${c} participant${c>1?'s':''}</span></div>`;
+    }).join('')}
+  </div>
+  <div class="desc"><h4>Description</h4>${ride.desc}</div>
+  ${joinPanelHTML(ride, mine, past)}
+  <div class="participants-head"><h2>Participants — ${counts.total}</h2></div>
+  <div class="group-tally">
+    ${ride.groups.map(g=>`<span class="gt"><span class="sw" style="background:${GROUP_INFO[g].color}"></span>${GROUP_INFO[g].label} — ${counts[g]}</span>`).join('')}
+  </div>
+  <div style="background:var(--surface-card); margin:0 20px 26px; border:1px solid var(--border); border-radius:18px; overflow:hidden;">
+    ${parts.length ? parts.map(p=>`
+      <div class="participant-row">
+        <span class="av md" style="${avStyle(p.name)}">${initials(p.name)}</span>
+        <span class="name">${p.name}${mine && mine.participationId===p.id ? ' (vous)' : ''}</span>
+        <span class="grp ${GROUP_INFO[p.group].cls}"><span class="sw"></span>${GROUP_INFO[p.group].label}</span>
+      </div>`).join('') : `<div class="empty">Personne n'est encore inscrit.</div>`}
+  </div>`;
+}
+
+/* ---- Inscription sans compte : nom + groupe, retrait par le nom ---- */
+function joinPanelHTML(ride, mine, past){
+  const dlRow = `
+    <div class="dl-row">
+      <button class="btn-secondary" data-gpx-download="${ride.id}">${icon('download',15)} Télécharger GPX</button>
+      <button class="btn-secondary" data-strava-open="${ride.id}">${icon('external',15)} Ouvrir sur Strava</button>
+    </div>
+    <div class="dl-row" style="margin-top:10px;">
+      <button class="btn-secondary" data-nav="map" data-map-open="${ride.id}">${icon('map',15)} Voir sur la carte</button>
+    </div>`;
+  if(past){
+    return `<div class="join-bar">
+      <button class="btn-secondary btn-block" disabled style="opacity:.65;">${icon('check',15)} Sortie terminée</button>
+      ${dlRow}
+    </div>`;
+  }
+  if(mine){
+    return `<div class="join-bar">
+      <button class="btn-primary btn-block on" data-leave="${ride.id}">${icon('check',16)} Inscrit ✓ · ${mine.name} · toucher pour vous retirer</button>
+      <div>
+        <p class="eyebrow" style="margin-bottom:8px;">Je roulerai avec :</p>
+        <div class="group-pick">
+          ${ride.groups.map(g=>{const info=GROUP_INFO[g]; const cls=g==='vert'?'gv':g==='rouge'?'gr':'gp'; const sel=mine.group===g;
+            return `<button class="${cls} ${sel?'sel':''}" data-pick-group="${ride.id}|${g}"><b>${info.label}</b>${info.range}</button>`;}).join('')}
+        </div>
+      </div>
+      ${dlRow}
+    </div>`;
+  }
+  return `<div class="join-bar">
+    <form id="joinForm" data-ride="${ride.id}" style="display:flex; flex-direction:column; gap:10px;">
+      <div>
+        <p class="eyebrow" style="margin-bottom:8px;">Votre nom</p>
+        <input type="text" id="joinName" required maxlength="60" placeholder="Prénom Nom" value="${(getLastUsedName()||'').replace(/"/g,'&quot;')}"
+          style="width:100%; padding:12px 13px; border-radius:12px; border:1.5px solid var(--border); background:var(--surface-card); font-family:inherit; font-size:13.5px; color:var(--text);">
+      </div>
+      <div>
+        <p class="eyebrow" style="margin-bottom:8px;">Je roulerai avec :</p>
+        <div class="group-pick">
+          ${ride.groups.map((g,i)=>{const info=GROUP_INFO[g]; const cls=g==='vert'?'gv':g==='rouge'?'gr':'gp';
+            return `<button type="button" class="${cls} ${i===0?'sel':''}" data-join-pick="${g}"><b>${info.label}</b>${info.range}</button>`;}).join('')}
+        </div>
+      </div>
+      <input type="hidden" id="joinGroup" value="${ride.groups[0]}">
+      <button type="submit" class="btn-primary btn-block">${icon('check',16)} Je participe</button>
+    </form>
+    ${dlRow}
+  </div>`;
+}
+
+/* ================= CLASSEMENT ================= */
+function renderClassement(){
+  const past = DB.participations
+    .map(p=>({...p, ride:rideById(p.rideId)}))
+    .filter(p=>p.ride && isPast(p.ride));
+
+  // Regroupement par nom normalisé (espaces/casse) — sans compte membre,
+  // c'est le seul moyen de rassembler "la même personne" d'une inscription
+  // à l'autre. Deux homonymes partageront la même ligne : compromis assumé.
+  const byName = new Map();
+  past.forEach(p=>{
+    const key = p.name.trim().toLowerCase();
+    if(!key) return;
+    const existing = byName.get(key) || {displayName:p.name.trim(), count:0, km:0, elevation:0, groupFreq:{}};
+    existing.count += 1;
+    existing.km += p.ride.distance;
+    existing.elevation += p.ride.elevation;
+    existing.groupFreq[p.group] = (existing.groupFreq[p.group]||0)+1;
+    existing.displayName = p.name.trim();
+    byName.set(key, existing);
+  });
+  const rows = Array.from(byName.values())
+    .map(r=>({...r, favGroup:(Object.entries(r.groupFreq).sort((a,b)=>b[1]-a[1])[0]||[])[0]}))
+    .sort((a,b)=>b.count-a.count || b.km-a.km)
+    .slice(0,20);
+
+  // Activité club (km cumulés, tous participants, 6 derniers mois)
+  const now = new Date('2026-09-04');
+  const buckets = [];
+  for(let i=5;i>=0;i--){
+    const dt = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    buckets.push({key:`${dt.getFullYear()}-${dt.getMonth()}`, label:MONTHS[dt.getMonth()], km:0});
+  }
+  past.forEach(p=>{
+    const dt = d(p.ride.date);
+    const key = `${dt.getFullYear()}-${dt.getMonth()}`;
+    const b = buckets.find(x=>x.key===key);
+    if(b) b.km += p.ride.distance;
+  });
+  const maxKm = Math.max(...buckets.map(b=>b.km),1);
+
+  return `
+  <div class="app-header"><h1>Classement</h1></div>
+  <p style="padding:0 20px 16px; font-size:12.5px; color:var(--text-muted); margin-top:-8px;">Nombre de sorties réalisées, par nom déclaré à l'inscription.</p>
+  <div class="section" style="padding-top:0; padding-bottom:6px;"><div class="section-head"><h2>Activité du club</h2></div></div>
+  <div style="margin:0 20px 22px; background:var(--surface-card); border:1px solid var(--border); border-radius:18px; padding:14px 10px 10px;">
+    <div class="bars">
+      ${buckets.map(b=>`<div class="bar-col"><div class="bar" style="height:${Math.max(6,(b.km/maxKm)*100)}%;" title="${Math.round(b.km)} km"></div><span class="m">${b.label}</span></div>`).join('')}
+    </div>
+  </div>
+  <div class="section" style="padding-top:0; padding-bottom:6px;"><div class="section-head"><h2>Les plus assidus</h2></div></div>
+  <div style="background:var(--surface-card); margin:0 20px 26px; border:1px solid var(--border); border-radius:18px; overflow:hidden;">
+    ${rows.length ? rows.map((r,i)=>`
+      <div class="participant-row" style="gap:12px;">
+        <span style="width:20px; flex:none; text-align:center; font-family:'Bebas Neue',sans-serif; font-size:15px; color:var(--text-faint);">${i+1}</span>
+        <span class="av md" style="${avStyle(r.displayName)}">${initials(r.displayName)}</span>
+        <div style="min-width:0; flex:1;">
+          <b style="display:block; font-size:13.5px; font-weight:800;">${r.displayName}</b>
+          <span style="font-size:11.5px; color:var(--text-muted);">${r.count} sortie${r.count>1?'s':''} · ${Math.round(r.km)} km${r.favGroup?` · <span style="color:${GROUP_INFO[r.favGroup].color}; font-weight:700;">${GROUP_INFO[r.favGroup].label}</span>`:''}</span>
+        </div>
+      </div>`).join('') : `<div class="empty">Aucune sortie réalisée pour le moment.</div>`}
+  </div>`;
+}
+
+/* ================= ADMIN ================= */
+function renderAdmin(){
+  const all = [...upcomingRides(), ...pastRides()];
+  return `
+  <div class="app-header"><h1>Administration</h1></div>
+  <p style="padding:0 20px 16px; font-size:12.5px; color:var(--text-muted); margin-top:-8px;">Créer et gérer les sorties du club.</p>
+  <div style="padding-bottom:90px;">
+  ${all.map(r=>{const c=rideCounts(r.id); const past=isPast(r);
+    return `<div class="admin-row">
+      <div class="t"><b>${r.title} ${past?'<span style=\"color:var(--text-faint); font-weight:600;\">· passée</span>':''}</b><div class="m">${fmtShort(r.date)} · ${r.time} · ${c.total} participants</div></div>
+      <div class="acts">
+        <button data-edit-ride="${r.id}">${icon('pencil',15)}</button>
+        <button class="danger" data-delete-ride="${r.id}">${icon('trash',15)}</button>
+      </div>
+    </div>`;}).join('')}
+  </div>
+  <div style="padding:0 20px 24px;">
+    <button id="logoutBtn" style="width:100%; padding:12px; border-radius:12px; border:1.5px solid var(--border); background:var(--surface-card); color:var(--danger,#C0392B); font-weight:700; font-size:13px; font-family:inherit; cursor:pointer;">Se déconnecter</button>
+  </div>
+  <button class="fab" data-new-ride>${icon('plus',24)}</button>
+  `;
+}
+
+/* ---- admin ride form ---- */
+function renderAdminForm(editId){
+  const ride = editId ? rideById(editId) : null;
+  pendingGpx = ride ? {points:genRideGeo(ride).points, elevation:genRideGeo(ride).elevation} : null;
+  return `
+  <div class="app-header">
+    <button class="back" data-nav-back>${icon('chevL',18)}</button>
+    <h1 style="font-size:20px;">${ride?'Modifier la sortie':'Nouvelle sortie'}</h1>
+    <div style="width:36px;"></div>
+  </div>
+  <form id="rideForm">
+    <div class="form-field"><label>Titre de la sortie</label><input type="text" name="title" placeholder="Sortie dimanche – Pic Saint-Loup" value="${ride?ride.title.replace(/"/g,'&quot;'):''}" required></div>
+    <div class="form-field"><label>Description</label><textarea name="desc" placeholder="Présentez la sortie, les difficultés, le point de rendez-vous…">${ride?ride.desc:''}</textarea></div>
+    <div class="form-2col">
+      <div class="form-field"><label>Date</label><input type="date" name="date" value="${ride?ride.date:''}" required></div>
+      <div class="form-field"><label>Heure de départ</label><input type="time" name="time" value="${ride?ride.time:''}" required></div>
+    </div>
+    <div class="form-field"><label>Lieu de départ</label><input type="text" name="place" placeholder="Adresse ou coordonnées GPS" value="${ride?ride.place.replace(/"/g,'&quot;'):''}" required></div>
+    <div class="form-2col">
+      <div class="form-field"><label>Distance (km)</label><input type="number" step="0.1" name="distance" id="fDistance" value="${ride?ride.distance:''}" required></div>
+      <div class="form-field"><label>D+ (m)</label><input type="number" name="elevation" id="fElevation" value="${ride?ride.elevation:''}" required></div>
+    </div>
+    <div class="form-field">
+      <label>Groupes disponibles</label>
+      <div class="group-check">
+        ${['vert','rouge','violet'].map(g=>{const info=GROUP_INFO[g]; const cls=g==='vert'?'gv':g==='rouge'?'gr':'gp'; const checked = ride ? ride.groups.includes(g) : g!=='violet';
+          return `<label class="${cls}"><input type="checkbox" name="groups" value="${g}" ${checked?'checked':''}><span>${icon(g==='vert'?'check':g==='rouge'?'target':'mountain',14)}</span>${info.label}<small style="font-weight:600;">${info.range}</small></label>`;}).join('')}
+      </div>
+    </div>
+    <div class="form-field"><label>Fichier GPX</label></div>
+    <div class="file-drop" id="gpxDrop">
+      ${icon('gpx',26)}
+      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">${ride ? 'GPX déjà importé — glissez un nouveau fichier pour le remplacer' : 'Importer un fichier .gpx (glisser-déposer ou toucher)'}</div>
+      <div class="fname" id="gpxFname">${ride ? ride.title+'.gpx' : ''}</div>
+      <input type="file" accept=".gpx" id="gpxInput">
+    </div>
+    <div id="gpxPreviewBox"></div>
+    <div class="section">
+      <button class="btn-primary btn-block" type="submit">${icon('check',16)} ${ride?'Enregistrer les modifications':'Créer la sortie'}</button>
+    </div>
+  </form>`;
+}
+
+/* ================= EVENT WIRING ================= */
+function wireDynamic(){
+  document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>{
+    const t=b.getAttribute('data-nav');
+    if(t==='admin' && !authed){ openGate(); return; }
+    if(b.hasAttribute('data-map-open')) { mapSelectedRide = b.getAttribute('data-map-open'); }
+    goto(t);
+  }));
+  document.querySelectorAll('[data-open-ride]').forEach(b=>b.addEventListener('click',(e)=>{
+    if(e.target.closest('[data-nav]') && e.target.closest('[data-nav]')!==b) return;
+    goto('ride', {id:b.getAttribute('data-open-ride'), fromTab: view.tab==='ride'?view.fromTab:view.tab});
+  }));
+  document.querySelectorAll('[data-nav-back]').forEach(b=>b.addEventListener('click',()=>{
+    if(view.tab==='ride') goto(view.fromTab||'home');
+    else if(view.tab==='adminForm') goto('admin');
+    else goto('home');
+  }));
+  const logoutBtn = document.getElementById('logoutBtn');
+  if(logoutBtn) logoutBtn.addEventListener('click', logout);
+  const notifBtn = document.getElementById('notifBtn');
+  if(notifBtn) notifBtn.addEventListener('click',(e)=>{ e.stopPropagation(); notifOpen=!notifOpen; document.getElementById('notifPanel').classList.toggle('open',notifOpen); });
+  document.addEventListener('click', function outsideNotif(e){
+    if(notifOpen && !e.target.closest('.notif-panel') && !e.target.closest('#notifBtn')){ notifOpen=false; const p=document.getElementById('notifPanel'); if(p) p.classList.remove('open'); }
+  }, {once:true});
+
+  document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{ ridesFilter=b.getAttribute('data-filter'); render(); }));
+  document.querySelectorAll('[data-map-select]').forEach(b=>b.addEventListener('click',()=>{ mapSelectedRide=b.getAttribute('data-map-select'); render(); }));
+
+  /* ---- inscription sans compte (nom + groupe) ---- */
+  document.querySelectorAll('[data-join-pick]').forEach(b=>b.addEventListener('click',()=>{
+    const g = b.getAttribute('data-join-pick');
+    const hidden = document.getElementById('joinGroup');
+    if(hidden) hidden.value = g;
+    const row = b.parentElement;
+    if(row) row.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));
+    b.classList.add('sel');
+  }));
+  const joinForm = document.getElementById('joinForm');
+  if(joinForm) joinForm.addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const rideId = joinForm.getAttribute('data-ride');
+    const name = document.getElementById('joinName').value.trim();
+    const group = document.getElementById('joinGroup').value;
+    if(!name){ toast('Indiquez votre nom','x'); return; }
+    const id = 'p'+Math.random().toString(36).slice(2,10);
+    const clientToken = Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+    DB.participations.push({id, rideId, name, group});
+    setMyParticipation(rideId, {participationId:id, clientToken, name, group});
+    setLastUsedName(name);
+    saveState();
+    toast('Inscription confirmée ✓','check');
+    render();
+  });
+  document.querySelectorAll('[data-leave]').forEach(b=>b.addEventListener('click',()=>{
+    const rideId = b.getAttribute('data-leave');
+    const mine = getMyParticipation(rideId);
+    if(!mine) return;
+    DB.participations = DB.participations.filter(p=>p.id!==mine.participationId);
+    clearMyParticipation(rideId);
+    saveState();
+    toast('Participation retirée','x');
+    render();
+  }));
+  document.querySelectorAll('[data-pick-group]').forEach(b=>b.addEventListener('click',()=>{
+    const [rideId,g] = b.getAttribute('data-pick-group').split('|');
+    const mine = getMyParticipation(rideId);
+    if(!mine) return;
+    const p = DB.participations.find(x=>x.id===mine.participationId);
+    if(p) p.group = g;
+    setMyParticipation(rideId, Object.assign({}, mine, {group:g}));
+    saveState();
+    toast('Groupe mis à jour : '+GROUP_INFO[g].label);
+    render();
+  }));
+  document.querySelectorAll('[data-gpx-download]').forEach(b=>b.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    toast('GPX téléchargé (démo)','download');
+  }));
+  document.querySelectorAll('[data-strava-open]').forEach(b=>b.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    const ride = rideById(b.getAttribute('data-strava-open'));
+    toast(`Ouverture de « ${ride?ride.title:'la sortie'} » sur Strava (démo)`,'external');
+  }));
+
+  document.querySelectorAll('[data-new-ride]').forEach(b=>b.addEventListener('click',()=>goto('adminForm',{id:null})));
+  document.querySelectorAll('[data-edit-ride]').forEach(b=>b.addEventListener('click',()=>goto('adminForm',{id:b.getAttribute('data-edit-ride')})));
+  document.querySelectorAll('[data-delete-ride]').forEach(b=>b.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    const id=b.getAttribute('data-delete-ride');
+    if(confirm('Supprimer définitivement cette sortie ?')){
+      DB.rides = DB.rides.filter(r=>r.id!==id);
+      DB.participations = DB.participations.filter(p=>p.rideId!==id);
+      saveState(); toast('Sortie supprimée','trash'); render();
+    }
+  }));
+
+  const form = document.getElementById('rideForm');
+  if(form){
+    const gpxInput = document.getElementById('gpxInput');
+    gpxInput.addEventListener('change', ()=>{
+      const file = gpxInput.files[0];
+      if(!file) return;
+      document.getElementById('gpxFname').textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        const parsed = parseGPX(reader.result);
+        if(!parsed){ toast('Fichier GPX invalide','x'); return; }
+        pendingGpx = parsed;
+        document.getElementById('fDistance').value = Math.round(parsed.distanceKm*10)/10;
+        if(parsed.hasEle) document.getElementById('fElevation').value = Math.round(parsed.gainM);
+        document.getElementById('gpxPreviewBox').innerHTML = `<div class="map-box" style="margin:0 20px 16px;"><div style="height:150px; position:relative;"><svg viewBox="0 0 1000 960" style="width:100%;height:100%;"><rect width="1000" height="960" fill="var(--surface-alt)"/><path d="${smoothPath(parsed.points)}" fill="none" stroke="var(--violet-600)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div>`;
+        toast('Parcours GPX importé ✓','check');
+      };
+      reader.readAsText(file);
+    });
+    ['gpxDrop'].forEach(id=>{
+      const dz=document.getElementById(id);
+      dz.addEventListener('dragover',e=>e.preventDefault());
+      dz.addEventListener('drop',e=>{ e.preventDefault(); if(e.dataTransfer.files[0]){ gpxInput.files=e.dataTransfer.files; gpxInput.dispatchEvent(new Event('change')); } });
+    });
+    form.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      const fd = new FormData(form);
+      const groups = fd.getAll('groups');
+      if(!groups.length){ toast('Sélectionnez au moins un groupe','x'); return; }
+      const payload = {
+        title: fd.get('title'), desc: fd.get('desc')||'', date: fd.get('date'), time: fd.get('time'),
+        place: fd.get('place'), distance: parseFloat(fd.get('distance')), elevation: parseFloat(fd.get('elevation')), groups
+      };
+      if(view.id){
+        const ride = rideById(view.id);
+        Object.assign(ride, payload);
+        delete rideGpxCache[ride.id];
+        if(pendingGpx){ rideGpxCache[ride.id] = {points:pendingGpx.points, elevation:pendingGpx.elevation}; }
+        toast('Sortie mise à jour ✓','check');
+      } else {
+        const id = 'r'+Math.random().toString(36).slice(2,8);
+        DB.rides.push({id, ...payload});
+        if(pendingGpx){ rideGpxCache[id] = {points:pendingGpx.points, elevation:pendingGpx.elevation}; }
+        toast('Sortie créée ✓','check');
+      }
+      saveState(); goto('admin');
+    });
+  }
+
+  document.querySelectorAll('.map-viewport').forEach(vp=>{
+    const tag = vp.id.replace('mv-','');
+    initMapPanZoom(tag);
+  });
+}
+
+/* ================= LOGIN GATE (compte administrateur unique) =================
+   L'app est consultable et utilisable par tout le monde sans connexion ;
+   seul l'onglet Admin est protégé. Toucher "Admin" sans être connecté ouvre
+   cette porte, exactement comme le middleware ne protège que /admin dans
+   l'app réelle. Il n'y a qu'un seul compte (ADMIN_EMAIL) : pas de recherche
+   parmi une liste de membres. ================================================ */
+let pendingLoginCode = null;
+let pendingLoginEmail = '';
+function genCode(){ return String(Math.floor(100000 + Math.random()*900000)); }
+function openGate(){
+  gateOpen = true;
+  document.getElementById('loginGate').classList.remove('hidden');
+}
+function closeGate(){
+  gateOpen = false;
+  document.getElementById('loginGate').classList.add('hidden');
+}
+function resetGateSteps(){
+  const stepEmail = document.getElementById('lgStepEmail');
+  const stepSent = document.getElementById('lgStepSent');
+  if(stepEmail) stepEmail.classList.add('active');
+  if(stepSent) stepSent.classList.remove('active');
+  const codeInput = document.getElementById('lgCode');
+  if(codeInput) codeInput.value = '';
+}
+function logout(){
+  authed = false;
+  saveState();
+  resetGateSteps();
+  if(view.tab==='admin' || view.tab==='adminForm'){ goto('home'); } else { render(); }
+  toast('Déconnecté', 'check');
+}
+(function wireLoginGate(){
+  const form = document.getElementById('lgForm');
+  const codeForm = document.getElementById('lgCodeForm');
+  const stepEmail = document.getElementById('lgStepEmail');
+  const stepSent = document.getElementById('lgStepSent');
+  const closeBtn = document.getElementById('lgClose');
+
+  function sendCodeTo(val){
+    pendingLoginEmail = val;
+    pendingLoginCode = genCode();
+    document.getElementById('lgSentEmail').textContent = val;
+    document.getElementById('lgCodeHint').textContent = `Code de démonstration : ${pendingLoginCode}`;
+    const codeInput = document.getElementById('lgCode');
+    codeInput.value = '';
+    stepEmail.classList.remove('active');
+    stepSent.classList.add('active');
+    setTimeout(()=>codeInput.focus(), 50);
+  }
+
+  if(closeBtn) closeBtn.addEventListener('click', closeGate);
+
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    const val = document.getElementById('lgEmail').value.trim();
+    if(!val) return;
+    if(val.toLowerCase() !== ADMIN_EMAIL.toLowerCase()){
+      toast("Aucun compte administrateur avec cette adresse", 'x');
+      return;
+    }
+    sendCodeTo(val);
+  });
+  document.getElementById('lgBackToEmail').addEventListener('click',()=>{
+    stepSent.classList.remove('active');
+    stepEmail.classList.add('active');
+  });
+  codeForm.addEventListener('submit', e=>{
+    e.preventDefault();
+    const val = document.getElementById('lgCode').value.trim();
+    if(val !== pendingLoginCode){
+      toast('Code invalide', 'x');
+      return;
+    }
+    authed = true;
+    saveState();
+    closeGate();
+    goto('admin');
+    toast('Connecté en tant qu’administrateur', 'check');
+  });
+})();
+
+/* ================= INIT ================= */
+loadState();
+render();
+
+})();
+</script>

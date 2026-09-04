@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-bebas: "Bebas Neue", sans-serif;
+  --font-manrope: "Manrope", system-ui, sans-serif;
+}
+
+html,
+body {
+  @apply bg-[#FBF9FC] text-[#150F1C] dark:bg-[#130D1A] dark:text-[#F3EFFA];
+}
+
+body {
+  font-family: var(--font-manrope), system-ui, sans-serif;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #f1edf6;
+}
+
+@media (prefers-color-scheme: dark) {
+  .leaflet-container {
+    background: #1c1526;
+  }
+  .leaflet-tile {
+    filter: brightness(0.85) invert(1) contrast(0.9) hue-rotate(180deg) saturate(0.6);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: fadeUp 0.25s ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

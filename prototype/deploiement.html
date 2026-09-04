@@ -1,0 +1,373 @@
+<title>Feuille de route SPS</title>
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#FAF7FD;
+  --card:#FFFFFF;
+  --ink:#180F22;
+  --ink-soft:#6B6478;
+  --ink-faint:#9891A1;
+  --line:#E6E0EE;
+  --violet-deep:#33124F;
+  --violet:#6D28D9;
+  --violet-bright:#7C3AED;
+  --violet-soft:#F1E9FE;
+  --done:#1F9D63;
+  --done-soft:#E3F6EC;
+  --warn:#9A6113;
+  --warn-soft:#FBF0DC;
+  --code-bg:#1D1526;
+  --code-ink:#EBE3FA;
+  --code-key:#C9A6FF;
+  --shadow:0 10px 28px -14px rgba(51,18,79,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#120C19; --card:#1A1422; --ink:#F3EFFA; --ink-soft:#AFA7BE; --ink-faint:#7C7489;
+    --line:#2E2439; --violet-soft:rgba(167,139,250,.14); --violet-bright:#A78BFA;
+    --done:#34C281; --done-soft:rgba(52,194,129,.14); --warn:#E3A83B; --warn-soft:rgba(227,168,59,.13);
+    --code-bg:#0E0A14; --shadow:0 10px 30px -14px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#120C19; --card:#1A1422; --ink:#F3EFFA; --ink-soft:#AFA7BE; --ink-faint:#7C7489;
+  --line:#2E2439; --violet-soft:rgba(167,139,250,.14); --violet-bright:#A78BFA;
+  --done:#34C281; --done-soft:rgba(52,194,129,.14); --warn:#E3A83B; --warn-soft:rgba(227,168,59,.13);
+  --code-bg:#0E0A14; --shadow:0 10px 30px -14px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.55;
+}
+h1,h2,h3{margin:0; text-wrap:balance; font-family:"Bebas Neue",sans-serif; letter-spacing:.01em; font-weight:400;}
+p{margin:0;}
+a{color:var(--violet-bright);}
+code, .mono{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;}
+::selection{background:var(--violet-soft);}
+
+.wrap{max-width:760px; margin:0 auto; padding:0 20px 90px;}
+
+/* ---- header ---- */
+.top{padding:44px 0 26px; display:flex; flex-direction:column; gap:14px;}
+.eyebrow{
+  font-family:"Bebas Neue",sans-serif; font-size:12.5px; letter-spacing:.22em; text-transform:uppercase;
+  color:var(--violet-bright); display:flex; align-items:center; gap:8px;
+}
+.eyebrow .dot{width:7px;height:7px;border-radius:50%; background:linear-gradient(135deg,var(--violet-bright),var(--violet-deep));}
+.top h1{font-size:44px; line-height:1.02;}
+.top .lede{font-size:15px; color:var(--ink-soft); max-width:58ch;}
+.top .lede b{color:var(--ink); font-weight:700;}
+
+.progress-card{
+  margin-top:6px; background:var(--card); border:1px solid var(--line); border-radius:18px;
+  padding:16px 18px; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:10px;
+}
+.progress-row{display:flex; align-items:baseline; justify-content:space-between; gap:10px;}
+.progress-row .lbl{font-size:12px; font-weight:700; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.06em;}
+.progress-row .val{font-family:"Bebas Neue",sans-serif; font-size:20px; color:var(--violet-bright);}
+.progress-track{height:8px; border-radius:99px; background:var(--violet-soft); overflow:hidden;}
+.progress-fill{height:100%; border-radius:99px; background:linear-gradient(90deg,var(--violet),var(--violet-bright)); width:0%; transition:width .35s ease;}
+.progress-note{font-size:11.5px; color:var(--ink-faint);}
+
+/* ---- prereqs ---- */
+.prereq{
+  display:flex; flex-wrap:wrap; gap:8px 22px; padding:14px 0 4px; font-size:13px; color:var(--ink-soft);
+}
+.prereq span{display:flex; align-items:center; gap:7px;}
+.prereq b{color:var(--ink);}
+.chk-icon{width:15px;height:15px; flex:none; color:var(--done);}
+
+/* ---- route rail ---- */
+.route{position:relative; margin-top:18px; padding-left:44px;}
+.route::before{
+  content:""; position:absolute; left:14px; top:6px; bottom:6px; width:2px; background:var(--line);
+}
+.route-fill{position:absolute; left:14px; top:6px; width:2px; background:linear-gradient(180deg,var(--violet-bright),var(--violet-deep)); height:0%; transition:height .4s ease;}
+
+.step{position:relative; padding-bottom:38px;}
+.step:last-child{padding-bottom:0;}
+.step-marker{
+  position:absolute; left:-44px; top:2px; width:30px; height:30px; border-radius:50%;
+  background:var(--card); border:2px solid var(--line); display:flex; align-items:center; justify-content:center;
+  font-family:"Bebas Neue",sans-serif; font-size:14px; color:var(--ink-faint); transition:.25s;
+}
+.step.done .step-marker{ border-color:var(--done); color:var(--done); background:var(--done-soft); }
+.step-head{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:6px;}
+.step-head h2{font-size:23px;}
+.step-tag{
+  font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--violet-bright);
+  background:var(--violet-soft); padding:3px 9px; border-radius:999px;
+}
+.step-body{color:var(--ink-soft); font-size:14px; display:flex; flex-direction:column; gap:12px;}
+.step-body b{color:var(--ink);}
+.step ol{margin:0; padding-left:19px; display:flex; flex-direction:column; gap:7px;}
+.step ol li::marker{color:var(--violet-bright); font-weight:700;}
+
+.field-table{
+  border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--card); font-size:12.5px;
+}
+.field-row{display:grid; grid-template-columns:minmax(150px,auto) 1fr; gap:0; border-top:1px solid var(--line);}
+.field-row:first-child{border-top:none;}
+.field-row .k{padding:9px 12px; background:var(--violet-soft); color:var(--violet-deep); font-weight:700;}
+.field-row .v{padding:9px 12px; color:var(--ink-soft); word-break:break-word;}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]) .field-row .k{color:var(--violet-bright);} }
+:root[data-theme="dark"] .field-row .k{color:var(--violet-bright);}
+
+pre.code{
+  background:var(--code-bg); color:var(--code-ink); border-radius:12px; padding:14px 16px;
+  font-size:12.5px; overflow-x:auto; line-height:1.6; margin:0;
+}
+pre.code .k{color:var(--code-key);}
+
+.check-list{display:flex; flex-direction:column; gap:9px; margin-top:2px;}
+.check{
+  display:flex; align-items:flex-start; gap:10px; cursor:pointer; padding:10px 12px; border-radius:12px;
+  border:1px solid var(--line); background:var(--card); font-size:13.5px; color:var(--ink); transition:.15s;
+}
+.check:hover{border-color:var(--violet-bright);}
+.check input{margin-top:2px; accent-color:var(--violet-bright); width:15px; height:15px; flex:none;}
+.check.checked{background:var(--done-soft); border-color:var(--done);}
+.check.checked span{text-decoration:line-through; color:var(--ink-soft);}
+
+.tip{
+  display:flex; gap:10px; background:var(--warn-soft); border-left:3px solid var(--warn); border-radius:10px;
+  padding:11px 14px; font-size:13px; color:var(--ink-soft);
+}
+.tip svg{flex:none; color:var(--warn); margin-top:2px;}
+.tip b{color:var(--ink);}
+
+.faq{display:flex; flex-direction:column; gap:16px;}
+.faq-item h3{font-family:"Manrope",sans-serif; font-weight:800; font-size:14.5px; margin-bottom:5px;}
+.faq-item p{font-size:13.5px; color:var(--ink-soft);}
+
+footer{margin-top:50px; padding-top:22px; border-top:1px solid var(--line); font-size:12px; color:var(--ink-faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;}
+
+@media (max-width:600px){
+  .top h1{font-size:34px;}
+  .route{padding-left:36px;}
+  .route::before, .route-fill{left:11px;}
+  .step-marker{left:-36px; width:26px; height:26px; font-size:12.5px;}
+  .field-row{grid-template-columns:1fr;}
+}
+</style>
+
+<div class="wrap">
+
+  <div class="top">
+    <div class="eyebrow"><span class="dot"></span>Feuille de route · mise en ligne</div>
+    <h1>De GitHub au club, en 6 étapes</h1>
+    <p class="lede">Le code de l'app réelle (<b>Next.js + Supabase</b>) est déjà prêt sur <b>github.com/xornone/sps-app</b>. Cette page suit la mise en ligne comme une sortie club — chaque étape est un point de passage, coche-les au fur et à mesure. Ta progression reste dans ce navigateur.</p>
+
+    <div class="progress-card">
+      <div class="progress-row"><span class="lbl">Progression</span><span class="val" id="progressVal">0 / 12</span></div>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <p class="progress-note">Base de données vierge par défaut — aucun membre ni sortie fictive n'est injecté par le schéma.</p>
+    </div>
+
+    <div class="prereq">
+      <span><svg class="chk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4.5 4.5L19 8"/></svg><b>Déjà fait</b> — dépôt GitHub public</span>
+      <span><svg class="chk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4.5 4.5L19 8"/></svg><b>À créer</b> — compte Supabase (gratuit)</span>
+      <span><svg class="chk-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4.5 4.5L19 8"/></svg><b>À créer</b> — compte Vercel (gratuit)</span>
+    </div>
+  </div>
+
+  <div class="route">
+    <div class="route-fill" id="routeFill"></div>
+
+    <div class="step" data-step="1">
+      <div class="step-marker">1</div>
+      <div class="step-head"><h2>Créer le projet Supabase</h2><span class="step-tag">Base de données</span></div>
+      <div class="step-body">
+        <ol>
+          <li>Sur <b>supabase.com</b> → <i>New project</i> — nomme-le par exemple <code>sps-app</code>, choisis une région proche (Europe) et un mot de passe de base de données (garde-le de côté, tu n'en auras pas besoin au quotidien).</li>
+          <li>Laisse le provisioning se terminer (~2 minutes).</li>
+          <li>Dans <b>Project Settings → API</b>, note l'<b>URL du projet</b> et la clé <b>anon public</b> — elles serviront à l'étape 3.</li>
+        </ol>
+        <div class="check-list">
+          <label class="check"><input type="checkbox" data-id="s1a"><span>Projet Supabase créé et provisionné</span></label>
+          <label class="check"><input type="checkbox" data-id="s1b"><span>URL du projet + clé anon notées de côté</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-step="2">
+      <div class="step-marker">2</div>
+      <div class="step-head"><h2>Appliquer le schéma</h2><span class="step-tag">SQL</span></div>
+      <div class="step-body">
+        <p>Dans Supabase : <b>SQL Editor → New query</b>, colle le contenu de <code>supabase/migrations/0001_init.sql</code> (dans le dépôt) puis <b>Run</b>. Ce fichier crée les tables (<code>rides</code>, <code>ride_groups</code>, <code>participations</code>, <code>notifications</code>), une vue publique <code>ride_participants</code>, les règles de sécurité (RLS) et le stockage GPX — rien d'autre. Il n'y a pas de table de comptes membres : participer à une sortie ne demande qu'un nom, saisi directement dans l'app.</p>
+        <div class="tip">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 22 20.5H2Z" stroke-linejoin="round"/><path d="M12 10v4.4" stroke-linecap="round"/><circle cx="12" cy="17.6" r="1" fill="currentColor" stroke="none"/></svg>
+          <span><b>Le fichier <code>supabase/seed.sql</code> est optionnel.</b> Il ajoute seulement 3 sorties d'exemple, sans aucun membre fictif — l'app est déjà « vierge » sans lui. Exécute-le seulement si tu veux garder ces 3 sorties comme premier contenu, sinon passe directement à l'étape 3.</span>
+        </div>
+        <div class="check-list">
+          <label class="check"><input type="checkbox" data-id="s2a"><span>Migration <code>0001_init.sql</code> exécutée sans erreur</span></label>
+          <label class="check"><input type="checkbox" data-id="s2b"><span>Tables vérifiées dans Table Editor</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-step="3">
+      <div class="step-marker">3</div>
+      <div class="step-head"><h2>Déployer sur Vercel</h2><span class="step-tag">Hébergement</span></div>
+      <div class="step-body">
+        <ol>
+          <li>Sur <b>vercel.com</b> → <i>Add New → Project → Import Git Repository</i>, connecte ton GitHub si besoin puis sélectionne <code>xornone/sps-app</code>.</li>
+          <li>Framework détecté automatiquement : <b>Next.js</b>. Root Directory : laisse <code>./</code> — l'app réelle est à la racine du dépôt (le prototype de démo vit à part, dans <code>/prototype</code>).</li>
+          <li>Avant de lancer le déploiement, ouvre <b>Settings → Environment Variables</b> et ajoute :</li>
+        </ol>
+        <div class="field-table">
+          <div class="field-row"><div class="k">NEXT_PUBLIC_SUPABASE_URL</div><div class="v">L'URL du projet (étape 1)</div></div>
+          <div class="field-row"><div class="k">NEXT_PUBLIC_SUPABASE_ANON_KEY</div><div class="v">La clé anon public (étape 1)</div></div>
+          <div class="field-row"><div class="k">SUPABASE_SERVICE_ROLE_KEY</div><div class="v">Project Settings → API → service_role — secret serveur, ne jamais exposer côté client</div></div>
+          <div class="field-row"><div class="k">NEXT_PUBLIC_SITE_URL</div><div class="v">https://sps-app-xxxx.vercel.app (ajustable après le 1ᵉʳ déploiement, puis redeploy)</div></div>
+        </div>
+        <p><b>Deploy.</b> Premier build : environ 1 à 2 minutes.</p>
+        <div class="check-list">
+          <label class="check"><input type="checkbox" data-id="s3a"><span>Dépôt importé sur Vercel</span></label>
+          <label class="check"><input type="checkbox" data-id="s3b"><span>Les 4 variables d'environnement renseignées</span></label>
+          <label class="check"><input type="checkbox" data-id="s3c"><span>Premier déploiement réussi (page /login accessible)</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-step="4">
+      <div class="step-marker">4</div>
+      <div class="step-head"><h2>Autoriser les redirections</h2><span class="step-tag">Auth</span></div>
+      <div class="step-body">
+        <p>Dans Supabase : <b>Authentication → URL Configuration</b>.</p>
+        <div class="field-table">
+          <div class="field-row"><div class="k">Site URL</div><div class="v">https://sps-app-xxxx.vercel.app</div></div>
+          <div class="field-row"><div class="k">Redirect URLs</div><div class="v">https://sps-app-xxxx.vercel.app/auth/callback</div></div>
+        </div>
+        <p>Sans cette étape, le lien reçu par email redirigera vers une URL refusée et la connexion échouera.</p>
+        <div class="check-list">
+          <label class="check"><input type="checkbox" data-id="s4a"><span>Site URL et Redirect URL enregistrées dans Supabase</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-step="5">
+      <div class="step-marker">5</div>
+      <div class="step-head"><h2>Créer ton compte administrateur</h2><span class="step-tag">Un seul compte</span></div>
+      <div class="step-body">
+        <p>L'app n'a qu'un seul compte : l'administrateur du club. Les membres n'ont besoin d'aucun compte pour participer aux sorties (étape 6) — inutile donc d'inviter qui que ce soit d'autre ici.</p>
+        <ol>
+          <li>Dans Supabase : <b>Authentication → Providers → Email</b>, désactive <b>Allow new users to sign up</b>. Cela empêche toute inscription publique — seul un compte que tu invites toi-même pourra se connecter.</li>
+          <li>Dans <b>Authentication → Users → Invite user</b>, entre ton adresse email et confirme.</li>
+          <li>Ouvre l'email d'invitation reçu (vérifie les spams — le tout premier envoi Supabase y atterrit parfois) et clique le lien.</li>
+        </ol>
+        <p>Tu arrives connecté directement : comme il n'existe qu'un seul compte, toute session authentifiée <b>est</b> le compte administrateur — pas de rôle à activer séparément. L'onglet <b>Administration</b> est utilisable dès cette première connexion.</p>
+        <div class="check-list">
+          <label class="check"><input type="checkbox" data-id="s5a"><span>Inscription publique désactivée dans Supabase</span></label>
+          <label class="check"><input type="checkbox" data-id="s5b"><span>Compte admin invité, première connexion réussie</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="step" data-step="6">
+      <div class="step-marker">6</div>
+      <div class="step-head"><h2>Faire rouler le club</h2><span class="step-tag">Aucun compte membre</span></div>
+      <div class="step-body">
+        <p>Les membres n'ont rien à créer ni à installer. Partage-leur simplement l'URL de l'app (celle de Vercel, ou ton nom de domaine si tu en ajoutes un plus tard) :</p>
+        <ol>
+          <li>Ils ouvrent l'app et vont sur la sortie qui les intéresse.</li>
+          <li>Ils tapent leur <b>nom</b>, choisissent leur <b>groupe</b> (Vert / Rouge / Violet) et valident — c'est leur seule action, aucun mot de passe.</li>
+          <li>Ils peuvent retirer leur propre participation à tout moment, depuis le même écran, en touchant leur inscription.</li>
+        </ol>
+        <p>Toi seul, connecté en admin, peux créer, modifier ou supprimer des sorties. Le classement (onglet <b>Classement</b>) regroupe automatiquement les participations passées par nom déclaré.</p>
+        <div class="check-list">
+          <label class="check"><input type="checkbox" data-id="s6a"><span>URL de l'app partagée avec le club</span></label>
+          <label class="check"><input type="checkbox" data-id="s6b"><span>Un premier membre a testé une inscription par son nom</span></label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section" style="margin-top:44px; display:flex; flex-direction:column; gap:16px;">
+    <div class="eyebrow"><span class="dot"></span>Pièges fréquents</div>
+    <div class="faq">
+      <div class="faq-item">
+        <h3>Les emails d'invitation ou de connexion n'arrivent pas</h3>
+        <p>Le plan gratuit Supabase limite l'envoi d'emails d'auth à quelques-uns par heure — largement suffisant ici puisqu'il n'y a qu'un seul compte à inviter et à faire se reconnecter de temps en temps. Si besoin, un fournisseur SMTP externe peut être branché dans <code>Authentication → Email Templates → SMTP Settings</code> — pas nécessaire pour démarrer.</p>
+      </div>
+      <div class="faq-item">
+        <h3>La connexion boucle ou renvoie une erreur</h3>
+        <p>Vérifie que <code>NEXT_PUBLIC_SITE_URL</code> (Vercel) et les <b>Redirect URLs</b> (Supabase) pointent exactement vers la même adresse — présence du slash final et http/https compris.</p>
+      </div>
+      <div class="faq-item">
+        <h3>Ajouter un nom de domaine personnalisé plus tard</h3>
+        <p>Possible à tout moment dans <b>Vercel → Settings → Domains</b> (ex. <code>app.spscycling.fr</code>). Il faut alors remettre à jour <code>NEXT_PUBLIC_SITE_URL</code> et les Redirect URLs Supabase avec la nouvelle adresse.</p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>github.com/xornone/sps-app</span>
+    <span>Solo Plus Solo</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var IDS = ['s1a','s1b','s2a','s2b','s3a','s3b','s3c','s4a','s5a','s5b','s6a','s6b'];
+var STEP_OF = {s1a:1,s1b:1,s2a:2,s2b:2,s3a:3,s3b:3,s3c:3,s4a:4,s5a:5,s5b:5,s6a:6,s6b:6};
+var COUNT_PER_STEP = {1:2,2:2,3:3,4:1,5:2,6:2};
+var state = {};
+
+function load(){
+  try{
+    var raw = localStorage.getItem('sps-deploy-checklist-v1');
+    if(raw) state = JSON.parse(raw) || {};
+  }catch(e){ state = {}; }
+}
+function save(){
+  try{ localStorage.setItem('sps-deploy-checklist-v1', JSON.stringify(state)); }catch(e){}
+}
+
+function render(){
+  var doneCount = 0;
+  IDS.forEach(function(id){
+    var box = document.querySelector('[data-id="'+id+'"]');
+    var row = box.closest('.check');
+    var checked = !!state[id];
+    box.checked = checked;
+    row.classList.toggle('checked', checked);
+    if(checked) doneCount++;
+  });
+  document.getElementById('progressVal').textContent = doneCount + ' / ' + IDS.length;
+  document.getElementById('progressFill').style.width = (doneCount / IDS.length * 100) + '%';
+
+  // step completion + route fill
+  var stepsDone = 0;
+  for(var s=1;s<=6;s++){
+    var doneInStep = IDS.filter(function(id){ return STEP_OF[id]===s && state[id]; }).length;
+    var stepEl = document.querySelector('.step[data-step="'+s+'"]');
+    var complete = doneInStep === COUNT_PER_STEP[s];
+    stepEl.classList.toggle('done', complete);
+    if(complete) stepsDone++;
+  }
+  document.getElementById('routeFill').style.height = (stepsDone/6*100) + '%';
+}
+
+document.querySelectorAll('.check input[type="checkbox"]').forEach(function(box){
+  box.addEventListener('change', function(){
+    state[box.getAttribute('data-id')] = box.checked;
+    save();
+    render();
+  });
+});
+
+load();
+render();
+})();
+</script>
