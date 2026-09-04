@@ -47,12 +47,11 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   } = await supabase.auth.getUser();
   const isAdmin = !!adminUser;
 
-  const shareMessage = buildRideShareMessage(
-    ride,
-    groups,
-    weather,
-    process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/s/${shortRideCode(ride.id)}` : null
-  );
+  // Filet de securite : si NEXT_PUBLIC_SITE_URL n'est pas configuree sur
+  // l'hebergeur, on retombe sur le domaine de production plutot que de
+  // laisser le message WhatsApp sans aucun lien.
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://spsapp2.vercel.app";
+  const shareMessage = buildRideShareMessage(ride, groups, weather, `${siteUrl}/s/${shortRideCode(ride.id)}`);
 
   return (
     <div>

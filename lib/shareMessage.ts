@@ -57,9 +57,14 @@ export function buildRideShareMessage(
     );
   }
 
+  if (ride.strava_url) {
+    lines.push("");
+    lines.push(`🔗 Strava : ${ride.strava_url}`);
+  }
+
   if (rideUrl) {
     lines.push("");
-    lines.push(`👉 Détails, trace GPX, Strava et inscription : ${rideUrl}`);
+    lines.push(`👉 Détails, trace GPX et inscription : ${rideUrl}`);
   }
 
   return lines.join("\n");
