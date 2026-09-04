@@ -1,25 +1,11 @@
-import { fetchRideWeather, getRideCoordinates, weatherCodeInfo, windDirectionLabel } from "@/lib/weather";
+import { weatherCodeInfo, windDirectionLabel, type RideWeather } from "@/lib/weather";
 import { Icon } from "./Icons";
 
-// Composant serveur asynchrone : la meteo est recuperee cote serveur au
-// rendu de la page, pas besoin de "use client". Si aucune coordonnee
-// exploitable ou aucune prevision n'est disponible (sortie trop loin dans
-// le temps, lieu non geolocalisable...), le widget est simplement omis.
-export async function WeatherWidget({
-  routePoints,
-  place,
-  rideDate,
-  rideTime,
-}: {
-  routePoints: [number, number][] | null;
-  place: string;
-  rideDate: string;
-  rideTime: string;
-}) {
-  const coords = await getRideCoordinates(routePoints, place);
-  if (!coords) return null;
-
-  const weather = await fetchRideWeather(coords[0], coords[1], rideDate, rideTime);
+// Purement presentation : la meteo est deja resolue par la page (qui la
+// reutilise aussi pour le message WhatsApp, voir buildRideShareMessage).
+// Si aucune prevision n'est disponible (sortie trop loin dans le temps,
+// lieu non geolocalisable...), le widget est simplement omis.
+export function WeatherWidget({ weather }: { weather: RideWeather | null }) {
   if (!weather) return null;
 
   const sky = weatherCodeInfo(weather.weatherCode);

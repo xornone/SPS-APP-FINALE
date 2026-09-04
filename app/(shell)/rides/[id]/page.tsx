@@ -10,8 +10,11 @@ import { Icon } from "@/components/Icons";
 import { JoinPanel } from "@/components/JoinPanel";
 import { RideComments } from "@/components/RideComments";
 import { WeatherWidget } from "@/components/WeatherWidget";
+import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
+import { buildRideShareMessage } from "@/lib/shareMessage";
 import { GROUP_INFO, type GroupLevel } from "@/lib/types";
+import { fetchRideWeather, getRideCoordinates } from "@/lib/weather";
 
 export default async function RideDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -30,6 +33,26 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   const gpxUrl = ride.gpx_path
     ? supabase.storage.from("gpx").getPublicUrl(ride.gpx_path).data.publicUrl
     : null;
+
+  // Meteo calculee une seule fois ici (reutilisee par le widget et par le
+  // message WhatsApp ci-dessous, pas de double appel a l'API Open-Meteo).
+  const coords = await getRideCoordinates(ride.route_points, ride.place);
+  const weather = coords ? await fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time) : null;
+
+  // Bouton "Publier sur WhatsApp" reserve a l'administrateur : toute
+  // session authentifiee EST admin (voir lib/adminGuard.ts).
+  const {
+    data: { user: adminUser },
+  } = await supabase.auth.getUser();
+  const isAdmin = !!adminUser;
+
+  const shareMessage = buildRideShareMessage(
+    ride,
+    groups,
+    weather,
+    gpxUrl,
+    process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/rides/${ride.id}` : null
+  );
 
   return (
     <div>
@@ -76,12 +99,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         <Stat value={speedRangeLabel(groups)} label="km/h" />
       </div>
 
-      <WeatherWidget
-        routePoints={ride.route_points}
-        place={ride.place}
-        rideDate={ride.ride_date}
-        rideTime={ride.ride_time}
-      />
+      <WeatherWidget weather={weather} />
 
       <div className="px-5 pb-1.5">
         <h2 className="font-display text-xl tracking-wide">Groupes</h2>
@@ -135,6 +153,12 @@ export default async function RideDetailPage({ params }: { params: { id: string 
           </a>
         )}
       </div>
+
+      {isAdmin && (
+        <div className="px-5 pb-2">
+          <WhatsAppShareButton text={shareMessage} />
+        </div>
+      )}
 
       <div className="flex items-center justify-between px-5 pb-2.5 pt-5">
         <h2 className="font-display text-xl tracking-wide">Participants — {participations.length}</h2>
