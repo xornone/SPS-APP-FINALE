@@ -195,6 +195,17 @@ grant select on public.ride_participants to anon, authenticated;
 create policy "notifications readable by anyone" on public.notifications
   for select using (true);
 
+-- ----------------------------------------------------------------------------
+-- Grants de base : necessaires en plus des policies RLS ci-dessus. Si le
+-- projet Supabase a ete cree avec "Automatically expose new tables"
+-- decoche (recommande), anon/authenticated n'ont par defaut AUCUN droit sur
+-- les nouvelles tables -> sans ces grants, meme une policy RLS "using (true)"
+-- echoue avec une erreur 42501 (permission denied), car le refus au niveau
+-- table est verifie avant les policies RLS.
+-- ----------------------------------------------------------------------------
+grant select on public.rides, public.ride_groups, public.notifications to anon, authenticated;
+grant insert, update, delete on public.rides, public.ride_groups to authenticated;
+
 -- ============================================================================
 -- Storage : bucket pour les fichiers GPX
 -- ============================================================================
