@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { fetchParticipationsForRide, fetchRide } from "@/lib/queries";
 import { RideMap } from "@/components/RideMap";
-import { StravaEmbed } from "@/components/StravaEmbed";
 import { ElevationChart } from "@/components/ElevationChart";
 import { GroupBadge } from "@/components/GroupBadge";
 import { Avatar } from "@/components/Avatar";
@@ -58,27 +57,9 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         </div>
       </div>
 
-      <div className="mx-5 mb-1.5">
-        <span className="text-[11px] font-extrabold uppercase tracking-wide text-black/40 dark:text-white/40">
-          Carte SPS (OpenStreetMap)
-        </span>
-      </div>
       <div className="mx-5 mb-4 h-[220px] overflow-hidden rounded-[22px] border border-black/[0.06] dark:border-white/10">
         <RideMap points={ride.route_points} className="h-full w-full" />
       </div>
-
-      {ride.strava_url && (
-        <>
-          <div className="mx-5 mb-1.5">
-            <span className="text-[11px] font-extrabold uppercase tracking-wide text-black/40 dark:text-white/40">
-              Aperçu Strava (comparaison)
-            </span>
-          </div>
-          <div className="mx-5 mb-4 h-[220px] overflow-hidden rounded-[22px] border border-black/[0.06] dark:border-white/10">
-            <StravaEmbed stravaUrl={ride.strava_url} className="h-full w-full" />
-          </div>
-        </>
-      )}
 
       {ride.route_elevations && (
         <div className="px-5 pb-1">
