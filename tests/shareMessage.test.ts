@@ -14,7 +14,7 @@ const RIDE: ShareableRide = {
 
 describe("buildRideShareMessage", () => {
   it("inclut toujours titre, date, lieu et distance", () => {
-    const msg = buildRideShareMessage(RIDE, [], null, null, null);
+    const msg = buildRideShareMessage(RIDE, [], null, null);
     expect(msg).toContain("Sortie dimanche – Pic Saint-Loup");
     expect(msg).toContain("dimanche 6 septembre à 08:30");
     expect(msg).toContain("Parking du stade, Saint-Clément-de-Rivière");
@@ -23,26 +23,25 @@ describe("buildRideShareMessage", () => {
   });
 
   it("liste les groupes avec leur plage de vitesse", () => {
-    const msg = buildRideShareMessage(RIDE, ["vert", "rouge"], null, null, null);
+    const msg = buildRideShareMessage(RIDE, ["vert", "rouge"], null, null);
     expect(msg).toContain("Vert — 24–26 km/h");
     expect(msg).toContain("Rouge — 26–28 km/h");
     expect(msg).not.toContain("Violet");
   });
 
   it("omet le bloc groupes si aucun groupe fourni", () => {
-    const msg = buildRideShareMessage(RIDE, [], null, null, null);
+    const msg = buildRideShareMessage(RIDE, [], null, null);
     expect(msg).not.toContain("Groupes :");
   });
 
   it("inclut la meteo seulement si fournie", () => {
-    const withoutWeather = buildRideShareMessage(RIDE, [], null, null, null);
+    const withoutWeather = buildRideShareMessage(RIDE, [], null, null);
     expect(withoutWeather).not.toContain("Météo prévue");
 
     const withWeather = buildRideShareMessage(
       RIDE,
       [],
       { temperatureC: 22, precipitationProbability: 10, windSpeedKmh: 14, windDirectionDeg: 0, weatherCode: 0 },
-      null,
       null
     );
     expect(withWeather).toContain("Météo prévue");
@@ -51,20 +50,15 @@ describe("buildRideShareMessage", () => {
     expect(withWeather).toContain("14 km/h N");
   });
 
-  it("inclut les liens GPX / Strava / sortie seulement s'ils sont fournis", () => {
-    const empty = buildRideShareMessage(RIDE, [], null, null, null);
-    expect(empty).not.toContain("Trace GPX");
-    expect(empty).toContain("Strava : https://www.strava.com/routes/12345"); // toujours present sur ce fixture
+  it("inclut le lien Strava et le lien court de la sortie seulement s'ils sont fournis", () => {
+    const empty = buildRideShareMessage({ ...RIDE, strava_url: null }, [], null, null);
+    expect(empty).not.toContain("Strava");
+    expect(empty).not.toContain("Détails");
 
-    const full = buildRideShareMessage(
-      RIDE,
-      [],
-      null,
-      "https://example.supabase.co/storage/v1/object/public/gpx/foo.gpx",
-      "https://spsapp2.vercel.app/rides/abc123"
-    );
-    expect(full).toContain("Trace GPX : https://example.supabase.co/storage/v1/object/public/gpx/foo.gpx");
-    expect(full).toContain("Détails et inscription : https://spsapp2.vercel.app/rides/abc123");
+    const full = buildRideShareMessage(RIDE, [], null, "https://spsapp2.vercel.app/s/056e1998");
+    expect(full).toContain("Strava : https://www.strava.com/routes/12345");
+    expect(full).toContain("Détails, trace GPX et inscription : https://spsapp2.vercel.app/s/056e1998");
+    expect(full).not.toContain("Trace GPX :");
   });
 });
 

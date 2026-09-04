@@ -23,7 +23,6 @@ export function buildRideShareMessage(
   ride: ShareableRide,
   groups: GroupLevel[],
   weather: RideWeather | null,
-  gpxUrl: string | null,
   rideUrl: string | null
 ): string {
   const lines: string[] = [];
@@ -58,15 +57,14 @@ export function buildRideShareMessage(
     );
   }
 
-  if (gpxUrl || ride.strava_url) {
+  if (ride.strava_url) {
     lines.push("");
-    if (gpxUrl) lines.push(`📥 Trace GPX : ${gpxUrl}`);
-    if (ride.strava_url) lines.push(`🔗 Strava : ${ride.strava_url}`);
+    lines.push(`🔗 Strava : ${ride.strava_url}`);
   }
 
   if (rideUrl) {
     lines.push("");
-    lines.push(`👉 Détails et inscription : ${rideUrl}`);
+    lines.push(`👉 Détails, trace GPX et inscription : ${rideUrl}`);
   }
 
   return lines.join("\n");

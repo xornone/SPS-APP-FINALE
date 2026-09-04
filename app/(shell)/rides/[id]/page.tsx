@@ -13,6 +13,7 @@ import { WeatherWidget } from "@/components/WeatherWidget";
 import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import { buildRideShareMessage } from "@/lib/shareMessage";
+import { shortRideCode } from "@/lib/shortLink";
 import { GROUP_INFO, type GroupLevel } from "@/lib/types";
 import { fetchRideWeather, getRideCoordinates } from "@/lib/weather";
 
@@ -50,8 +51,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
     ride,
     groups,
     weather,
-    gpxUrl,
-    process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/rides/${ride.id}` : null
+    process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/s/${shortRideCode(ride.id)}` : null
   );
 
   return (
@@ -156,11 +156,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
 
       {isAdmin && (
         <div className="px-5 pb-2">
-          <WhatsAppShareButton
-            text={shareMessage}
-            imageUrl={`/api/rides/${ride.id}/share-image`}
-            imageFilename={`sortie-${ride.id}.png`}
-          />
+          <WhatsAppShareButton text={shareMessage} />
         </div>
       )}
 
