@@ -8,7 +8,15 @@ import { getLastCommentName, getMyCommentToken, saveMyCommentToken, setLastComme
 import { fmtCommentTime } from "@/lib/format";
 import type { RideComment } from "@/lib/types";
 
-export function RideComments({ rideId, initialComments }: { rideId: string; initialComments: RideComment[] }) {
+export function RideComments({
+  rideId,
+  initialComments,
+  isAdmin = false,
+}: {
+  rideId: string;
+  initialComments: RideComment[];
+  isAdmin?: boolean;
+}) {
   const [comments, setComments] = useState(initialComments);
   // Pre-rempli avec le dernier nom utilise pour un message, ou a defaut
   // celui utilise pour s'inscrire a une sortie.
@@ -53,15 +61,18 @@ export function RideComments({ rideId, initialComments }: { rideId: string; init
     setMessage("");
   }
 
+  // L'auteur peut supprimer son propre message (jeton local) ; un admin
+  // peut supprimer n'importe quel message (moderation) — l'API verifie sa
+  // session cote serveur, aucun jeton necessaire dans ce cas.
   async function handleDelete(id: string) {
     const token = getMyCommentToken(id);
-    if (!token) return;
+    if (!token && !isAdmin) return;
     const previous = comments;
     setComments((prev) => prev.filter((c) => c.id !== id));
     const res = await fetch(`/api/comments/${id}`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ client_token: token }),
+      body: JSON.stringify({ client_token: token || null }),
     });
     if (!res.ok) setComments(previous); // echec : on remet le message affiche
   }
@@ -94,12 +105,12 @@ export function RideComments({ rideId, initialComments }: { rideId: string; init
                       {c.message}
                     </p>
                   </div>
-                  {mine && (
+                  {(mine || isAdmin) && (
                     <button
                       type="button"
                       onClick={() => handleDelete(c.id)}
                       className="flex-none self-start p-0.5 text-black/25 hover:text-red-500 dark:text-white/25"
-                      aria-label="Supprimer mon message"
+                      aria-label={mine ? "Supprimer mon message" : "Supprimer (modération)"}
                     >
                       <Icon name="trash" size={14} />
                     </button>

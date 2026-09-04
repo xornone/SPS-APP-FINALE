@@ -125,7 +125,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         {ride.description || "Pas de description pour cette sortie."}
       </div>
 
-      <RideComments rideId={ride.id} initialComments={comments} />
+      <RideComments rideId={ride.id} initialComments={comments} isAdmin={isAdmin} />
 
       <div className="px-5 pb-2">
         <JoinPanel rideId={ride.id} availableGroups={groups} isPast={past} participants={participations} />
