@@ -1,8 +1,20 @@
 /**
- * Parsing GPX cote client ET serveur (DOMParser est disponible nativement
- * dans les runtimes Node modernes utilises par Next.js / Vercel ; en environnement
- * de test (jsdom / Vitest) il est egalement disponible globalement).
+ * Parsing GPX cote client ET serveur.
+ *
+ * DOMParser est une API navigateur : elle existe globalement cote client, et
+ * en environnement de test (jsdom / Vitest). Elle N'EXISTE PAS nativement
+ * dans le runtime Node.js des fonctions serverless Vercel -> sans repli, tout
+ * appel serveur (route API d'upload GPX) plante avec "DOMParser is not
+ * defined". On utilise donc @xmldom/xmldom comme implementation de secours
+ * cote serveur, et on s'appuie uniquement sur getElementsByTagName (supporte
+ * par les deux implementations) plutot que sur querySelector/querySelectorAll
+ * (non fournis par xmldom).
  */
+function resolveDOMParser(): typeof DOMParser {
+  if (typeof DOMParser !== "undefined") return DOMParser;
+  const { DOMParser: XmldomParser } = require("@xmldom/xmldom");
+  return XmldomParser as unknown as typeof DOMParser;
+}
 
 export interface GpxPoint {
   lat: number;
@@ -55,19 +67,20 @@ export function elevationGain(elevations: number[]): number {
  * Retourne null si le fichier ne contient pas de points exploitables.
  */
 export function parseGpx(xmlText: string): ParsedGpx | null {
-  const parser = new DOMParser();
+  const Parser = resolveDOMParser();
+  const parser = new Parser();
   const xml = parser.parseFromString(xmlText, "application/xml");
-  if (xml.querySelector("parsererror")) return null;
+  if (xml.getElementsByTagName("parsererror").length > 0) return null;
 
-  let nodes = Array.from(xml.querySelectorAll("trkpt"));
-  if (!nodes.length) nodes = Array.from(xml.querySelectorAll("rtept"));
+  let nodes = Array.from(xml.getElementsByTagName("trkpt"));
+  if (!nodes.length) nodes = Array.from(xml.getElementsByTagName("rtept"));
   if (!nodes.length) return null;
 
   const raw: GpxPoint[] = nodes
     .map((n) => {
       const lat = parseFloat(n.getAttribute("lat") || "");
       const lon = parseFloat(n.getAttribute("lon") || "");
-      const eleNode = n.querySelector("ele");
+      const eleNode = n.getElementsByTagName("ele")[0];
       const ele = eleNode ? parseFloat(eleNode.textContent || "") : null;
       return { lat, lon, ele: Number.isFinite(ele) ? ele : null };
     })
