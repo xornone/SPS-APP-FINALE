@@ -8,6 +8,7 @@ import { GroupBadge } from "@/components/GroupBadge";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icons";
 import { JoinPanel } from "@/components/JoinPanel";
+import { WeatherWidget } from "@/components/WeatherWidget";
 import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import type { GroupLevel } from "@/lib/types";
 
@@ -72,6 +73,13 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         <Stat value={fmtM(ride.elevation_gain_m)} label="D+" />
         <Stat value={speedRangeLabel(groups)} label="km/h" />
       </div>
+
+      <WeatherWidget
+        routePoints={ride.route_points}
+        place={ride.place}
+        rideDate={ride.ride_date}
+        rideTime={ride.ride_time}
+      />
 
       <div className="px-5 pb-1.5">
         <h2 className="font-display text-xl tracking-wide">Groupes</h2>

@@ -23,6 +23,14 @@ const PATHS: Record<string, string> = {
   logout: '<path d="M9 4.5H6a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 6 19.5h3" stroke-linecap="round"/><path d="M14 8l4 4-4 4M18 12H9" stroke-linecap="round" stroke-linejoin="round"/>',
   trophy: '<path d="M7 4.5h10v5a5 5 0 0 1-10 0v-5Z" stroke-linejoin="round"/><path d="M7 6H4.5v1.5A3.5 3.5 0 0 0 7 10.9M17 6h2.5v1.5A3.5 3.5 0 0 1 17 10.9" stroke-linecap="round"/><path d="M12 14.5v3M9 20h6M9.5 17.5h5" stroke-linecap="round"/>',
   external: '<path d="M9 6H6a1.5 1.5 0 0 0-1.5 1.5v10A1.5 1.5 0 0 0 6 19h10a1.5 1.5 0 0 0 1.5-1.5V15" stroke-linecap="round" stroke-linejoin="round"/><path d="M14 4.5h5.5V10M19.3 4.7l-8.6 8.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 3v2.2M12 18.8V21M4.2 4.2l1.5 1.5M18.3 18.3l1.5 1.5M3 12h2.2M18.8 12H21M4.2 19.8l1.5-1.5M18.3 5.7l1.5-1.5" stroke-linecap="round"/>',
+  cloudSun: '<path d="M9.3 8.2a3.4 3.4 0 1 1 3 5.1" stroke-linecap="round"/><path d="M9.5 3.2v1.6M5.3 5.7l1.1 1.1M3.6 10h1.6" stroke-linecap="round"/><path d="M8.3 19.8a3.6 3.6 0 0 1-.5-7.15 5 5 0 0 1 9.6-2.15 3.8 3.8 0 0 1-.7 9.3H8.3Z" stroke-linejoin="round"/>',
+  cloud: '<path d="M7 18.5a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17.3 9.2 4.2 4.2 0 0 1 16.5 18.5H7Z" stroke-linejoin="round"/>',
+  rain: '<path d="M7 14.5a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17.3 5.7 4.2 4.2 0 0 1 16.5 14.5H7Z" stroke-linejoin="round"/><path d="M9 17l-1 3.3M13 17l-1 3.3M17 17l-1 3.3" stroke-linecap="round"/>',
+  storm: '<path d="M7 13a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17.3 4.2 4.2 4.2 0 0 1 16.5 13H7Z" stroke-linejoin="round"/><path d="M13.2 13l-3 4.6h2.7L10.8 22" stroke-linecap="round" stroke-linejoin="round"/>',
+  snow: '<path d="M7 13a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17.3 4.2 4.2 4.2 0 0 1 16.5 13H7Z" stroke-linejoin="round"/><path d="M9 16.5v4.3M7 17.8l4 1.4M11 17.8l-4 1.4M15.5 16.5v4.3M13.5 17.8l4 1.4M17.5 17.8l-4 1.4" stroke-linecap="round"/>',
+  fog: '<path d="M4 8.7h13" stroke-linecap="round"/><path d="M4 12.7h16" stroke-linecap="round"/><path d="M4 16.7h13" stroke-linecap="round"/>',
+  arrowUp: '<path d="M12 20.5V5M6.3 10.3 12 4.5l5.7 5.8" stroke-linecap="round" stroke-linejoin="round"/>',
 };
 
 export function Icon({
