@@ -156,7 +156,11 @@ export default async function RideDetailPage({ params }: { params: { id: string 
 
       {isAdmin && (
         <div className="px-5 pb-2">
-          <WhatsAppShareButton text={shareMessage} />
+          <WhatsAppShareButton
+            text={shareMessage}
+            imageUrl={`/api/rides/${ride.id}/share-image`}
+            imageFilename={`sortie-${ride.id}.png`}
+          />
         </div>
       )}
 
