@@ -47,7 +47,7 @@ export default async function ClassementPage() {
   return (
     <div>
       <div className="px-5 pb-1 pt-5">
-        <h1 className="font-display text-[26px] tracking-wide">Classement</h1>
+        <h1 className="font-display text-[26px] tracking-wide">Statistique SPS</h1>
         <p className="text-[12.5px] text-black/45 dark:text-white/45">Les chiffres du club, tous membres confondus.</p>
       </div>
 
