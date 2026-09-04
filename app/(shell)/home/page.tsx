@@ -13,9 +13,13 @@ export default async function HomePage() {
   const supabase = createClient();
   const [rides, participations] = await Promise.all([fetchRides(supabase), fetchAllParticipations(supabase)]);
 
+  // Toutes les sorties du jour le plus proche sont mises en avant (en
+  // violet) — pas seulement la premiere — si plusieurs sorties ont lieu le
+  // meme jour.
   const upcoming = rides.filter((r) => !isPastDate(r.ride_date));
-  const next = upcoming[0];
-  const rest = upcoming.slice(1, 5);
+  const nextDate = upcoming[0]?.ride_date;
+  const featured = upcoming.filter((r) => r.ride_date === nextDate);
+  const rest = upcoming.filter((r) => r.ride_date !== nextDate).slice(0, 4);
 
   const countsFor = (rideId: string) => participations.filter((p) => p.ride_id === rideId);
 
@@ -26,45 +30,56 @@ export default async function HomePage() {
         <NotifBell />
       </div>
 
-      {next && (
+      {featured.length > 0 && (
         <>
           <div className="px-5 pb-2">
-            <h2 className="font-display text-xl tracking-wide">Prochaine sortie</h2>
+            <h2 className="font-display text-xl tracking-wide">
+              {featured.length > 1 ? "Prochaines sorties" : "Prochaine sortie"}
+            </h2>
           </div>
-          <Link
-            href={`/rides/${next.id}`}
-            className="relative mx-5 mb-6 block overflow-hidden rounded-[26px] bg-gradient-to-br from-sps-violet700 to-sps-violet900 p-5 text-[#F4EEFF] shadow-card"
-          >
-            <span className="text-[11.5px] font-extrabold uppercase tracking-wide text-violet-200">
-              {daysUntil(next.ride_date) === 0 ? "Aujourd'hui" : daysUntil(next.ride_date) === 1 ? "Demain" : fmtDateLong(next.ride_date)}
-            </span>
-            <h3 className="mb-1 mt-1.5 font-display text-[27px] leading-tight">{next.title}</h3>
-            <p className="mb-3.5 text-[13px] text-violet-200/90">
-              {fmtTime(next.ride_time)} · {next.place}
-            </p>
-            <div className="mb-4 flex gap-4">
-              <div>
-                <span className="block font-display text-[22px] leading-none">{fmtKm(next.distance_km)}</span>
-                <span className="text-[10.5px] uppercase text-violet-300">Distance</span>
-              </div>
-              <div>
-                <span className="block font-display text-[22px] leading-none">{fmtM(next.elevation_gain_m)}</span>
-                <span className="text-[10.5px] uppercase text-violet-300">D+</span>
-              </div>
-              <div>
-                <span className="block font-display text-[22px] leading-none">{countsFor(next.id).length}</span>
-                <span className="text-[10.5px] uppercase text-violet-300">Participants</span>
-              </div>
-            </div>
-            <div className="mb-4 flex flex-wrap gap-1.5">
-              {(next.ride_groups || []).map((g) => (
-                <GroupBadge key={g.group_level} group={g.group_level} withRange={false} onDark />
-              ))}
-            </div>
-            <span className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-sps-violet500 to-sps-violet700 px-4 py-3 text-sm font-extrabold shadow-lg">
-              Voir la sortie <Icon name="chevR" size={15} />
-            </span>
-          </Link>
+          <div className="mb-6 flex flex-col gap-3 px-5">
+            {featured.map((ride) => (
+              <Link
+                key={ride.id}
+                href={`/rides/${ride.id}`}
+                className="relative block overflow-hidden rounded-[26px] bg-gradient-to-br from-sps-violet700 to-sps-violet900 p-5 text-[#F4EEFF] shadow-card"
+              >
+                <span className="text-[11.5px] font-extrabold uppercase tracking-wide text-violet-200">
+                  {daysUntil(ride.ride_date) === 0
+                    ? "Aujourd'hui"
+                    : daysUntil(ride.ride_date) === 1
+                      ? "Demain"
+                      : fmtDateLong(ride.ride_date)}
+                </span>
+                <h3 className="mb-1 mt-1.5 font-display text-[27px] leading-tight">{ride.title}</h3>
+                <p className="mb-3.5 text-[13px] text-violet-200/90">
+                  {fmtTime(ride.ride_time)} · {ride.place}
+                </p>
+                <div className="mb-4 flex gap-4">
+                  <div>
+                    <span className="block font-display text-[22px] leading-none">{fmtKm(ride.distance_km)}</span>
+                    <span className="text-[10.5px] uppercase text-violet-300">Distance</span>
+                  </div>
+                  <div>
+                    <span className="block font-display text-[22px] leading-none">{fmtM(ride.elevation_gain_m)}</span>
+                    <span className="text-[10.5px] uppercase text-violet-300">D+</span>
+                  </div>
+                  <div>
+                    <span className="block font-display text-[22px] leading-none">{countsFor(ride.id).length}</span>
+                    <span className="text-[10.5px] uppercase text-violet-300">Participants</span>
+                  </div>
+                </div>
+                <div className="mb-4 flex flex-wrap gap-1.5">
+                  {(ride.ride_groups || []).map((g) => (
+                    <GroupBadge key={g.group_level} group={g.group_level} withRange={false} onDark />
+                  ))}
+                </div>
+                <span className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-sps-violet500 to-sps-violet700 px-4 py-3 text-sm font-extrabold shadow-lg">
+                  Voir la sortie <Icon name="chevR" size={15} />
+                </span>
+              </Link>
+            ))}
+          </div>
         </>
       )}
 
