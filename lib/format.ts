@@ -57,6 +57,20 @@ export function fmtM(v: number): string {
   return `${Math.round(v)} m`;
 }
 
+// Formatage court d'un timestamp (ISO complet, avec heure) pour la
+// discussion sous une sortie : juste l'heure si c'est aujourd'hui, sinon
+// date courte + heure.
+export function fmtCommentTime(iso: string): string {
+  const d = new Date(iso);
+  const now = new Date();
+  const hh = `${d.getHours()}`.padStart(2, "0");
+  const mm = `${d.getMinutes()}`.padStart(2, "0");
+  const sameDay =
+    d.getDate() === now.getDate() && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  if (sameDay) return `${hh}:${mm}`;
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} · ${hh}:${mm}`;
+}
+
 export function initials(name: string): string {
   return name
     .split(" ")

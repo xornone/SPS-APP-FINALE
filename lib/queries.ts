@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Participation, Ride } from "./types";
+import type { Participation, Ride, RideComment } from "./types";
 
 export async function fetchRides(supabase: SupabaseClient): Promise<Ride[]> {
   const { data, error } = await supabase
@@ -39,4 +39,16 @@ export async function fetchAllParticipations(supabase: SupabaseClient): Promise<
   const { data, error } = await supabase.from("ride_participants").select("*");
   if (error) throw error;
   return (data || []) as unknown as Participation[];
+}
+
+// Lit la vue publique ride_comment_feed (jamais la table ride_comments
+// directement : elle porte le client_token, qui ne doit pas fuiter).
+export async function fetchCommentsForRide(supabase: SupabaseClient, rideId: string): Promise<RideComment[]> {
+  const { data, error } = await supabase
+    .from("ride_comment_feed")
+    .select("*")
+    .eq("ride_id", rideId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return (data || []) as unknown as RideComment[];
 }

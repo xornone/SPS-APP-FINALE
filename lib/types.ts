@@ -42,6 +42,14 @@ export interface Participation {
   created_at: string;
 }
 
+export interface RideComment {
+  id: string;
+  ride_id: string;
+  author_name: string;
+  message: string;
+  created_at: string;
+}
+
 export interface Notification {
   id: string;
   kind: "ride_created" | "ride_updated" | "ride_cancelled" | "new_participant";

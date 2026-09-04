@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { fetchParticipationsForRide, fetchRide } from "@/lib/queries";
+import { fetchCommentsForRide, fetchParticipationsForRide, fetchRide } from "@/lib/queries";
 import { RideMap } from "@/components/RideMap";
 import { ElevationChart } from "@/components/ElevationChart";
 import { GroupBadge } from "@/components/GroupBadge";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icons";
 import { JoinPanel } from "@/components/JoinPanel";
+import { RideComments } from "@/components/RideComments";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel } from "@/lib/types";
@@ -19,6 +20,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   if (!ride) notFound();
 
   const participations = await fetchParticipationsForRide(supabase, ride.id);
+  const comments = await fetchCommentsForRide(supabase, ride.id);
   const past = isPastDate(ride.ride_date);
   const groups = (ride.ride_groups || []).map((g) => g.group_level);
 
@@ -105,6 +107,8 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         <h4 className="mb-2 font-display text-sm tracking-wide text-black dark:text-white">Description</h4>
         {ride.description || "Pas de description pour cette sortie."}
       </div>
+
+      <RideComments rideId={ride.id} initialComments={comments} />
 
       <div className="px-5 pb-2">
         <JoinPanel rideId={ride.id} availableGroups={groups} isPast={past} participants={participations} />

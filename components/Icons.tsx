@@ -31,6 +31,7 @@ const PATHS: Record<string, string> = {
   snow: '<path d="M7 13a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17.3 4.2 4.2 4.2 0 0 1 16.5 13H7Z" stroke-linejoin="round"/><path d="M9 16.5v4.3M7 17.8l4 1.4M11 17.8l-4 1.4M15.5 16.5v4.3M13.5 17.8l4 1.4M17.5 17.8l-4 1.4" stroke-linecap="round"/>',
   fog: '<path d="M4 8.7h13" stroke-linecap="round"/><path d="M4 12.7h16" stroke-linecap="round"/><path d="M4 16.7h13" stroke-linecap="round"/>',
   arrowUp: '<path d="M12 20.5V5M6.3 10.3 12 4.5l5.7 5.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  send: '<path d="M4.2 11.8 19.5 4.5 15 19.5l-3.6-6.1-6.1-1.6Z" stroke-linejoin="round"/><path d="M11.4 13.4 19.5 4.5" stroke-linecap="round"/>',
 };
 
 export function Icon({
