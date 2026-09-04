@@ -50,14 +50,14 @@ describe("buildRideShareMessage", () => {
     expect(withWeather).toContain("14 km/h N");
   });
 
-  it("inclut le lien Strava et le lien court de la sortie seulement s'ils sont fournis", () => {
-    const empty = buildRideShareMessage({ ...RIDE, strava_url: null }, [], null, null);
-    expect(empty).not.toContain("Strava");
+  it("inclut uniquement le lien court de la sortie, pas le lien Strava brut", () => {
+    const empty = buildRideShareMessage(RIDE, [], null, null);
     expect(empty).not.toContain("Détails");
+    expect(empty).not.toContain("strava.com");
 
     const full = buildRideShareMessage(RIDE, [], null, "https://spsapp2.vercel.app/s/056e1998");
-    expect(full).toContain("Strava : https://www.strava.com/routes/12345");
-    expect(full).toContain("Détails, trace GPX et inscription : https://spsapp2.vercel.app/s/056e1998");
+    expect(full).toContain("Détails, trace GPX, Strava et inscription : https://spsapp2.vercel.app/s/056e1998");
+    expect(full).not.toContain("strava.com");
     expect(full).not.toContain("Trace GPX :");
   });
 });
