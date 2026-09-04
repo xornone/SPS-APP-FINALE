@@ -11,7 +11,6 @@ import { Icon } from "./Icons";
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
   { href: "/rides", label: "Sorties", icon: "bike" as const },
-  { href: "/map", label: "Carte", icon: "map" as const },
   { href: "/classement", label: "Classement", icon: "trophy" as const },
   { href: "/admin", label: "Admin", icon: "gear" as const },
 ];

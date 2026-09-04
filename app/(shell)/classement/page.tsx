@@ -1,17 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
-import { Avatar } from "@/components/Avatar";
-import { GROUP_INFO, type GroupLevel } from "@/lib/types";
 import { isPastDate } from "@/lib/format";
 
-interface Row {
-  displayName: string;
-  count: number;
-  km: number;
-  elevation: number;
-  favGroup?: GroupLevel;
-}
-
+// Page volontairement collective : aucun classement nominatif des membres,
+// uniquement des chiffres qui mettent en avant le club dans son ensemble.
 export default async function ClassementPage() {
   const supabase = createClient();
   const [rides, participations] = await Promise.all([fetchRides(supabase), fetchAllParticipations(supabase)]);
@@ -21,37 +13,23 @@ export default async function ClassementPage() {
     .map((p) => ({ ...p, ride: ridesById.get(p.ride_id) }))
     .filter((p) => p.ride && isPastDate(p.ride.ride_date));
 
-  // Regroupement par nom normalisé (espaces/casse) — c'est le seul moyen de
-  // consolider "les mêmes personnes" sans compte ; deux membres homonymes
-  // partageront la même ligne, ce qui est le compromis assumé de ce modèle.
-  const byName = new Map<string, Row & { groupFreq: Record<string, number> }>();
-  past.forEach((p) => {
-    const key = p.participant_name.trim().toLowerCase();
-    if (!key) return;
-    const existing = byName.get(key) || {
-      displayName: p.participant_name.trim(),
-      count: 0,
-      km: 0,
-      elevation: 0,
-      groupFreq: {},
-    };
-    existing.count += 1;
-    existing.km += p.ride!.distance_km;
-    existing.elevation += p.ride!.elevation_gain_m;
-    existing.groupFreq[p.group_level] = (existing.groupFreq[p.group_level] || 0) + 1;
-    existing.displayName = p.participant_name.trim(); // garde la dernière casse utilisée
-    byName.set(key, existing);
+  // Km cumules parcourus par l'ensemble des membres : chaque inscription a
+  // une sortie passee ajoute la distance de cette sortie au total (une
+  // sortie avec 8 participants compte 8 fois sa distance).
+  const totalKm = past.reduce((sum, p) => sum + (p.ride?.distance_km || 0), 0);
+  const totalRidesOrganized = rides.length;
+
+  // Sorties proposees par le club, par annee (toutes les sorties creees,
+  // passees comme a venir).
+  const perYear = new Map<number, number>();
+  rides.forEach((r) => {
+    const year = Number(r.ride_date.slice(0, 4));
+    if (!Number.isNaN(year)) perYear.set(year, (perYear.get(year) || 0) + 1);
   });
+  const yearRows = Array.from(perYear.entries()).sort((a, b) => b[0] - a[0]);
+  const maxYearCount = Math.max(...yearRows.map(([, c]) => c), 1);
 
-  const rows: Row[] = Array.from(byName.values())
-    .map((r) => ({
-      ...r,
-      favGroup: (Object.entries(r.groupFreq).sort((a, b) => b[1] - a[1])[0]?.[0] as GroupLevel) || undefined,
-    }))
-    .sort((a, b) => b.count - a.count || b.km - a.km)
-    .slice(0, 20);
-
-  // Activité club (km cumulés, tous participants, 6 derniers mois)
+  // Activite club (km cumules, tous participants, 6 derniers mois)
   const now = new Date();
   const MONTHS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
   const buckets: { label: string; km: number }[] = [];
@@ -70,9 +48,12 @@ export default async function ClassementPage() {
     <div>
       <div className="px-5 pb-1 pt-5">
         <h1 className="font-display text-[26px] tracking-wide">Classement</h1>
-        <p className="text-[12.5px] text-black/45 dark:text-white/45">
-          Nombre de sorties réalisées, par nom déclaré à l&apos;inscription.
-        </p>
+        <p className="text-[12.5px] text-black/45 dark:text-white/45">Les chiffres du club, tous membres confondus.</p>
+      </div>
+
+      <div className="flex gap-2.5 px-5 py-4">
+        <ClubStat value={`${Math.round(totalKm).toLocaleString("fr-FR")} km`} label="Parcourus par les membres" />
+        <ClubStat value={String(totalRidesOrganized)} label="Sorties organisées" />
       </div>
 
       <div className="px-5 py-3">
@@ -94,36 +75,42 @@ export default async function ClassementPage() {
       </div>
 
       <div className="px-5 pb-1.5">
-        <h2 className="font-display text-xl tracking-wide">Les plus assidus</h2>
+        <h2 className="font-display text-xl tracking-wide">Sorties par année</h2>
       </div>
       <div className="mx-5 mb-6 overflow-hidden rounded-2xl border border-black/[0.06] bg-white dark:border-white/10 dark:bg-[#1A1422]">
-        {rows.length === 0 ? (
-          <p className="p-6 text-center text-sm text-black/40 dark:text-white/40">
-            Aucune sortie réalisée pour le moment.
-          </p>
+        {yearRows.length === 0 ? (
+          <p className="p-6 text-center text-sm text-black/40 dark:text-white/40">Aucune sortie proposée pour le moment.</p>
         ) : (
-          rows.map((r, i) => (
-            <div key={r.displayName} className="flex items-center gap-3 border-b border-black/[0.05] px-4 py-3 last:border-0 dark:border-white/[0.06]">
-              <span className="w-5 flex-none text-center font-display text-base text-black/35 dark:text-white/35">{i + 1}</span>
-              <Avatar name={r.displayName} seed={r.displayName} size="sm" />
-              <div className="min-w-0 flex-1">
-                <b className="block truncate text-[13.5px] font-bold">{r.displayName}</b>
-                <span className="text-[11.5px] text-black/45 dark:text-white/45">
-                  {r.count} sortie{r.count > 1 ? "s" : ""} · {Math.round(r.km)} km
-                  {r.favGroup && (
-                    <>
-                      {" · "}
-                      <span style={{ color: GROUP_INFO[r.favGroup].hex }} className="font-bold">
-                        {GROUP_INFO[r.favGroup].label}
-                      </span>
-                    </>
-                  )}
-                </span>
+          yearRows.map(([year, count]) => (
+            <div
+              key={year}
+              className="flex items-center gap-3 border-b border-black/[0.05] px-4 py-3 last:border-0 dark:border-white/[0.06]"
+            >
+              <span className="w-12 flex-none font-display text-base">{year}</span>
+              <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/[0.05] dark:bg-white/10">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-sps-violet400 to-sps-violet600"
+                  style={{ width: `${Math.max(6, (count / maxYearCount) * 100)}%` }}
+                />
               </div>
+              <span className="w-20 flex-none text-right text-[12.5px] text-black/45 dark:text-white/45">
+                {count} sortie{count > 1 ? "s" : ""}
+              </span>
             </div>
           ))
         )}
       </div>
+    </div>
+  );
+}
+
+function ClubStat({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex-1 rounded-2xl border border-black/[0.06] bg-white py-3.5 text-center dark:border-white/10 dark:bg-[#1A1422]">
+      <span className="block font-display text-[20px] leading-none">{value}</span>
+      <span className="mt-1.5 block px-1 text-[10px] uppercase leading-tight tracking-wide text-black/35 dark:text-white/35">
+        {label}
+      </span>
     </div>
   );
 }
