@@ -7,6 +7,22 @@ import { NextResponse, type NextRequest } from "next/server";
 const PROTECTED_PREFIX = "/admin";
 
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const isProtected = path.startsWith(PROTECTED_PREFIX);
+  const isLogin = path === "/login";
+
+  // Seules /admin/* et /login ont besoin de connaitre la session : partout
+  // ailleurs (accueil, sorties, fiche sortie, statistiques, API publiques
+  // comme /api/comments ou /api/participations...) on evite l'appel reseau
+  // vers Supabase Auth sur CHAQUE navigation/requete, qui etait jusqu'ici
+  // fait systematiquement meme pour un visiteur anonyme sans session. Les
+  // routes /api/admin/* ne sont pas concernees par ce matcher (elles ne
+  // commencent pas par "/admin") : elles verifient deja elles-memes la
+  // session via requireAdmin(), independamment du middleware.
+  if (!isProtected && !isLogin) {
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({ request: { headers: request.headers } });
 
   const supabase = createServerClient(
@@ -32,9 +48,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
-  const isProtected = path.startsWith(PROTECTED_PREFIX);
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone();

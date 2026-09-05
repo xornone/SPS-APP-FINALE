@@ -20,13 +20,32 @@ import { fetchRideWeather, getRideCoordinates } from "@/lib/weather";
 export default async function RideDetailPage({ params }: { params: { id: string } }) {
   const supabase = createClient();
 
-  const ride = await fetchRide(supabase, params.id);
+  // La sortie et la session admin ne dependent pas l'une de l'autre : les
+  // lancer en parallele (plutot que l'un apres l'autre) evite d'attendre
+  // deux allers-retours reseau la ou un seul suffit.
+  const [ride, {
+    data: { user: adminUser },
+  }] = await Promise.all([fetchRide(supabase, params.id), supabase.auth.getUser()]);
   if (!ride) notFound();
 
-  const participations = await fetchParticipationsForRide(supabase, ride.id);
-  const comments = await fetchCommentsForRide(supabase, ride.id);
-  const past = isPastDate(ride.ride_date);
+  // Bouton "Publier sur WhatsApp" reserve a l'administrateur : toute
+  // session authentifiee EST admin (voir lib/adminGuard.ts).
+  const isAdmin = !!adminUser;
   const groups = (ride.ride_groups || []).map((g) => g.group_level);
+
+  // Participations, commentaires et meteo sont eux aussi independants les
+  // uns des autres : meme logique, on les recupere en parallele plutot
+  // qu'en chaine (c'etait le principal point lent de cette page — jusqu'a
+  // 4 allers-retours reseau successifs au lieu d'un seul groupe parallele).
+  const [participations, comments, weather] = await Promise.all([
+    fetchParticipationsForRide(supabase, ride.id),
+    fetchCommentsForRide(supabase, ride.id),
+    getRideCoordinates(ride.route_points, ride.place).then((coords) =>
+      coords ? fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time) : null
+    ),
+  ]);
+
+  const past = isPastDate(ride.ride_date);
 
   const groupCounts: Record<GroupLevel, number> = { vert: 0, rouge: 0, violet: 0 };
   participations.forEach((p) => groupCounts[p.group_level]++);
@@ -34,18 +53,6 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   const gpxUrl = ride.gpx_path
     ? supabase.storage.from("gpx").getPublicUrl(ride.gpx_path).data.publicUrl
     : null;
-
-  // Meteo calculee une seule fois ici (reutilisee par le widget et par le
-  // message WhatsApp ci-dessous, pas de double appel a l'API Open-Meteo).
-  const coords = await getRideCoordinates(ride.route_points, ride.place);
-  const weather = coords ? await fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time) : null;
-
-  // Bouton "Publier sur WhatsApp" reserve a l'administrateur : toute
-  // session authentifiee EST admin (voir lib/adminGuard.ts).
-  const {
-    data: { user: adminUser },
-  } = await supabase.auth.getUser();
-  const isAdmin = !!adminUser;
 
   // Filet de securite : si NEXT_PUBLIC_SITE_URL n'est pas configuree sur
   // l'hebergeur, on retombe sur le domaine de production plutot que de
