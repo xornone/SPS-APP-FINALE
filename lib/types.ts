@@ -50,11 +50,3 @@ export interface RideComment {
   message: string;
   created_at: string;
 }
-
-export interface Notification {
-  id: string;
-  kind: "ride_created" | "ride_updated" | "ride_cancelled" | "new_participant";
-  ride_id: string | null;
-  message: string;
-  created_at: string;
-}

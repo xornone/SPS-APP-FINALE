@@ -5,7 +5,6 @@ import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { RideCard } from "@/components/RideCard";
 import { WeekDivider } from "@/components/WeekDivider";
 import { GroupBadge } from "@/components/GroupBadge";
-import { NotifBell } from "@/components/NotifBell";
 import { Icon } from "@/components/Icons";
 import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime, fmtWeekLabel, isPastDate, weekKey } from "@/lib/format";
 
@@ -30,9 +29,8 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between px-5 pb-3 pt-5">
+      <div className="px-5 pb-3 pt-5">
         <h1 className="font-display text-[26px] tracking-wide">Bonjour 👋</h1>
-        <NotifBell />
       </div>
 
       {featured.length > 0 && (
