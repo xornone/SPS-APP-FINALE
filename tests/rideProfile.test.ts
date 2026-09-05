@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { haversineKm } from "@/lib/gpx";
-import { describeRideProfile, detectClimbs, resampleProfile } from "@/lib/rideProfile";
+import { describeRideProfile, detectClimbs, estimateDifficulty, resampleProfile } from "@/lib/rideProfile";
 
 /**
  * Construit une trace synthetique en ligne droite (latitude variable,
@@ -145,6 +145,7 @@ describe("describeRideProfile", () => {
     const text = describeRideProfile({ points, elevations, distanceKm, elevationGainM: 20, hasRealElevation: true });
     expect(text).toContain("40 km");
     expect(text.toLowerCase()).toContain("plat");
+    expect(text).toMatch(/Difficulté estimée : 1\/5/);
   });
 
   it("decrit un parcours avec une montee, en mentionnant longueur, pente et position", () => {
@@ -165,9 +166,10 @@ describe("describeRideProfile", () => {
     expect(text).toContain("228 m");
     expect(text).toMatch(/\d,\d km à \d,\d% de moyenne/);
     expect(text).toContain("vers le km 5");
+    expect(text).toMatch(/Difficulté estimée : \d(,\d)?\/5/);
   });
 
-  it("reste sobre quand le GPX n'a pas d'altitude reelle (estimee)", () => {
+  it("reste sobre quand le GPX n'a pas d'altitude reelle (estimee), mais indique quand meme une difficulte", () => {
     const { points, elevations, distanceKm } = buildTrack([
       [0, 100],
       [10, 100],
@@ -176,5 +178,36 @@ describe("describeRideProfile", () => {
     expect(text).toContain("10 km");
     expect(text).not.toContain("montée");
     expect(text).not.toContain("km 0");
+    expect(text).toMatch(/Difficulté estimée : \d(,\d)?\/5/);
+  });
+});
+
+describe("estimateDifficulty", () => {
+  it("note 1/5 un parcours plat et court", () => {
+    expect(estimateDifficulty(30, 80, [])).toBe(1);
+  });
+
+  it("augmente avec le denivele par km", () => {
+    const flat = estimateDifficulty(50, 100, []);
+    const hilly = estimateDifficulty(50, 1200, []);
+    expect(hilly).toBeGreaterThan(flat);
+  });
+
+  it("augmente avec la pente de la montee la plus raide", () => {
+    const gentle = estimateDifficulty(60, 800, [{ startKm: 10, lengthKm: 5, elevationGainM: 150, avgGradientPct: 3 }]);
+    const steep = estimateDifficulty(60, 800, [{ startKm: 10, lengthKm: 5, elevationGainM: 400, avgGradientPct: 9 }]);
+    expect(steep).toBeGreaterThan(gentle);
+  });
+
+  it("reste borne entre 1 et 5", () => {
+    expect(estimateDifficulty(10, 0, [])).toBeGreaterThanOrEqual(1);
+    expect(
+      estimateDifficulty(200, 6000, [{ startKm: 50, lengthKm: 20, elevationGainM: 2000, avgGradientPct: 15 }])
+    ).toBeLessThanOrEqual(5);
+  });
+
+  it("varie par pas de 0.5", () => {
+    const score = estimateDifficulty(72, 950, [{ startKm: 20, lengthKm: 6, elevationGainM: 250, avgGradientPct: 4.2 }]);
+    expect((score * 2) % 1).toBe(0);
   });
 });

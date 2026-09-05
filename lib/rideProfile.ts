@@ -165,6 +165,53 @@ function describeClimb(c: ClimbSegment): string {
   return `${fmtKm(c.lengthKm)} à ${fmtGradient(c.avgGradientPct)} de moyenne (vers le km ${Math.round(c.startKm)})`;
 }
 
+/**
+ * Estime une difficulte globale du parcours, notee de 1 a 5 (par pas de
+ * 0.5), a partir de trois facteurs simples : le denivele cumule rapporte a
+ * la distance (intensite generale du relief), la pente de la montee la
+ * plus raide rencontree, et la longueur de la plus longue montee (effort
+ * soutenu) — avec un bonus pour les tres longues distances. C'est une
+ * heuristique volontairement simple et transparente pour donner un repere
+ * de lecture rapide, pas une mesure scientifique.
+ */
+export function estimateDifficulty(distanceKm: number, elevationGainM: number, climbs: ClimbSegment[]): number {
+  const gainPerKm = elevationGainM / Math.max(distanceKm, 1);
+  let score = 1;
+
+  if (gainPerKm >= 25) score += 3;
+  else if (gainPerKm >= 15) score += 2;
+  else if (gainPerKm >= 8) score += 1;
+  else if (gainPerKm >= 4) score += 0.5;
+
+  const maxGradient = climbs.length ? Math.max(...climbs.map((c) => c.avgGradientPct)) : 0;
+  if (maxGradient >= 8) score += 1;
+  else if (maxGradient >= 5) score += 0.5;
+
+  const longestClimbKm = climbs.length ? Math.max(...climbs.map((c) => c.lengthKm)) : 0;
+  if (longestClimbKm >= 5) score += 0.5;
+
+  if (distanceKm >= 100) score += 0.5;
+
+  return Math.min(5, Math.max(1, Math.round(score * 2) / 2));
+}
+
+function difficultyLabel(score: number): string {
+  if (score <= 1.5) return "facile";
+  if (score <= 2.5) return "modéré";
+  if (score <= 3.5) return "difficile";
+  if (score <= 4.5) return "très difficile";
+  return "extrême";
+}
+
+function fmtDifficulty(score: number): string {
+  return score % 1 === 0 ? `${score}` : score.toString().replace(".", ",");
+}
+
+function describeDifficulty(distanceKm: number, elevationGainM: number, climbs: ClimbSegment[]): string {
+  const score = estimateDifficulty(distanceKm, elevationGainM, climbs);
+  return `Difficulté estimée : ${fmtDifficulty(score)}/5 (${difficultyLabel(score)}).`;
+}
+
 export interface RideProfileInput {
   points: [number, number][];
   elevations: number[];
@@ -184,18 +231,21 @@ export function describeRideProfile(parsed: RideProfileInput): string {
 
   if (!parsed.hasRealElevation) {
     // Le GPX ne contient pas d'altitude reelle : le denivele affiche est deja
-    // une estimation, impossible d'en tirer une analyse fiable du relief.
-    return intro;
+    // une estimation, impossible d'en tirer une analyse fiable du relief
+    // (la difficulte ci-dessous n'en tient donc pas compte non plus).
+    const difficulty = describeDifficulty(parsed.distanceKm, parsed.elevationGainM, []);
+    return `${difficulty} ${intro}`;
   }
 
   const climbs = detectClimbs(parsed.points, parsed.elevations).sort(
     (a, b) => b.elevationGainM - a.elevationGainM
   );
+  const difficulty = describeDifficulty(parsed.distanceKm, parsed.elevationGainM, climbs);
 
   if (climbs.length === 0) {
     const gainPerKm = parsed.elevationGainM / Math.max(parsed.distanceKm, 0.1);
     const note = gainPerKm < 6 ? "Profil plutôt plat, sans difficulté notable." : "Relief roulant, sans grosse difficulté isolée.";
-    return `${intro} ${note}`;
+    return `${difficulty} ${intro} ${note}`;
   }
 
   const top = climbs.slice(0, MAX_CLIMBS_IN_TEXT).sort((a, b) => a.startKm - b.startKm);
@@ -214,5 +264,5 @@ export function describeRideProfile(parsed: RideProfileInput): string {
   const extra =
     remaining > 0 ? ` (+ ${remaining} autre${remaining > 1 ? "s" : ""} bosse${remaining > 1 ? "s" : ""} plus courte${remaining > 1 ? "s" : ""})` : "";
 
-  return `${intro} ${climbSentence}${extra}`;
+  return `${difficulty} ${intro} ${climbSentence}${extra}`;
 }

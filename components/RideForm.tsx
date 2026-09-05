@@ -10,6 +10,13 @@ import { Icon } from "./Icons";
 
 const ALL_GROUPS: GroupLevel[] = ["vert", "rouge", "violet"];
 
+// Place le texte genere au debut de la description, sans jamais effacer ce
+// que l'admin a deja saisi (qui reste tel quel, en dessous).
+function prependGenerated(current: string, generated: string): string {
+  const trimmed = current.trim();
+  return trimmed ? `${generated}\n\n${trimmed}` : generated;
+}
+
 export function RideForm({ ride }: { ride?: Ride }) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
@@ -52,16 +59,13 @@ export function RideForm({ ride }: { ride?: Ride }) {
     setPreview(parsed);
     setDistance((Math.round(parsed.distanceKm * 10) / 10).toString());
     setElevation(Math.round(parsed.elevationGainM).toString());
-    // Pre-remplit la description avec une analyse du parcours (montees
-    // detectees dans la trace) uniquement si l'admin n'a rien ecrit —
-    // jamais ecraser un texte deja saisi sans action explicite.
-    if (!description.trim()) {
-      setDescription(describeRideProfile(parsed));
-    }
+    // Ajoute l'analyse du parcours au DEBUT de la description, sans jamais
+    // effacer ce que l'admin a deja ecrit (qui reste en dessous).
+    setDescription((prev) => prependGenerated(prev, describeRideProfile(parsed)));
   }
 
   function regenerateDescription() {
-    if (preview) setDescription(describeRideProfile(preview));
+    if (preview) setDescription((prev) => prependGenerated(prev, describeRideProfile(preview)));
   }
 
   async function handleSubmit(e: React.FormEvent) {
