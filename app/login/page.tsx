@@ -1,11 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
+// Connexion admin par email + mot de passe. Pas d'inscription publique :
+// les comptes admin sont crees directement par le club dans le tableau de
+// bord Supabase (Authentication > Users > Add user), avec "Auto Confirm
+// User" active pour pouvoir se connecter immediatement.
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [password, setPassword] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -13,18 +20,15 @@ export default function LoginPage() {
     setStatus("sending");
     setErrorMsg("");
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || window.location.origin}/auth/callback`,
-      },
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setStatus("error");
-      setErrorMsg(error.message);
-    } else {
-      setStatus("sent");
+      setErrorMsg(error.message === "Invalid login credentials" ? "Email ou mot de passe incorrect." : error.message);
+      return;
     }
+    const next = new URLSearchParams(window.location.search).get("next") || "/admin";
+    router.push(next);
+    router.refresh();
   }
 
   return (
@@ -46,35 +50,37 @@ export default function LoginPage() {
           Réservée à l&apos;administrateur du club. Les membres n&apos;ont pas besoin de compte pour s&apos;inscrire aux sorties.
         </p>
 
-        {status === "sent" ? (
-          <div className="rounded-2xl bg-emerald-500/15 p-4 text-sm text-emerald-200">
-            Email envoyé à <b>{email}</b>. Ouvre le lien reçu pour te connecter.
-          </div>
-        ) : (
-          <>
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-white/50">
-              Adresse email
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="prenom.nom@exemple.fr"
-              className="mb-4 w-full rounded-xl border border-white/15 bg-white/[0.06] px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-sps-violet400"
-            />
-            {status === "error" && (
-              <p className="mb-3 text-xs text-red-300">{errorMsg}</p>
-            )}
-            <button
-              type="submit"
-              disabled={status === "sending"}
-              className="w-full rounded-xl bg-gradient-to-br from-sps-violet500 to-sps-violet700 px-4 py-3 text-sm font-extrabold shadow-lg shadow-violet-900/40 disabled:opacity-60"
-            >
-              {status === "sending" ? "Envoi…" : "Recevoir mon lien de connexion"}
-            </button>
-          </>
-        )}
+        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-white/50">Adresse email</label>
+        <input
+          type="email"
+          required
+          autoComplete="username"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="prenom.nom@exemple.fr"
+          className="mb-4 w-full rounded-xl border border-white/15 bg-white/[0.06] px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-sps-violet400"
+        />
+
+        <label className="mb-1.5 block text-xs font-bold uppercase tracking-wide text-white/50">Mot de passe</label>
+        <input
+          type="password"
+          required
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          className="mb-4 w-full rounded-xl border border-white/15 bg-white/[0.06] px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-sps-violet400"
+        />
+
+        {status === "error" && <p className="mb-3 text-xs text-red-300">{errorMsg}</p>}
+
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className="w-full rounded-xl bg-gradient-to-br from-sps-violet500 to-sps-violet700 px-4 py-3 text-sm font-extrabold shadow-lg shadow-violet-900/40 disabled:opacity-60"
+        >
+          {status === "sending" ? "Connexion…" : "Se connecter"}
+        </button>
       </form>
     </div>
   );
