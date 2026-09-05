@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const { supabase, user } = guard;
 
     const body = await request.json();
-    const { title, description, ride_date, ride_time, place, distance_km, elevation_gain_m, strava_url, groups } = body;
+    const { title, description, ride_date, ride_time, place, place_url, distance_km, elevation_gain_m, strava_url, groups } = body;
 
     if (!title || !ride_date || !ride_time || !place || !groups?.length) {
       return NextResponse.json({ error: "Champs obligatoires manquants." }, { status: 400 });
@@ -28,6 +28,7 @@ export async function POST(request: Request) {
         ride_date,
         ride_time,
         place,
+        place_url: place_url || null,
         distance_km: Number(distance_km) || 0,
         elevation_gain_m: Math.round(Number(elevation_gain_m) || 0),
         strava_url: strava_url || null,

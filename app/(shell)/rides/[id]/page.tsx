@@ -78,7 +78,22 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[12.5px] text-black/50 dark:text-white/50">
           <span className="flex items-center gap-1.5"><Icon name="bell" size={14} className="text-sps-violet600 dark:text-sps-violet400" /> {fmtDateLong(ride.ride_date)}</span>
           <span className="flex items-center gap-1.5"><Icon name="target" size={14} className="text-sps-violet600 dark:text-sps-violet400" /> {fmtTime(ride.ride_time)}</span>
-          <span className="flex items-center gap-1.5"><Icon name="route" size={14} className="text-sps-violet600 dark:text-sps-violet400" /> {ride.place}</span>
+          <span className="flex items-center gap-1.5">
+            <Icon name="route" size={14} className="text-sps-violet600 dark:text-sps-violet400" />
+            {ride.place_url ? (
+              <a
+                href={ride.place_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 underline decoration-dotted underline-offset-2"
+              >
+                {ride.place}
+                <Icon name="external" size={11} />
+              </a>
+            ) : (
+              ride.place
+            )}
+          </span>
         </div>
       </div>
 

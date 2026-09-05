@@ -19,6 +19,7 @@ export interface Ride {
   ride_date: string; // YYYY-MM-DD
   ride_time: string; // HH:MM:SS
   place: string;
+  place_url: string | null;
   distance_km: number;
   elevation_gain_m: number;
   strava_url: string | null;

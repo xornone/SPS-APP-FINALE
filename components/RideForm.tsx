@@ -26,6 +26,7 @@ export function RideForm({ ride }: { ride?: Ride }) {
   const [date, setDate] = useState(ride?.ride_date || "");
   const [time, setTime] = useState(ride?.ride_time?.slice(0, 5) || "");
   const [place, setPlace] = useState(ride?.place || "");
+  const [placeUrl, setPlaceUrl] = useState(ride?.place_url || "");
   const [distance, setDistance] = useState(ride ? String(ride.distance_km) : "");
   const [elevation, setElevation] = useState(ride ? String(ride.elevation_gain_m) : "");
   const [stravaUrl, setStravaUrl] = useState(ride?.strava_url || "");
@@ -77,7 +78,7 @@ export function RideForm({ ride }: { ride?: Ride }) {
     setSaving(true);
     setError("");
 
-    const payload = { title, description, ride_date: date, ride_time: time, place, distance_km: distance, elevation_gain_m: elevation, strava_url: stravaUrl.trim(), groups };
+    const payload = { title, description, ride_date: date, ride_time: time, place, place_url: placeUrl.trim(), distance_km: distance, elevation_gain_m: elevation, strava_url: stravaUrl.trim(), groups };
 
     try {
       let rideId = ride?.id;
@@ -167,6 +168,15 @@ export function RideForm({ ride }: { ride?: Ride }) {
           value={place}
           onChange={(e) => setPlace(e.target.value)}
           placeholder="Adresse ou coordonnées GPS"
+          className="input"
+        />
+      </Field>
+      <Field label="Lien du lieu de départ (optionnel)">
+        <input
+          type="url"
+          value={placeUrl}
+          onChange={(e) => setPlaceUrl(e.target.value)}
+          placeholder="https://maps.google.com/…"
           className="input"
         />
       </Field>
