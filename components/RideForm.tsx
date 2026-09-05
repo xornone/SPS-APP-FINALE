@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseGpx, type ParsedGpx } from "@/lib/gpx";
+import { isKnownPlaceUrl, lookupPlaceUrl } from "@/lib/knownPlaces";
 import { describeRideProfile } from "@/lib/rideProfile";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import { RideMap } from "./RideMap";
@@ -63,6 +64,17 @@ export function RideForm({ ride }: { ride?: Ride }) {
     // Ajoute l'analyse du parcours au DEBUT de la description, sans jamais
     // effacer ce que l'admin a deja ecrit (qui reste en dessous).
     setDescription((prev) => prependGenerated(prev, describeRideProfile(parsed)));
+  }
+
+  // Pre-remplit automatiquement le lien du lieu quand son nom correspond a
+  // un lieu de rendez-vous connu du club (voir lib/knownPlaces.ts). On ne
+  // touche jamais a un lien deja saisi a la main : seuls un champ vide, ou
+  // un lien lui-meme issu d'un lieu connu (l'admin change d'avis sur le
+  // lieu apres coup), sont mis a jour.
+  function handlePlaceBlur() {
+    const known = lookupPlaceUrl(place);
+    if (!known) return;
+    if (!placeUrl.trim() || isKnownPlaceUrl(placeUrl)) setPlaceUrl(known);
   }
 
   function regenerateDescription() {
@@ -167,6 +179,7 @@ export function RideForm({ ride }: { ride?: Ride }) {
           required
           value={place}
           onChange={(e) => setPlace(e.target.value)}
+          onBlur={handlePlaceBlur}
           placeholder="Adresse ou coordonnées GPS"
           className="input"
         />
