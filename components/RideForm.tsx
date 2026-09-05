@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseGpx, type ParsedGpx } from "@/lib/gpx";
+import { describeRideProfile } from "@/lib/rideProfile";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import { RideMap } from "./RideMap";
 import { Icon } from "./Icons";
@@ -51,6 +52,16 @@ export function RideForm({ ride }: { ride?: Ride }) {
     setPreview(parsed);
     setDistance((Math.round(parsed.distanceKm * 10) / 10).toString());
     setElevation(Math.round(parsed.elevationGainM).toString());
+    // Pre-remplit la description avec une analyse du parcours (montees
+    // detectees dans la trace) uniquement si l'admin n'a rien ecrit —
+    // jamais ecraser un texte deja saisi sans action explicite.
+    if (!description.trim()) {
+      setDescription(describeRideProfile(parsed));
+    }
+  }
+
+  function regenerateDescription() {
+    if (preview) setDescription(describeRideProfile(preview));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -110,7 +121,21 @@ export function RideForm({ ride }: { ride?: Ride }) {
           className="input"
         />
       </Field>
-      <Field label="Description">
+      <div className="px-5 pb-3.5">
+        <div className="mb-1.5 flex items-center justify-between">
+          <label className="block text-[12px] font-extrabold uppercase tracking-wide text-black/45 dark:text-white/45">
+            Description
+          </label>
+          {preview && (
+            <button
+              type="button"
+              onClick={regenerateDescription}
+              className="text-[11px] font-bold text-sps-violet600 dark:text-sps-violet400"
+            >
+              ✨ Générer depuis le parcours
+            </button>
+          )}
+        </div>
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -118,7 +143,12 @@ export function RideForm({ ride }: { ride?: Ride }) {
           rows={4}
           className="input resize-y"
         />
-      </Field>
+        {preview && (
+          <p className="mt-1 text-[11px] text-black/35 dark:text-white/35">
+            Suggestion générée à partir du GPX (montées détectées) — à relire et compléter (lieu de rendez-vous, consignes…).
+          </p>
+        )}
+      </div>
       <div className="grid grid-cols-2 gap-3 px-5 pb-3.5">
         <Field label="Date" bare>
           <input required type="date" value={date} onChange={(e) => setDate(e.target.value)} className="input" />
