@@ -122,7 +122,9 @@ export default async function RideDetailPage({ params }: { params: { id: string 
 
       <div className="px-5 py-4 text-[13.5px] leading-relaxed text-black/60 dark:text-white/60">
         <h4 className="mb-2 font-display text-sm tracking-wide text-black dark:text-white">Description</h4>
-        {ride.description || "Pas de description pour cette sortie."}
+        <p className="whitespace-pre-wrap break-words">
+          {ride.description || "Pas de description pour cette sortie."}
+        </p>
       </div>
 
       <RideComments rideId={ride.id} initialComments={comments} isAdmin={isAdmin} />
