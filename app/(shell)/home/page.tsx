@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { RideCard } from "@/components/RideCard";
 import { WeekDivider } from "@/components/WeekDivider";
@@ -9,8 +9,13 @@ import { NotifBell } from "@/components/NotifBell";
 import { Icon } from "@/components/Icons";
 import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime, fmtWeekLabel, isPastDate, weekKey } from "@/lib/format";
 
+// Page 100% publique (aucune donnee liee a une session) : mise en cache
+// courte pour eviter de tout recalculer a chaque visite. Voir
+// lib/supabase/publicClient.ts pour le detail.
+export const revalidate = 20;
+
 export default async function HomePage() {
-  const supabase = createClient();
+  const supabase = createPublicClient();
   const [rides, participations] = await Promise.all([fetchRides(supabase), fetchAllParticipations(supabase)]);
 
   // Toutes les sorties du jour le plus proche sont mises en avant (en

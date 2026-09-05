@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchCommentsForRide, fetchParticipationsForRide, fetchRide } from "@/lib/queries";
 import { RideMap } from "@/components/RideMap";
 import { ElevationChart } from "@/components/ElevationChart";
@@ -11,26 +11,26 @@ import { JoinPanel } from "@/components/JoinPanel";
 import { RideComments } from "@/components/RideComments";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
+import { AdminOnly } from "@/components/AdminOnly";
 import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import { buildRideShareMessage } from "@/lib/shareMessage";
 import { shortRideCode } from "@/lib/shortLink";
 import { GROUP_INFO, type GroupLevel } from "@/lib/types";
 import { fetchRideWeather, getRideCoordinates } from "@/lib/weather";
 
-export default async function RideDetailPage({ params }: { params: { id: string } }) {
-  const supabase = createClient();
+// Cette page ne depend plus de la session (voir AdminOnly / useIsAdmin pour
+// le bouton WhatsApp reserve a l'admin) : elle peut donc utiliser le client
+// public (pas de cookies()) et rester mise en cache quelques secondes,
+// plutot que de refaire un aller-retour base de donnees complet a chaque
+// clic sur une sortie.
+export const revalidate = 15;
 
-  // La sortie et la session admin ne dependent pas l'une de l'autre : les
-  // lancer en parallele (plutot que l'un apres l'autre) evite d'attendre
-  // deux allers-retours reseau la ou un seul suffit.
-  const [ride, {
-    data: { user: adminUser },
-  }] = await Promise.all([fetchRide(supabase, params.id), supabase.auth.getUser()]);
+export default async function RideDetailPage({ params }: { params: { id: string } }) {
+  const supabase = createPublicClient();
+
+  const ride = await fetchRide(supabase, params.id);
   if (!ride) notFound();
 
-  // Bouton "Publier sur WhatsApp" reserve a l'administrateur : toute
-  // session authentifiee EST admin (voir lib/adminGuard.ts).
-  const isAdmin = !!adminUser;
   const groups = (ride.ride_groups || []).map((g) => g.group_level);
 
   // Participations, commentaires et meteo sont eux aussi independants les
@@ -86,7 +86,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
           <span className="flex items-center gap-1.5"><Icon name="bell" size={14} className="text-sps-violet600 dark:text-sps-violet400" /> {fmtDateLong(ride.ride_date)}</span>
           <span className="flex items-center gap-1.5"><Icon name="target" size={14} className="text-sps-violet600 dark:text-sps-violet400" /> {fmtTime(ride.ride_time)}</span>
           <span className="flex items-center gap-1.5">
-            <Icon name="route" size={14} className="text-sps-violet600 dark:text-sps-violet400" />
+            <Icon name="flag" size={14} className="text-sps-violet600 dark:text-sps-violet400" />
             {ride.place_url ? (
               <a
                 href={ride.place_url}
@@ -149,7 +149,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         </p>
       </div>
 
-      <RideComments rideId={ride.id} initialComments={comments} isAdmin={isAdmin} />
+      <RideComments rideId={ride.id} initialComments={comments} />
 
       <div className="px-5 pb-2">
         <JoinPanel rideId={ride.id} availableGroups={groups} isPast={past} participants={participations} />
@@ -177,11 +177,11 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         )}
       </div>
 
-      {isAdmin && (
+      <AdminOnly>
         <div className="px-5 pb-2">
           <WhatsAppShareButton text={shareMessage} />
         </div>
-      )}
+      </AdminOnly>
 
       <div className="flex items-center justify-between px-5 pb-2.5 pt-5">
         <h2 className="font-display text-xl tracking-wide">Participants — {participations.length}</h2>

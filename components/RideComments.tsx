@@ -6,17 +6,20 @@ import { Icon } from "./Icons";
 import { getLastUsedName } from "@/lib/myParticipations";
 import { getLastCommentName, getMyCommentToken, saveMyCommentToken, setLastCommentName } from "@/lib/myComments";
 import { fmtCommentTime } from "@/lib/format";
+import { useIsAdmin } from "@/lib/useIsAdmin";
 import type { RideComment } from "@/lib/types";
 
 export function RideComments({
   rideId,
   initialComments,
-  isAdmin = false,
 }: {
   rideId: string;
   initialComments: RideComment[];
-  isAdmin?: boolean;
 }) {
+  // Determine cote client (voir lib/useIsAdmin.ts) plutot que reçu du
+  // serveur : la fiche sortie n'a ainsi plus besoin de connaitre la
+  // session pour s'afficher, et reste mise en cache pour tout le monde.
+  const isAdmin = useIsAdmin();
   const [comments, setComments] = useState(initialComments);
   // Pre-rempli avec le dernier nom utilise pour un message, ou a defaut
   // celui utilise pour s'inscrire a une sortie.

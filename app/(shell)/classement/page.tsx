@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { Icon } from "@/components/Icons";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
@@ -7,8 +7,13 @@ import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 
 // Page volontairement collective : aucun classement nominatif des membres,
 // uniquement des chiffres qui mettent en avant le club dans son ensemble.
+// 100% publique (aucune donnee liee a une session) : mise en cache courte
+// pour eviter de recalculer ces agregats sur tout l'historique a chaque
+// visite. Voir lib/supabase/publicClient.ts pour le detail.
+export const revalidate = 20;
+
 export default async function ClassementPage() {
-  const supabase = createClient();
+  const supabase = createPublicClient();
   const [rides, participations] = await Promise.all([fetchRides(supabase), fetchAllParticipations(supabase)]);
 
   const ridesById = new Map(rides.map((r) => [r.id, r]));
