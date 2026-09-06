@@ -63,16 +63,16 @@ export default async function HomePage() {
                 </p>
                 <div className="mb-4 flex gap-4">
                   <div>
-                    <span className="block font-display text-[22px] leading-none">{fmtKm(ride.distance_km)}</span>
-                    <span className="text-[10.5px] uppercase text-violet-300">Distance</span>
+                    <b className="text-sm">{fmtKm(ride.distance_km)}</b>
+                    <span className="ml-1 text-[10px] uppercase text-violet-300">distance</span>
                   </div>
                   <div>
-                    <span className="block font-display text-[22px] leading-none">{fmtM(ride.elevation_gain_m)}</span>
-                    <span className="text-[10.5px] uppercase text-violet-300">D+</span>
+                    <b className="text-sm">{fmtM(ride.elevation_gain_m)}</b>
+                    <span className="ml-1 text-[10px] uppercase text-violet-300">D+</span>
                   </div>
                   <div>
-                    <span className="block font-display text-[22px] leading-none">{countsFor(ride.id).length}</span>
-                    <span className="text-[10.5px] uppercase text-violet-300">Participants</span>
+                    <b className="text-sm">{countsFor(ride.id).length}</b>
+                    <span className="ml-1 text-[10px] uppercase text-violet-300">participants</span>
                   </div>
                 </div>
                 <AdminOnly>
