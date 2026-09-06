@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -23,7 +24,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     const { data: row, error: rowError } = await admin
       .from("participations")
-      .select("id, client_token")
+      .select("id, ride_id, client_token")
       .eq("id", params.id)
       .maybeSingle();
     if (rowError) return NextResponse.json({ error: `Erreur serveur : ${rowError.message}` }, { status: 500 });
@@ -36,6 +37,14 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     const { error } = await admin.from("participations").delete().eq("id", params.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    // Meme logique que sur l'inscription : purge immediate du cache
+    // d'Accueil/Sorties/fiche sortie pour que le retrait s'y reflete tout
+    // de suite (voir POST /api/participations).
+    revalidatePath("/home");
+    revalidatePath("/rides");
+    revalidatePath(`/rides/${row.ride_id}`);
+
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Erreur serveur inattendue." }, { status: 500 });
@@ -55,7 +64,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const admin = createAdminClient();
     const { data: row, error: rowError } = await admin
       .from("participations")
-      .select("id, client_token")
+      .select("id, ride_id, client_token")
       .eq("id", params.id)
       .maybeSingle();
     if (rowError) return NextResponse.json({ error: `Erreur serveur : ${rowError.message}` }, { status: 500 });
@@ -67,6 +76,12 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 
     const { error } = await admin.from("participations").update({ group_level: group }).eq("id", params.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    // Le groupe n'affecte pas le nombre de participants (Accueil/Sorties),
+    // mais la repartition par groupe affichee sur la fiche sortie, elle,
+    // change : meme purge que sur l'inscription/le retrait.
+    revalidatePath(`/rides/${row.ride_id}`);
+
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Erreur serveur inattendue." }, { status: 500 });

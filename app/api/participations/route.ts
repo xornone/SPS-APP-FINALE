@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const GROUPS = ["vert", "rouge", "violet"];
@@ -88,6 +89,14 @@ export async function POST(request: Request) {
       }
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    // Accueil, Sorties et la fiche sortie sont mis en cache (export const
+    // revalidate) pour naviguer plus vite : on purge ce cache tout de suite
+    // pour que la nouvelle inscription y apparaisse immediatement, sans
+    // attendre la fenetre de revalidation (15-20s).
+    revalidatePath("/home");
+    revalidatePath("/rides");
+    revalidatePath(`/rides/${rideId}`);
 
     return NextResponse.json({ id: data.id, client_token: data.client_token });
   } catch (err: any) {
