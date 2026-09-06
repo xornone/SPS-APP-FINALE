@@ -42,7 +42,6 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // d'Accueil/Sorties/fiche sortie pour que le retrait s'y reflete tout
     // de suite (voir POST /api/participations).
     revalidatePath("/home");
-    revalidatePath("/rides");
     revalidatePath(`/rides/${row.ride_id}`);
 
     return NextResponse.json({ ok: true });

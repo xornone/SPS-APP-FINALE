@@ -63,7 +63,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
     <div>
       <div className="flex items-center justify-between px-5 pb-2 pt-5">
         <Link
-          href="/rides"
+          href="/home"
           className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
         >
           <Icon name="chevL" size={18} />

@@ -95,7 +95,6 @@ export async function POST(request: Request) {
     // pour que la nouvelle inscription y apparaisse immediatement, sans
     // attendre la fenetre de revalidation (15-20s).
     revalidatePath("/home");
-    revalidatePath("/rides");
     revalidatePath(`/rides/${rideId}`);
 
     return NextResponse.json({ id: data.id, client_token: data.client_token });

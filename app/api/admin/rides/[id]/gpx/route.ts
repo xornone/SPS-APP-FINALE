@@ -37,7 +37,6 @@ export async function POST(request: Request, { params }: { params: { id: string 
     if (updateError) return NextResponse.json({ error: updateError.message }, { status: 400 });
 
     revalidatePath("/home");
-    revalidatePath("/rides");
     revalidatePath(`/rides/${params.id}`);
 
     return NextResponse.json({

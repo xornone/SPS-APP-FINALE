@@ -8,9 +8,13 @@ import { Icon } from "./Icons";
 // l'affichage. L'onglet Admin mene vers une page protegee par le
 // middleware (redirection /login si pas de session), donc il est toujours
 // visible mais ne s'ouvre reellement que pour l'administrateur.
+//
+// Accueil et Sorties affichaient en grande partie les memes sorties dans
+// deux visuels differents : fusionnes en un seul onglet "Accueil" (voir
+// app/(shell)/home/page.tsx), qui reprend le visuel d'Accueil et les
+// filtres qu'avait Sorties.
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
-  { href: "/rides", label: "Sorties", icon: "bike" as const },
   { href: "/classement", label: "Statistique SPS", icon: "trophy" as const },
   { href: "/admin", label: "Admin", icon: "gear" as const },
 ];

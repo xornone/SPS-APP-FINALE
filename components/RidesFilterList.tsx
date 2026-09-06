@@ -5,6 +5,7 @@ import { RideCard } from "./RideCard";
 import { WeekDivider } from "./WeekDivider";
 import { fmtWeekLabel, isCurrentWeek, isWeekend, weekKey } from "@/lib/format";
 import { getMyRideIds } from "@/lib/myParticipations";
+import { getRegisteredAdmins } from "@/lib/admins";
 import type { Participation, Ride } from "@/lib/types";
 
 type Filter = "toutes" | "semaine" | "weekend" | "mine";
@@ -31,6 +32,7 @@ export function RidesFilterList({
   }, []);
 
   const countsFor = (rideId: string) => participations.filter((p) => p.ride_id === rideId);
+  const adminsFor = (rideId: string) => getRegisteredAdmins(countsFor(rideId));
 
   // "Cette semaine" / "Ce week-end" se basent sur la semaine calendaire en
   // cours (lundi -> dimanche), pas sur une fenetre glissante de 7 jours qui
@@ -75,6 +77,7 @@ export function RidesFilterList({
                 participantCount={parts.length}
                 participantPreview={parts.map((p) => ({ id: p.id, name: p.participant_name }))}
                 isJoined={myRideIds.has(r.id)}
+                registeredAdmins={adminsFor(r.id)}
               />
             </Fragment>
           );

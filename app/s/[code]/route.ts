@@ -12,6 +12,6 @@ export async function GET(request: Request, { params }: { params: { code: string
   const supabase = createClient();
   const rides = await fetchRides(supabase);
   const match = rides.find((r) => r.id.replace(/-/g, "").startsWith(code));
-  const dest = match ? `/rides/${match.id}` : "/rides";
+  const dest = match ? `/rides/${match.id}` : "/home";
   return NextResponse.redirect(new URL(dest, request.url));
 }

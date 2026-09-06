@@ -45,11 +45,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     // La sortie modifiee (dates, groupes de niveau...) doit se refleter
-    // immediatement sur l'Accueil, Sorties et sa propre fiche — y compris
-    // l'alerte "pas d'admin en {groupe}" quand un groupe vient d'etre
-    // ajoute (voir lib/admins.ts).
+    // immediatement sur l'Accueil et sa propre fiche — y compris l'alerte
+    // "pas d'admin en {groupe}" quand un groupe vient d'etre ajoute (voir
+    // lib/admins.ts).
     revalidatePath("/home");
-    revalidatePath("/rides");
     revalidatePath(`/rides/${params.id}`);
 
     return NextResponse.json({ ok: true });
@@ -68,7 +67,6 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
 
     revalidatePath("/home");
-    revalidatePath("/rides");
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

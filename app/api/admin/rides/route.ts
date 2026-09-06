@@ -48,11 +48,11 @@ export async function POST(request: Request) {
     const { error: gErr } = await supabase.from("ride_groups").insert(rows);
     if (gErr) return NextResponse.json({ error: gErr.message }, { status: 400 });
 
-    // La nouvelle sortie doit apparaitre immediatement sur l'Accueil et
-    // Sorties, sans attendre une revalidation ISR (voir la meme logique sur
-    // les routes /api/participations).
+    // La nouvelle sortie doit apparaitre immediatement sur l'Accueil
+    // (Sorties a fusionne avec l'Accueil, voir components/BottomNav.tsx),
+    // sans attendre une revalidation ISR (voir la meme logique sur les
+    // routes /api/participations).
     revalidatePath("/home");
-    revalidatePath("/rides");
 
     return NextResponse.json({ ride });
   } catch (err: any) {
