@@ -6,6 +6,8 @@ import { RideCard } from "@/components/RideCard";
 import { WeekDivider } from "@/components/WeekDivider";
 import { GroupBadge } from "@/components/GroupBadge";
 import { Icon } from "@/components/Icons";
+import { AdminOnly } from "@/components/AdminOnly";
+import { countRegisteredAdmins } from "@/lib/admins";
 import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime, fmtWeekLabel, isPastDate, weekKey } from "@/lib/format";
 
 // Page 100% publique (aucune donnee liee a une session) : mise en cache
@@ -26,6 +28,7 @@ export default async function HomePage() {
   const rest = upcoming.filter((r) => r.ride_date !== nextDate).slice(0, 4);
 
   const countsFor = (rideId: string) => participations.filter((p) => p.ride_id === rideId);
+  const adminsFor = (rideId: string) => countRegisteredAdmins(countsFor(rideId).map((p) => p.participant_name));
 
   return (
     <div>
@@ -55,8 +58,8 @@ export default async function HomePage() {
                       : fmtDateLong(ride.ride_date)}
                 </span>
                 <h3 className="mb-1 mt-1.5 font-display text-[27px] leading-tight">{ride.title}</h3>
-                <p className="mb-3.5 text-[13px] text-violet-200/90">
-                  {fmtTime(ride.ride_time)} · {ride.place}
+                <p className="mb-3.5 flex items-center gap-1.5 text-[13px] text-violet-200/90">
+                  {fmtTime(ride.ride_time)} · <Icon name="flag" size={13} /> {ride.place}
                 </p>
                 <div className="mb-4 flex gap-4">
                   <div>
@@ -72,6 +75,12 @@ export default async function HomePage() {
                     <span className="text-[10.5px] uppercase text-violet-300">Participants</span>
                   </div>
                 </div>
+                <AdminOnly>
+                  <p className="-mt-3 mb-4 text-[11px] font-bold text-violet-200/90">
+                    👑 {adminsFor(ride.id)} admin{adminsFor(ride.id) > 1 ? "s" : ""} inscrit
+                    {adminsFor(ride.id) > 1 ? "s" : ""}
+                  </p>
+                </AdminOnly>
                 <div className="mb-4 flex flex-wrap gap-1.5">
                   {(ride.ride_groups || []).map((g) => (
                     <GroupBadge key={g.group_level} group={g.group_level} withRange={false} onDark />
@@ -110,6 +119,7 @@ export default async function HomePage() {
                 participantCount={parts.length}
                 participantPreview={parts.map((p) => ({ id: p.id, name: p.participant_name }))}
                 isJoined={false}
+                adminsRegistered={adminsFor(r.id)}
               />
             </Fragment>
           );

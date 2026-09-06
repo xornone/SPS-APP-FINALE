@@ -5,10 +5,10 @@ import { fetchCommentsForRide, fetchParticipationsForRide, fetchRide } from "@/l
 import { RideMap } from "@/components/RideMap";
 import { ElevationChart } from "@/components/ElevationChart";
 import { GroupBadge } from "@/components/GroupBadge";
-import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/Icons";
 import { JoinPanel } from "@/components/JoinPanel";
 import { RideComments } from "@/components/RideComments";
+import { ParticipantsList } from "@/components/ParticipantsList";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
 import { AdminOnly } from "@/components/AdminOnly";
@@ -186,19 +186,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
       <div className="flex items-center justify-between px-5 pb-2.5 pt-5">
         <h2 className="font-display text-xl tracking-wide">Participants — {participations.length}</h2>
       </div>
-      <div className="mx-5 mb-6 overflow-hidden rounded-2xl border border-black/[0.06] bg-white dark:border-white/10 dark:bg-[#1A1422]">
-        {participations.length === 0 ? (
-          <p className="p-6 text-center text-sm text-black/40 dark:text-white/40">Personne n&apos;est encore inscrit.</p>
-        ) : (
-          participations.map((p) => (
-            <div key={p.id} className="flex items-center gap-3 px-4 py-2.5">
-              <Avatar name={p.participant_name} seed={p.participant_name} />
-              <span className="flex-1 text-[13.5px] font-bold">{p.participant_name}</span>
-              <GroupBadge group={p.group_level} withRange={false} />
-            </div>
-          ))
-        )}
-      </div>
+      <ParticipantsList rideId={ride.id} initialParticipants={participations} />
     </div>
   );
 }

@@ -27,6 +27,14 @@ export function buildRideShareMessage(
 ): string {
   const lines: string[] = [];
 
+  // Le lien (details, trace GPX, inscription) est le plus important : on le
+  // met en tout premier pour qu'il ne soit pas noye dans le reste du
+  // message et que personne n'ait a faire defiler pour le trouver.
+  if (rideUrl) {
+    lines.push(`👉 Détails, trace GPX et inscription : ${rideUrl}`);
+    lines.push("");
+  }
+
   lines.push(`🚴 ${ride.title}`);
   lines.push("");
   lines.push(`📅 ${fmtDateLong(ride.ride_date)} à ${fmtTime(ride.ride_time)}`);
@@ -60,11 +68,6 @@ export function buildRideShareMessage(
   if (ride.strava_url) {
     lines.push("");
     lines.push(`🔗 Strava : ${ride.strava_url}`);
-  }
-
-  if (rideUrl) {
-    lines.push("");
-    lines.push(`👉 Détails, trace GPX et inscription : ${rideUrl}`);
   }
 
   return lines.join("\n");

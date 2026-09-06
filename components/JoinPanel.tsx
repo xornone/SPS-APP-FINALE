@@ -41,9 +41,15 @@ export function JoinPanel({
 
   async function handleJoin(e: React.FormEvent) {
     e.preventDefault();
-    const trimmed = name.trim();
+    const trimmed = name.trim().replace(/\s+/g, " ");
     if (!trimmed) {
-      setError("Indique ton nom pour t'inscrire.");
+      setError("Indique ton prénom et ton nom pour t'inscrire.");
+      return;
+    }
+    // Prenom + nom obligatoires (pas juste un prenom) pour eviter de
+    // confondre deux personnes qui partagent le meme prenom.
+    if (trimmed.split(" ").length < 2) {
+      setError("Indique ton prénom ET ton nom (ex. « Julie Martin »).");
       return;
     }
     setError("");
@@ -159,7 +165,7 @@ export function JoinPanel({
     <form onSubmit={handleJoin} className="flex flex-col gap-3.5">
       <div>
         <label className="mb-1.5 block text-[11px] font-extrabold uppercase tracking-wide text-black/35 dark:text-white/35">
-          Ton nom
+          Ton prénom et ton nom
         </label>
         <input
           value={name}

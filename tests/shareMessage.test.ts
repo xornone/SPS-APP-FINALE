@@ -60,6 +60,14 @@ describe("buildRideShareMessage", () => {
     expect(full).toContain("Détails, trace GPX et inscription : https://spsapp2.vercel.app/s/056e1998");
     expect(full).not.toContain("Trace GPX :");
   });
+
+  it("place le lien de la sortie en tout premier, avant le reste du message", () => {
+    const msg = buildRideShareMessage(RIDE, [], null, "https://spsapp2.vercel.app/s/056e1998");
+    expect(msg.startsWith("👉 Détails, trace GPX et inscription : https://spsapp2.vercel.app/s/056e1998")).toBe(true);
+
+    const withoutLink = buildRideShareMessage(RIDE, [], null, null);
+    expect(withoutLink.startsWith("🚴")).toBe(true);
+  });
 });
 
 describe("whatsAppShareUrl", () => {

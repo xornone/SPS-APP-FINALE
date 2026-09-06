@@ -2,6 +2,7 @@ import Link from "next/link";
 import { GroupBadge } from "./GroupBadge";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icons";
+import { AdminOnly } from "./AdminOnly";
 import { fmtDateShort, fmtKm, fmtM, fmtTime } from "@/lib/format";
 import type { Ride } from "@/lib/types";
 
@@ -10,11 +11,15 @@ export function RideCard({
   participantCount,
   participantPreview,
   isJoined,
+  adminsRegistered,
 }: {
   ride: Ride;
   participantCount: number;
   participantPreview: { id: string; name: string }[];
   isJoined: boolean;
+  /** Nombre d'admins du club inscrits, affiche uniquement aux autres admins
+   * (voir lib/admins.ts). Omis sur l'onglet Sorties, fourni sur l'Accueil. */
+  adminsRegistered?: number;
 }) {
   return (
     <Link
@@ -37,7 +42,7 @@ export function RideCard({
       </div>
       <h3 className="text-[16.5px] font-extrabold leading-tight">{ride.title}</h3>
       <div className="flex items-center gap-1.5 text-[12.5px] text-black/50 dark:text-white/50">
-        <Icon name="target" size={13} /> {ride.place}
+        <Icon name="flag" size={13} /> {ride.place}
       </div>
       <div className="flex gap-4">
         <div>
@@ -70,6 +75,13 @@ export function RideCard({
           {participantCount} participant{participantCount > 1 ? "s" : ""}
         </span>
       </div>
+      {typeof adminsRegistered === "number" && (
+        <AdminOnly>
+          <p className="text-[10.5px] font-bold text-sps-violet600 dark:text-sps-violet400">
+            👑 {adminsRegistered} admin{adminsRegistered > 1 ? "s" : ""} inscrit{adminsRegistered > 1 ? "s" : ""}
+          </p>
+        </AdminOnly>
+      )}
     </Link>
   );
 }
