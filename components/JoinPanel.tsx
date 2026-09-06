@@ -11,13 +11,22 @@ export function JoinPanel({
   availableGroups,
   isPast,
   participants,
+  onJoin,
+  onLeave,
+  onChangeGroup,
 }: {
   rideId: string;
   availableGroups: GroupLevel[];
   isPast: boolean;
-  /** Liste actuelle des participants (rendue cote serveur), pour verifier que
-   * "mon" inscription (retrouvee en localStorage) existe toujours. */
+  /** Liste actuelle des participants (partagee avec le parent, voir
+   * RideParticipationSection), pour verifier que "mon" inscription
+   * (retrouvee en localStorage) existe toujours. */
   participants: Participation[];
+  /** Met a jour immediatement la liste partagee (voir RideParticipationSection)
+   * pour que l'inscription apparaisse sans attendre un rechargement serveur. */
+  onJoin?: (p: Participation) => void;
+  onLeave?: (id: string) => void;
+  onChangeGroup?: (id: string, group: GroupLevel) => void;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
@@ -68,6 +77,17 @@ export function JoinPanel({
     const record = { id: data.id, client_token: data.client_token, participant_name: trimmed, group_level: group };
     setMyParticipation(rideId, record);
     setMine(record);
+    // Ajoute immediatement "mon" inscription a la liste partagee : pas
+    // besoin d'attendre router.refresh() (qui peut renvoyer une page mise
+    // en cache quelques secondes, voir export const revalidate sur la
+    // fiche sortie) pour se voir apparaitre dans les participants.
+    onJoin?.({
+      id: data.id,
+      ride_id: rideId,
+      participant_name: trimmed,
+      group_level: group,
+      created_at: new Date().toISOString(),
+    });
     router.refresh();
   }
 
@@ -86,6 +106,7 @@ export function JoinPanel({
     }
     clearMyParticipation(rideId);
     setMine(null);
+    onLeave?.(mine.id);
     router.refresh();
   }
 
@@ -105,6 +126,7 @@ export function JoinPanel({
     const updated = { ...mine, group_level: g };
     setMyParticipation(rideId, updated);
     setMine(updated);
+    onChangeGroup?.(mine.id, g);
     router.refresh();
   }
 

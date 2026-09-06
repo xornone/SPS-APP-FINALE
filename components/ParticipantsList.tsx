@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Avatar } from "./Avatar";
 import { GroupBadge } from "./GroupBadge";
 import { Icon } from "./Icons";
@@ -9,22 +8,26 @@ import { useIsAdmin } from "@/lib/useIsAdmin";
 import type { Participation } from "@/lib/types";
 
 /**
- * Liste des participants d'une sortie. Pour un admin (verifie cote client,
- * voir lib/useIsAdmin.ts), chaque ligne gagne une case a cocher permettant
- * de selectionner un ou plusieurs participants a retirer ; une confirmation
- * explicite (avec les noms concernes) est demandee avant tout retrait, pour
- * eviter une manipulation involontaire.
+ * Liste des participants d'une sortie. Le tableau est controle par le
+ * parent (voir RideParticipationSection) plutot que copie dans un state
+ * local : ainsi une inscription/un retrait via JoinPanel se reflete ici
+ * immediatement, sans attendre un rechargement serveur. Pour un admin
+ * (verifie cote client, voir lib/useIsAdmin.ts), chaque ligne gagne une
+ * case a cocher permettant de selectionner un ou plusieurs participants a
+ * retirer ; une confirmation explicite (avec les noms concernes) est
+ * demandee avant tout retrait, pour eviter une manipulation involontaire.
  */
 export function ParticipantsList({
   rideId,
-  initialParticipants,
+  participants,
+  onRemoved,
 }: {
   rideId: string;
-  initialParticipants: Participation[];
+  participants: Participation[];
+  /** Met a jour la liste partagee du parent une fois le retrait confirme cote serveur. */
+  onRemoved: (ids: Set<string>) => void;
 }) {
   const isAdmin = useIsAdmin();
-  const router = useRouter();
-  const [participants, setParticipants] = useState(initialParticipants);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
@@ -63,13 +66,15 @@ export function ParticipantsList({
     if (removedIds.size < toRemove.length) {
       setError("Certains participants n'ont pas pu être retirés.");
     }
-    setParticipants((prev) => prev.filter((p) => !removedIds.has(p.id)));
+    onRemoved(removedIds);
     setSelected(new Set());
-    router.refresh();
   }
 
   return (
-    <div className="mx-5 mb-6 overflow-hidden rounded-2xl border border-black/[0.06] bg-white dark:border-white/10 dark:bg-[#1A1422]">
+    <div
+      data-ride-id={rideId}
+      className="mx-5 mb-6 overflow-hidden rounded-2xl border border-black/[0.06] bg-white dark:border-white/10 dark:bg-[#1A1422]"
+    >
       {participants.length === 0 ? (
         <p className="p-6 text-center text-sm text-black/40 dark:text-white/40">Personne n&apos;est encore inscrit.</p>
       ) : (

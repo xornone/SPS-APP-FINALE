@@ -6,12 +6,9 @@ import { RideMap } from "@/components/RideMap";
 import { ElevationChart } from "@/components/ElevationChart";
 import { GroupBadge } from "@/components/GroupBadge";
 import { Icon } from "@/components/Icons";
-import { JoinPanel } from "@/components/JoinPanel";
 import { RideComments } from "@/components/RideComments";
-import { ParticipantsList } from "@/components/ParticipantsList";
+import { RideParticipationSection } from "@/components/RideParticipationSection";
 import { WeatherWidget } from "@/components/WeatherWidget";
-import { WhatsAppShareButton } from "@/components/WhatsAppShareButton";
-import { AdminOnly } from "@/components/AdminOnly";
 import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import { buildRideShareMessage } from "@/lib/shareMessage";
 import { shortRideCode } from "@/lib/shortLink";
@@ -151,42 +148,15 @@ export default async function RideDetailPage({ params }: { params: { id: string 
 
       <RideComments rideId={ride.id} initialComments={comments} />
 
-      <div className="px-5 pb-2">
-        <JoinPanel rideId={ride.id} availableGroups={groups} isPast={past} participants={participations} />
-      </div>
-
-      <div className="flex gap-2.5 px-5 pb-2 pt-3">
-        {gpxUrl && (
-          <a
-            href={gpxUrl}
-            download
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-[13px] font-bold dark:border-white/15 dark:bg-[#1A1422]"
-          >
-            <Icon name="download" size={15} /> Télécharger GPX
-          </a>
-        )}
-        {ride.strava_url && (
-          <a
-            href={ride.strava_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-[13px] font-bold dark:border-white/15 dark:bg-[#1A1422]"
-          >
-            <Icon name="external" size={15} /> Ouvrir sur Strava
-          </a>
-        )}
-      </div>
-
-      <AdminOnly>
-        <div className="px-5 pb-2">
-          <WhatsAppShareButton text={shareMessage} />
-        </div>
-      </AdminOnly>
-
-      <div className="flex items-center justify-between px-5 pb-2.5 pt-5">
-        <h2 className="font-display text-xl tracking-wide">Participants — {participations.length}</h2>
-      </div>
-      <ParticipantsList rideId={ride.id} initialParticipants={participations} />
+      <RideParticipationSection
+        rideId={ride.id}
+        availableGroups={groups}
+        isPast={past}
+        initialParticipants={participations}
+        gpxUrl={gpxUrl}
+        stravaUrl={ride.strava_url}
+        shareMessage={shareMessage}
+      />
     </div>
   );
 }
