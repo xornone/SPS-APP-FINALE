@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminGuard";
 import { parseGpx } from "@/lib/gpx";
 
@@ -34,6 +35,10 @@ export async function POST(request: Request, { params }: { params: { id: string 
       })
       .eq("id", params.id);
     if (updateError) return NextResponse.json({ error: updateError.message }, { status: 400 });
+
+    revalidatePath("/home");
+    revalidatePath("/rides");
+    revalidatePath(`/rides/${params.id}`);
 
     return NextResponse.json({
       ok: true,

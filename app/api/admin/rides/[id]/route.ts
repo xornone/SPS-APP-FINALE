@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminGuard";
 
 const GROUP_SPEED: Record<string, string> = {
@@ -43,6 +44,14 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       if (gErr) return NextResponse.json({ error: gErr.message }, { status: 400 });
     }
 
+    // La sortie modifiee (dates, groupes de niveau...) doit se refleter
+    // immediatement sur l'Accueil, Sorties et sa propre fiche — y compris
+    // l'alerte "pas d'admin en {groupe}" quand un groupe vient d'etre
+    // ajoute (voir lib/admins.ts).
+    revalidatePath("/home");
+    revalidatePath("/rides");
+    revalidatePath(`/rides/${params.id}`);
+
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Erreur serveur inattendue." }, { status: 500 });
@@ -57,6 +66,10 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
 
     const { error } = await supabase.from("rides").delete().eq("id", params.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    revalidatePath("/home");
+    revalidatePath("/rides");
+
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Erreur serveur inattendue." }, { status: 500 });

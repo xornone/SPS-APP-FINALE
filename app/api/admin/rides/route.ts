@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminGuard";
 
 const GROUP_SPEED: Record<string, string> = {
@@ -46,6 +47,12 @@ export async function POST(request: Request) {
     }));
     const { error: gErr } = await supabase.from("ride_groups").insert(rows);
     if (gErr) return NextResponse.json({ error: gErr.message }, { status: 400 });
+
+    // La nouvelle sortie doit apparaitre immediatement sur l'Accueil et
+    // Sorties, sans attendre une revalidation ISR (voir la meme logique sur
+    // les routes /api/participations).
+    revalidatePath("/home");
+    revalidatePath("/rides");
 
     return NextResponse.json({ ride });
   } catch (err: any) {
