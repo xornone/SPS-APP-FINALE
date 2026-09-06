@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countRegisteredAdmins, isAdminName } from "@/lib/admins";
+import { getRegisteredAdmins, isAdminName } from "@/lib/admins";
 
 describe("isAdminName", () => {
   it("reconnaît un nom d'admin quels que soient la casse et les accents", () => {
@@ -16,13 +16,25 @@ describe("isAdminName", () => {
   });
 });
 
-describe("countRegisteredAdmins", () => {
-  it("compte uniquement les noms qui correspondent à un admin", () => {
-    const names = ["Jean Dupont", "Duc Nguyen", "Margaux Dirat", "Marie Curie"];
-    expect(countRegisteredAdmins(names)).toBe(2);
+describe("getRegisteredAdmins", () => {
+  it("ne garde que les participants qui correspondent à un admin, avec leur groupe", () => {
+    const participants = [
+      { participant_name: "Jean Dupont", group_level: "vert" as const },
+      { participant_name: "Duc Nguyen", group_level: "violet" as const },
+      { participant_name: "Margaux Dirat", group_level: "rouge" as const },
+      { participant_name: "Marie Curie", group_level: "vert" as const },
+    ];
+    expect(getRegisteredAdmins(participants)).toEqual([
+      { name: "Duc Nguyen", group: "violet" },
+      { name: "Margaux Dirat", group: "rouge" },
+    ]);
   });
 
-  it("retourne 0 si aucun admin n'est inscrit", () => {
-    expect(countRegisteredAdmins(["Jean Dupont", "Marie Curie"])).toBe(0);
+  it("retourne un tableau vide si aucun admin n'est inscrit", () => {
+    const participants = [
+      { participant_name: "Jean Dupont", group_level: "vert" as const },
+      { participant_name: "Marie Curie", group_level: "rouge" as const },
+    ];
+    expect(getRegisteredAdmins(participants)).toEqual([]);
   });
 });

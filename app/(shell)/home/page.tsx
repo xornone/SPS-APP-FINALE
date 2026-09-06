@@ -7,7 +7,8 @@ import { WeekDivider } from "@/components/WeekDivider";
 import { GroupBadge } from "@/components/GroupBadge";
 import { Icon } from "@/components/Icons";
 import { AdminOnly } from "@/components/AdminOnly";
-import { countRegisteredAdmins } from "@/lib/admins";
+import { getRegisteredAdmins } from "@/lib/admins";
+import { GROUP_INFO } from "@/lib/types";
 import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime, fmtWeekLabel, isPastDate, weekKey } from "@/lib/format";
 
 // Page 100% publique (aucune donnee liee a une session, voir
@@ -31,7 +32,7 @@ export default async function HomePage() {
   const rest = upcoming.filter((r) => r.ride_date !== nextDate).slice(0, 4);
 
   const countsFor = (rideId: string) => participations.filter((p) => p.ride_id === rideId);
-  const adminsFor = (rideId: string) => countRegisteredAdmins(countsFor(rideId).map((p) => p.participant_name));
+  const adminsFor = (rideId: string) => getRegisteredAdmins(countsFor(rideId));
 
   return (
     <div>
@@ -80,8 +81,11 @@ export default async function HomePage() {
                 </div>
                 <AdminOnly>
                   <p className="-mt-3 mb-4 text-[11px] font-bold text-violet-200/90">
-                    👑 {adminsFor(ride.id)} admin{adminsFor(ride.id) > 1 ? "s" : ""} inscrit
-                    {adminsFor(ride.id) > 1 ? "s" : ""}
+                    {adminsFor(ride.id).length === 0
+                      ? "👑 Aucun admin inscrit"
+                      : `👑 ${adminsFor(ride.id)
+                          .map((a) => `${a.name} ${GROUP_INFO[a.group].emoji}`)
+                          .join(", ")}`}
                   </p>
                 </AdminOnly>
                 <div className="mb-4 flex flex-wrap gap-1.5">
@@ -122,7 +126,7 @@ export default async function HomePage() {
                 participantCount={parts.length}
                 participantPreview={parts.map((p) => ({ id: p.id, name: p.participant_name }))}
                 isJoined={false}
-                adminsRegistered={adminsFor(r.id)}
+                registeredAdmins={adminsFor(r.id)}
               />
             </Fragment>
           );

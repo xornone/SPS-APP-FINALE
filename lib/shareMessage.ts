@@ -2,8 +2,6 @@ import { fmtDateLong, fmtKm, fmtM, fmtTime } from "./format";
 import { GROUP_INFO, type GroupLevel } from "./types";
 import { weatherCodeInfo, windDirectionLabel, type RideWeather } from "./weather";
 
-const GROUP_EMOJI: Record<GroupLevel, string> = { vert: "🟢", rouge: "🔴", violet: "🟣" };
-
 export interface ShareableRide {
   title: string;
   ride_date: string;
@@ -53,7 +51,7 @@ export function buildRideShareMessage(
     lines.push("Groupes :");
     groups.forEach((g) => {
       const info = GROUP_INFO[g];
-      lines.push(`${GROUP_EMOJI[g]} ${info.label} — ${info.range}`);
+      lines.push(`${info.emoji} ${info.label} — ${info.range}`);
     });
   }
 

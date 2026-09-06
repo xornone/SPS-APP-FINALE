@@ -4,22 +4,24 @@ import { Avatar } from "./Avatar";
 import { Icon } from "./Icons";
 import { AdminOnly } from "./AdminOnly";
 import { fmtDateShort, fmtKm, fmtM, fmtTime } from "@/lib/format";
-import type { Ride } from "@/lib/types";
+import { GROUP_INFO, type Ride } from "@/lib/types";
+import type { RegisteredAdmin } from "@/lib/admins";
 
 export function RideCard({
   ride,
   participantCount,
   participantPreview,
   isJoined,
-  adminsRegistered,
+  registeredAdmins,
 }: {
   ride: Ride;
   participantCount: number;
   participantPreview: { id: string; name: string }[];
   isJoined: boolean;
-  /** Nombre d'admins du club inscrits, affiche uniquement aux autres admins
-   * (voir lib/admins.ts). Omis sur l'onglet Sorties, fourni sur l'Accueil. */
-  adminsRegistered?: number;
+  /** Admins du club inscrits (avec leur groupe), affiche uniquement aux
+   * autres admins (voir lib/admins.ts). Omis sur l'onglet Sorties, fourni
+   * sur l'Accueil. */
+  registeredAdmins?: RegisteredAdmin[];
 }) {
   return (
     <Link
@@ -75,10 +77,12 @@ export function RideCard({
           {participantCount} participant{participantCount > 1 ? "s" : ""}
         </span>
       </div>
-      {typeof adminsRegistered === "number" && (
+      {registeredAdmins && (
         <AdminOnly>
           <p className="text-[10.5px] font-bold text-sps-violet600 dark:text-sps-violet400">
-            👑 {adminsRegistered} admin{adminsRegistered > 1 ? "s" : ""} inscrit{adminsRegistered > 1 ? "s" : ""}
+            {registeredAdmins.length === 0
+              ? "👑 Aucun admin inscrit"
+              : `👑 ${registeredAdmins.map((a) => `${a.name} ${GROUP_INFO[a.group].emoji}`).join(", ")}`}
           </p>
         </AdminOnly>
       )}
