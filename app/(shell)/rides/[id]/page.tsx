@@ -17,10 +17,12 @@ import { fetchRideWeather, getRideCoordinates } from "@/lib/weather";
 
 // Cette page ne depend plus de la session (voir AdminOnly / useIsAdmin pour
 // le bouton WhatsApp reserve a l'admin) : elle peut donc utiliser le client
-// public (pas de cookies()) et rester mise en cache quelques secondes,
-// plutot que de refaire un aller-retour base de donnees complet a chaque
-// clic sur une sortie.
-export const revalidate = 15;
+// public (pas de cookies()). Rendue a chaque requete plutot que mise en
+// cache : voir la meme note sur app/(shell)/home/page.tsx — le club prefere
+// voir les inscriptions/retraits a jour immediatement en ouvrant une sortie
+// plutot que gagner en vitesse avec un cache qui peut rester perime le
+// temps de sa fenetre de revalidation.
+export const dynamic = "force-dynamic";
 
 export default async function RideDetailPage({ params }: { params: { id: string } }) {
   const supabase = createPublicClient();

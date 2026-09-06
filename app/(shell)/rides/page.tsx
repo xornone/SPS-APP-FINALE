@@ -3,10 +3,10 @@ import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { RidesFilterList } from "@/components/RidesFilterList";
 import { isPastDate } from "@/lib/format";
 
-// Page 100% publique (aucune donnee liee a une session) : mise en cache
-// courte pour eviter de tout recalculer a chaque visite. Voir
-// lib/supabase/publicClient.ts pour le detail.
-export const revalidate = 20;
+// Page 100% publique (aucune donnee liee a une session, voir
+// lib/supabase/publicClient.ts), mais rendue a chaque requete plutot que
+// mise en cache : voir la meme note sur app/(shell)/home/page.tsx.
+export const dynamic = "force-dynamic";
 
 export default async function RidesPage() {
   const supabase = createPublicClient();

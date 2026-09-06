@@ -10,10 +10,13 @@ import { AdminOnly } from "@/components/AdminOnly";
 import { countRegisteredAdmins } from "@/lib/admins";
 import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime, fmtWeekLabel, isPastDate, weekKey } from "@/lib/format";
 
-// Page 100% publique (aucune donnee liee a une session) : mise en cache
-// courte pour eviter de tout recalculer a chaque visite. Voir
-// lib/supabase/publicClient.ts pour le detail.
-export const revalidate = 20;
+// Page 100% publique (aucune donnee liee a une session, voir
+// lib/supabase/publicClient.ts), mais rendue a chaque requete plutot que
+// mise en cache : le club prefere voir l'app se mettre a jour a chaque
+// clic (changement d'onglet, ouverture d'une sortie, retour arriere)
+// plutot que de gagner quelques dixiemes de seconde avec un cache qui peut
+// rester perime le temps de sa fenetre de revalidation.
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const supabase = createPublicClient();

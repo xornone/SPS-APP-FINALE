@@ -7,10 +7,10 @@ import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 
 // Page volontairement collective : aucun classement nominatif des membres,
 // uniquement des chiffres qui mettent en avant le club dans son ensemble.
-// 100% publique (aucune donnee liee a une session) : mise en cache courte
-// pour eviter de recalculer ces agregats sur tout l'historique a chaque
-// visite. Voir lib/supabase/publicClient.ts pour le detail.
-export const revalidate = 20;
+// 100% publique (aucune donnee liee a une session, voir
+// lib/supabase/publicClient.ts), mais rendue a chaque requete plutot que
+// mise en cache : voir la meme note sur app/(shell)/home/page.tsx.
+export const dynamic = "force-dynamic";
 
 export default async function ClassementPage() {
   const supabase = createPublicClient();
