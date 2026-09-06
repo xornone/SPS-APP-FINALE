@@ -46,3 +46,14 @@ export function getRegisteredAdmins(
     .filter((p) => isAdminName(p.participant_name))
     .map((p) => ({ name: p.participant_name, group: p.group_level }));
 }
+
+/** Parmi les groupes de niveau proposes sur une sortie, ceux ou aucun admin
+ * n'est inscrit — pour alerter les autres admins qu'il faudra en trouver un
+ * (encadrement du groupe). */
+export function getMissingAdminGroups(
+  rideGroups: GroupLevel[],
+  registeredAdmins: RegisteredAdmin[]
+): GroupLevel[] {
+  const coveredGroups = new Set(registeredAdmins.map((a) => a.group));
+  return rideGroups.filter((g) => !coveredGroups.has(g));
+}

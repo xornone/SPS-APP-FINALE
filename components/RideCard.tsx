@@ -5,8 +5,8 @@ import { Icon } from "./Icons";
 import { AdminOnly } from "./AdminOnly";
 import { AdminBadge } from "./AdminBadge";
 import { fmtDateShort, fmtKm, fmtM, fmtTime } from "@/lib/format";
-import type { Ride } from "@/lib/types";
-import type { RegisteredAdmin } from "@/lib/admins";
+import { GROUP_INFO, type Ride } from "@/lib/types";
+import { getMissingAdminGroups, type RegisteredAdmin } from "@/lib/admins";
 
 export function RideCard({
   ride,
@@ -24,6 +24,10 @@ export function RideCard({
    * sur l'Accueil. */
   registeredAdmins?: RegisteredAdmin[];
 }) {
+  const missingAdminGroups = registeredAdmins
+    ? getMissingAdminGroups((ride.ride_groups || []).map((g) => g.group_level), registeredAdmins)
+    : [];
+
   return (
     <Link
       href={`/rides/${ride.id}`}
@@ -88,6 +92,11 @@ export function RideCard({
               <AdminBadge key={a.name} name={a.name} group={a.group} />
             ))}
           </div>
+          {missingAdminGroups.length > 0 && (
+            <p className="mt-1 text-[10.5px] font-bold text-amber-600 dark:text-amber-400">
+              ⚠️ Pas d&apos;admin en {missingAdminGroups.map((g) => GROUP_INFO[g].label).join(", ")}
+            </p>
+          )}
         </AdminOnly>
       )}
     </Link>

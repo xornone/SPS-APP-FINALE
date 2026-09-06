@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getRegisteredAdmins, isAdminName } from "@/lib/admins";
+import { getMissingAdminGroups, getRegisteredAdmins, isAdminName } from "@/lib/admins";
 
 describe("isAdminName", () => {
   it("reconnaît un nom d'admin quels que soient la casse et les accents", () => {
@@ -36,5 +36,27 @@ describe("getRegisteredAdmins", () => {
       { participant_name: "Marie Curie", group_level: "rouge" as const },
     ];
     expect(getRegisteredAdmins(participants)).toEqual([]);
+  });
+});
+
+describe("getMissingAdminGroups", () => {
+  it("retourne les groupes proposés par la sortie sans aucun admin inscrit", () => {
+    const registeredAdmins = [
+      { name: "Duc Nguyen", group: "violet" as const },
+      { name: "Margaux Dirat", group: "violet" as const },
+    ];
+    expect(getMissingAdminGroups(["vert", "rouge", "violet"], registeredAdmins)).toEqual(["vert", "rouge"]);
+  });
+
+  it("retourne un tableau vide si chaque groupe proposé a au moins un admin", () => {
+    const registeredAdmins = [
+      { name: "Duc Nguyen", group: "vert" as const },
+      { name: "Margaux Dirat", group: "rouge" as const },
+    ];
+    expect(getMissingAdminGroups(["vert", "rouge"], registeredAdmins)).toEqual([]);
+  });
+
+  it("retourne un tableau vide si la sortie ne propose aucun groupe", () => {
+    expect(getMissingAdminGroups([], [])).toEqual([]);
   });
 });

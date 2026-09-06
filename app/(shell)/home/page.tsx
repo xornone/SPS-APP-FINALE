@@ -8,7 +8,8 @@ import { GroupBadge } from "@/components/GroupBadge";
 import { Icon } from "@/components/Icons";
 import { AdminOnly } from "@/components/AdminOnly";
 import { AdminBadge } from "@/components/AdminBadge";
-import { getRegisteredAdmins } from "@/lib/admins";
+import { getMissingAdminGroups, getRegisteredAdmins } from "@/lib/admins";
+import { GROUP_INFO, type Ride } from "@/lib/types";
 import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime, fmtWeekLabel, isPastDate, weekKey } from "@/lib/format";
 
 // Page 100% publique (aucune donnee liee a une session, voir
@@ -33,6 +34,8 @@ export default async function HomePage() {
 
   const countsFor = (rideId: string) => participations.filter((p) => p.ride_id === rideId);
   const adminsFor = (rideId: string) => getRegisteredAdmins(countsFor(rideId));
+  const missingAdminGroupsFor = (ride: Ride) =>
+    getMissingAdminGroups((ride.ride_groups || []).map((g) => g.group_level), adminsFor(ride.id));
 
   return (
     <div>
@@ -88,6 +91,11 @@ export default async function HomePage() {
                       <AdminBadge key={a.name} name={a.name} group={a.group} onDark />
                     ))}
                   </div>
+                  {missingAdminGroupsFor(ride).length > 0 && (
+                    <p className="-mt-3 mb-4 text-[11px] font-bold text-amber-300">
+                      ⚠️ Pas d&apos;admin en {missingAdminGroupsFor(ride).map((g) => GROUP_INFO[g].label).join(", ")}
+                    </p>
+                  )}
                 </AdminOnly>
                 <div className="mb-4 flex flex-wrap gap-1.5">
                   {(ride.ride_groups || []).map((g) => (
