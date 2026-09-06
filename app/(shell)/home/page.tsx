@@ -82,8 +82,7 @@ export default async function HomePage() {
                 <AdminOnly>
                   <div className="-mt-3 mb-4 flex flex-wrap items-center gap-1.5">
                     <span className="text-[11px] font-bold text-violet-200/90">
-                      👑 {adminsFor(ride.id).length} admin{adminsFor(ride.id).length > 1 ? "s" : ""} inscrit
-                      {adminsFor(ride.id).length > 1 ? "s" : ""}
+                      👑 {adminsFor(ride.id).length}
                     </span>
                     {adminsFor(ride.id).map((a) => (
                       <AdminBadge key={a.name} name={a.name} group={a.group} onDark />

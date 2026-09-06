@@ -82,8 +82,7 @@ export function RideCard({
         <AdminOnly>
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-[10.5px] font-bold text-sps-violet600 dark:text-sps-violet400">
-              👑 {registeredAdmins.length} admin{registeredAdmins.length > 1 ? "s" : ""} inscrit
-              {registeredAdmins.length > 1 ? "s" : ""}
+              👑 {registeredAdmins.length}
             </span>
             {registeredAdmins.map((a) => (
               <AdminBadge key={a.name} name={a.name} group={a.group} />
