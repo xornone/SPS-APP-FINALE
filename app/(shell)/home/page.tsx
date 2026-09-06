@@ -7,8 +7,8 @@ import { WeekDivider } from "@/components/WeekDivider";
 import { GroupBadge } from "@/components/GroupBadge";
 import { Icon } from "@/components/Icons";
 import { AdminOnly } from "@/components/AdminOnly";
+import { AdminBadge } from "@/components/AdminBadge";
 import { getRegisteredAdmins } from "@/lib/admins";
-import { GROUP_INFO } from "@/lib/types";
 import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime, fmtWeekLabel, isPastDate, weekKey } from "@/lib/format";
 
 // Page 100% publique (aucune donnee liee a une session, voir
@@ -80,13 +80,16 @@ export default async function HomePage() {
                   </div>
                 </div>
                 <AdminOnly>
-                  <p className="-mt-3 mb-4 text-[11px] font-bold text-violet-200/90">
-                    {adminsFor(ride.id).length === 0
-                      ? "👑 Aucun admin inscrit"
-                      : `👑 ${adminsFor(ride.id)
-                          .map((a) => `${a.name} ${GROUP_INFO[a.group].emoji}`)
-                          .join(", ")}`}
-                  </p>
+                  <div className="-mt-3 mb-4 flex flex-wrap items-center gap-1.5">
+                    <span className="text-[11px] font-bold text-violet-200/90">👑</span>
+                    {adminsFor(ride.id).length === 0 ? (
+                      <span className="text-[11px] font-bold text-violet-200/90">Aucun admin inscrit</span>
+                    ) : (
+                      adminsFor(ride.id).map((a) => (
+                        <AdminBadge key={a.name} name={a.name} group={a.group} onDark />
+                      ))
+                    )}
+                  </div>
                 </AdminOnly>
                 <div className="mb-4 flex flex-wrap gap-1.5">
                   {(ride.ride_groups || []).map((g) => (

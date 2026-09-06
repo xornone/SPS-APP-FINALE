@@ -3,8 +3,9 @@ import { GroupBadge } from "./GroupBadge";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icons";
 import { AdminOnly } from "./AdminOnly";
+import { AdminBadge } from "./AdminBadge";
 import { fmtDateShort, fmtKm, fmtM, fmtTime } from "@/lib/format";
-import { GROUP_INFO, type Ride } from "@/lib/types";
+import type { Ride } from "@/lib/types";
 import type { RegisteredAdmin } from "@/lib/admins";
 
 export function RideCard({
@@ -79,11 +80,16 @@ export function RideCard({
       </div>
       {registeredAdmins && (
         <AdminOnly>
-          <p className="text-[10.5px] font-bold text-sps-violet600 dark:text-sps-violet400">
-            {registeredAdmins.length === 0
-              ? "👑 Aucun admin inscrit"
-              : `👑 ${registeredAdmins.map((a) => `${a.name} ${GROUP_INFO[a.group].emoji}`).join(", ")}`}
-          </p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[10.5px] font-bold text-sps-violet600 dark:text-sps-violet400">👑</span>
+            {registeredAdmins.length === 0 ? (
+              <span className="text-[10.5px] font-bold text-sps-violet600 dark:text-sps-violet400">
+                Aucun admin inscrit
+              </span>
+            ) : (
+              registeredAdmins.map((a) => <AdminBadge key={a.name} name={a.name} group={a.group} />)
+            )}
+          </div>
         </AdminOnly>
       )}
     </Link>
