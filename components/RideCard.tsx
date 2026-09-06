@@ -81,14 +81,13 @@ export function RideCard({
       {registeredAdmins && (
         <AdminOnly>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[10.5px] font-bold text-sps-violet600 dark:text-sps-violet400">👑</span>
-            {registeredAdmins.length === 0 ? (
-              <span className="text-[10.5px] font-bold text-sps-violet600 dark:text-sps-violet400">
-                Aucun admin inscrit
-              </span>
-            ) : (
-              registeredAdmins.map((a) => <AdminBadge key={a.name} name={a.name} group={a.group} />)
-            )}
+            <span className="text-[10.5px] font-bold text-sps-violet600 dark:text-sps-violet400">
+              👑 {registeredAdmins.length} admin{registeredAdmins.length > 1 ? "s" : ""} inscrit
+              {registeredAdmins.length > 1 ? "s" : ""}
+            </span>
+            {registeredAdmins.map((a) => (
+              <AdminBadge key={a.name} name={a.name} group={a.group} />
+            ))}
           </div>
         </AdminOnly>
       )}

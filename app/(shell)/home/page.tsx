@@ -81,14 +81,13 @@ export default async function HomePage() {
                 </div>
                 <AdminOnly>
                   <div className="-mt-3 mb-4 flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-violet-200/90">👑</span>
-                    {adminsFor(ride.id).length === 0 ? (
-                      <span className="text-[11px] font-bold text-violet-200/90">Aucun admin inscrit</span>
-                    ) : (
-                      adminsFor(ride.id).map((a) => (
-                        <AdminBadge key={a.name} name={a.name} group={a.group} onDark />
-                      ))
-                    )}
+                    <span className="text-[11px] font-bold text-violet-200/90">
+                      👑 {adminsFor(ride.id).length} admin{adminsFor(ride.id).length > 1 ? "s" : ""} inscrit
+                      {adminsFor(ride.id).length > 1 ? "s" : ""}
+                    </span>
+                    {adminsFor(ride.id).map((a) => (
+                      <AdminBadge key={a.name} name={a.name} group={a.group} onDark />
+                    ))}
                   </div>
                 </AdminOnly>
                 <div className="mb-4 flex flex-wrap gap-1.5">
