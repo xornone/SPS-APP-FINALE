@@ -107,3 +107,23 @@ export function parseGpx(xmlText: string): ParsedGpx | null {
     hasRealElevation,
   };
 }
+
+const GPX_MAPS_LINK_PREFIX = "https://www.google.com/maps?q=";
+
+/**
+ * Lien Google Maps pointant directement sur des coordonnees precises, sans
+ * cle API — utilise pour pre-remplir automatiquement le lien du lieu de
+ * rendez-vous a partir du premier point d'une trace GPX : le point de
+ * depart d'une trace est quasi toujours le point de rassemblement du club.
+ * 6 decimales (~11cm de precision) suffisent largement et gardent un lien
+ * lisible.
+ */
+export function googleMapsLinkForPoint(lat: number, lon: number): string {
+  return `${GPX_MAPS_LINK_PREFIX}${lat.toFixed(6)},${lon.toFixed(6)}`;
+}
+
+/** True si ce lien a ete genere par googleMapsLinkForPoint (donc probablement
+ * auto-rempli depuis une trace GPX, pas saisi a la main). */
+export function isGpxGeneratedMapsLink(url: string): boolean {
+  return url.trim().startsWith(GPX_MAPS_LINK_PREFIX);
+}

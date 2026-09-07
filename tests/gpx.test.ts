@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { elevationGain, haversineKm, parseGpx, totalDistanceKm } from "@/lib/gpx";
+import {
+  elevationGain,
+  googleMapsLinkForPoint,
+  haversineKm,
+  isGpxGeneratedMapsLink,
+  parseGpx,
+  totalDistanceKm,
+} from "@/lib/gpx";
 
 const SAMPLE_GPX = `<?xml version="1.0" encoding="UTF-8"?>
 <gpx version="1.1" creator="test">
@@ -103,5 +110,29 @@ describe("parseGpx", () => {
 
   it("retourne null quand le GPX ne contient aucun point exploitable", () => {
     expect(parseGpx(EMPTY_GPX)).toBeNull();
+  });
+});
+
+describe("googleMapsLinkForPoint", () => {
+  it("construit un lien Google Maps avec 6 decimales", () => {
+    expect(googleMapsLinkForPoint(43.65, 3.75)).toBe("https://www.google.com/maps?q=43.650000,3.750000");
+  });
+
+  it("arrondit a 6 decimales sans tronquer", () => {
+    expect(googleMapsLinkForPoint(43.6512345678, 3.7598765432)).toBe(
+      "https://www.google.com/maps?q=43.651235,3.759877"
+    );
+  });
+});
+
+describe("isGpxGeneratedMapsLink", () => {
+  it("reconnait un lien genere par googleMapsLinkForPoint", () => {
+    expect(isGpxGeneratedMapsLink(googleMapsLinkForPoint(43.65, 3.75))).toBe(true);
+  });
+
+  it("rejette un lien saisi a la main ou un lien connu du club", () => {
+    expect(isGpxGeneratedMapsLink("https://maps.app.goo.gl/EJtpGzv1rseboNxy6")).toBe(false);
+    expect(isGpxGeneratedMapsLink("https://maps.google.com/autre-lien")).toBe(false);
+    expect(isGpxGeneratedMapsLink("")).toBe(false);
   });
 });

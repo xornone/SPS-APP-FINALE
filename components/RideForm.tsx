@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { parseGpx, type ParsedGpx } from "@/lib/gpx";
+import { googleMapsLinkForPoint, isGpxGeneratedMapsLink, parseGpx, type ParsedGpx } from "@/lib/gpx";
 import { isKnownPlaceUrl, lookupPlaceUrl } from "@/lib/knownPlaces";
 import { describeRideProfile } from "@/lib/rideProfile";
 import type { StravaConnection, StravaRouteSummary } from "@/lib/strava";
@@ -79,6 +79,22 @@ export function RideForm({
     setGroups((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
   }
 
+  // True si ce lien peut etre remplace automatiquement sans risque d'ecraser
+  // une saisie manuelle de l'admin : vide, issu d'un lieu connu, ou lui-meme
+  // genere depuis une trace GPX precedente.
+  function isAutoFilledPlaceUrl(url: string): boolean {
+    return !url.trim() || isKnownPlaceUrl(url) || isGpxGeneratedMapsLink(url);
+  }
+
+  // Le point de depart d'une trace est quasi toujours le point de
+  // rassemblement du club : pre-remplit le lien du lieu avec un lien Google
+  // Maps pointant dessus, sauf si l'admin a deja saisi un lien a la main.
+  function fillPlaceUrlFromGpxStart(parsed: ParsedGpx) {
+    if (!isAutoFilledPlaceUrl(placeUrl)) return;
+    const [lat, lon] = parsed.points[0];
+    setPlaceUrl(googleMapsLinkForPoint(lat, lon));
+  }
+
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -97,6 +113,7 @@ export function RideForm({
     // Ajoute l'analyse du parcours au DEBUT de la description, sans jamais
     // effacer ce que l'admin a deja ecrit (qui reste en dessous).
     setDescription((prev) => prependGenerated(prev, describeRideProfile(parsed)));
+    fillPlaceUrlFromGpxStart(parsed);
   }
 
   // Recupere le trace directement depuis Strava (toujours le propre compte
@@ -131,6 +148,7 @@ export function RideForm({
       setDistance((Math.round(parsed.distanceKm * 10) / 10).toString());
       setElevation(Math.round(parsed.elevationGainM).toString());
       setDescription((prev) => prependGenerated(prev, describeRideProfile(parsed)));
+      fillPlaceUrlFromGpxStart(parsed);
     } catch (err: any) {
       setStravaImportError(err?.message || "Import Strava impossible.");
     } finally {
@@ -153,7 +171,7 @@ export function RideForm({
   function handlePlaceBlur() {
     const known = lookupPlaceUrl(place);
     if (!known) return;
-    if (!placeUrl.trim() || isKnownPlaceUrl(placeUrl)) setPlaceUrl(known);
+    if (isAutoFilledPlaceUrl(placeUrl)) setPlaceUrl(known);
   }
 
   function regenerateDescription() {
@@ -271,6 +289,11 @@ export function RideForm({
           placeholder="https://maps.google.com/…"
           className="input"
         />
+        {isGpxGeneratedMapsLink(placeUrl) && (
+          <p className="mt-1 text-[11px] text-black/35 dark:text-white/35">
+            Lien généré automatiquement à partir du point de départ de la trace — à vérifier avant publication.
+          </p>
+        )}
       </Field>
       <Field label="Lien Strava (optionnel)">
         <input
