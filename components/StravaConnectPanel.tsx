@@ -37,7 +37,7 @@ export function StravaConnectPanel({ connections }: { connections: StravaConnect
       )}
       {hadError && (
         <p className="rounded-xl bg-sps-red/10 px-3 py-2 text-xs font-semibold text-sps-red">
-          La connexion Strava a échoué, réessaie.
+          La connexion Strava a échoué : {hadError}
         </p>
       )}
       {list.map((c) => (

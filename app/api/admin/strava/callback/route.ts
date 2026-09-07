@@ -22,14 +22,20 @@ export async function GET(request: Request) {
   const errorParam = searchParams.get("error");
 
   if (errorParam || !code) {
-    return NextResponse.redirect(`${siteUrl()}/admin?strava_error=1`);
+    return NextResponse.redirect(
+      `${siteUrl()}/admin?strava_error=${encodeURIComponent(errorParam || "Code d'autorisation manquant.")}`
+    );
   }
 
   try {
     const token = await exchangeStravaCode(code);
     const name = await saveStravaConnection(token);
     return NextResponse.redirect(`${siteUrl()}/admin?strava_connected=${encodeURIComponent(name)}`);
-  } catch {
-    return NextResponse.redirect(`${siteUrl()}/admin?strava_error=1`);
+  } catch (err: any) {
+    // Le detail (message Strava ou erreur Supabase) est affiche directement
+    // sur /admin (StravaConnectPanel) : bien plus utile pour diagnostiquer
+    // qu'un message generique, sans avoir besoin des logs Vercel.
+    const message = (err?.message || "Erreur inconnue.").slice(0, 300);
+    return NextResponse.redirect(`${siteUrl()}/admin?strava_error=${encodeURIComponent(message)}`);
   }
 }

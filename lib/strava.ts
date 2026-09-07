@@ -62,7 +62,13 @@ export async function exchangeStravaCode(code: string): Promise<StravaTokenRespo
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ client_id: clientId, client_secret: clientSecret, code, grant_type: "authorization_code" }),
   });
-  if (!res.ok) throw new Error(`Échange du code Strava échoué (${res.status}).`);
+  if (!res.ok) {
+    // Le corps de reponse de Strava (JSON avec message/errors) est bien
+    // plus utile pour diagnostiquer que le seul code HTTP — client_id ou
+    // client_secret invalide, code deja utilise, etc.
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Échange du code Strava échoué (${res.status})${detail ? ` — ${detail.slice(0, 300)}` : ""}.`);
+  }
   return res.json();
 }
 
@@ -78,7 +84,10 @@ async function refreshStravaToken(refreshToken: string): Promise<StravaTokenResp
       grant_type: "refresh_token",
     }),
   });
-  if (!res.ok) throw new Error(`Rafraîchissement du jeton Strava échoué (${res.status}).`);
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Rafraîchissement du jeton Strava échoué (${res.status})${detail ? ` — ${detail.slice(0, 300)}` : ""}.`);
+  }
   return res.json();
 }
 
