@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { parseGpx, type ParsedGpx } from "@/lib/gpx";
 import { isKnownPlaceUrl, lookupPlaceUrl } from "@/lib/knownPlaces";
 import { describeRideProfile } from "@/lib/rideProfile";
+import type { StravaConnection } from "@/lib/strava";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import { RideMap } from "./RideMap";
 import { Icon } from "./Icons";
@@ -18,7 +19,7 @@ function prependGenerated(current: string, generated: string): string {
   return trimmed ? `${generated}\n\n${trimmed}` : generated;
 }
 
-export function RideForm({ ride }: { ride?: Ride }) {
+export function RideForm({ ride, stravaConnections = [] }: { ride?: Ride; stravaConnections?: StravaConnection[] }) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -42,6 +43,10 @@ export function RideForm({ ride }: { ride?: Ride }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  const [stravaAthleteId, setStravaAthleteId] = useState(stravaConnections[0]?.athleteId ?? null);
+  const [stravaImporting, setStravaImporting] = useState(false);
+  const [stravaImportError, setStravaImportError] = useState("");
+
   function toggleGroup(g: GroupLevel) {
     setGroups((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
   }
@@ -64,6 +69,41 @@ export function RideForm({ ride }: { ride?: Ride }) {
     // Ajoute l'analyse du parcours au DEBUT de la description, sans jamais
     // effacer ce que l'admin a deja ecrit (qui reste en dessous).
     setDescription((prev) => prependGenerated(prev, describeRideProfile(parsed)));
+  }
+
+  // Recupere le trace directement depuis Strava (compte connecte choisi
+  // via `stravaAthleteId`) plutot que de demander a l'admin d'exporter puis
+  // reimporter un fichier .gpx a la main. Reutilise ensuite exactement le
+  // meme chemin que handleFileChange une fois le GPX genere cote serveur.
+  async function handleStravaImport() {
+    if (!stravaAthleteId || !stravaUrl.trim()) return;
+    setStravaImporting(true);
+    setStravaImportError("");
+    try {
+      const res = await fetch("/api/admin/strava/import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ athleteId: stravaAthleteId, activityUrl: stravaUrl.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      const parsed = parseGpx(data.gpxText);
+      if (!parsed) throw new Error("Trace Strava illisible.");
+
+      const file = new File([data.gpxText], `strava-${data.activityId}.gpx`, { type: "application/gpx+xml" });
+      setGpxFile(file);
+      setGpxFileName(file.name);
+      setError("");
+      setPreview(parsed);
+      setDistance((Math.round(parsed.distanceKm * 10) / 10).toString());
+      setElevation(Math.round(parsed.elevationGainM).toString());
+      setDescription((prev) => prependGenerated(prev, describeRideProfile(parsed)));
+    } catch (err: any) {
+      setStravaImportError(err?.message || "Import Strava impossible.");
+    } finally {
+      setStravaImporting(false);
+    }
   }
 
   // Pre-remplit automatiquement le lien du lieu quand son nom correspond a
@@ -198,9 +238,45 @@ export function RideForm({ ride }: { ride?: Ride }) {
           type="url"
           value={stravaUrl}
           onChange={(e) => setStravaUrl(e.target.value)}
-          placeholder="https://www.strava.com/routes/…"
+          placeholder="https://www.strava.com/activities/…"
           className="input"
         />
+        {stravaConnections.length > 0 && (
+          <div className="mt-2 flex items-center gap-2">
+            {stravaConnections.length > 1 ? (
+              <select
+                value={stravaAthleteId ?? ""}
+                onChange={(e) => setStravaAthleteId(Number(e.target.value))}
+                className="input !w-auto flex-none py-2 text-xs"
+              >
+                {stravaConnections.map((c) => (
+                  <option key={c.athleteId} value={c.athleteId}>
+                    {c.athleteName}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="flex-none text-[11px] text-black/45 dark:text-white/45">
+                {stravaConnections[0].athleteName}
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleStravaImport}
+              disabled={stravaImporting || !stravaUrl.trim()}
+              className="flex-1 rounded-xl border-[1.5px] border-sps-violet600 px-3 py-2 text-xs font-bold text-sps-violet600 disabled:opacity-50 dark:border-sps-violet400 dark:text-sps-violet400"
+            >
+              {stravaImporting ? "Import en cours…" : "🔄 Importer le tracé depuis Strava"}
+            </button>
+          </div>
+        )}
+        {stravaConnections.length === 0 && (
+          <p className="mt-1.5 text-[11px] text-black/35 dark:text-white/35">
+            Aucun compte Strava connecté — connecte-en un depuis la page Administration pour activer l’import
+            automatique.
+          </p>
+        )}
+        {stravaImportError && <p className="mt-1.5 text-[11px] text-red-500">{stravaImportError}</p>}
       </Field>
       <div className="grid grid-cols-2 gap-3 px-5 pb-3.5">
         <Field label="Distance (km)" bare>

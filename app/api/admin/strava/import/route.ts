@@ -5,17 +5,16 @@ import {
   extractStravaActivityId,
   fetchStravaActivityStreams,
   getValidAccessToken,
-  isStravaTestAdmin,
-} from "@/lib/stravaTest";
+} from "@/lib/strava";
 
 export async function POST(request: Request) {
   const guard = await requireAdmin();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: guard.status });
 
   try {
-    const { adminName, activityUrl } = await request.json();
-    if (!isStravaTestAdmin(adminName)) {
-      return NextResponse.json({ error: "Choisis un admin connecté à Strava." }, { status: 400 });
+    const { athleteId, activityUrl } = await request.json();
+    if (typeof athleteId !== "number") {
+      return NextResponse.json({ error: "Choisis un compte Strava connecté." }, { status: 400 });
     }
     const activityId = extractStravaActivityId(activityUrl || "");
     if (!activityId) {
@@ -25,7 +24,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const accessToken = await getValidAccessToken(adminName);
+    const accessToken = await getValidAccessToken(athleteId);
     const streams = await fetchStravaActivityStreams(accessToken, activityId);
     const gpxText = buildGpxFromStreams(streams, `Sortie SPS — activité Strava ${activityId}`);
 

@@ -1,31 +1,26 @@
 import { createAdminClient } from "./supabase/admin";
 
-// Fonctions serveur uniquement (OAuth Strava + appels API Strava) pour la
-// page de test /admin2test — import automatique du trace GPX d'une sortie
-// depuis un lien d'activite Strava, sans repasser par un export/import
-// manuel de fichier .gpx. Jamais importe depuis un composant client.
+// Fonctions serveur uniquement (OAuth Strava + appels API Strava) pour
+// l'import automatique du trace GPX d'une sortie depuis un lien
+// d'activite Strava, sans repasser par un export/import manuel de fichier
+// .gpx. Jamais importe depuis un composant client.
+//
+// N'importe quel admin peut connecter son propre compte Strava (bouton
+// "Connecter à Strava" sur /admin) : chaque connexion est identifiee par
+// l'ID Strava de l'athlete (retourne par Strava a la connexion), pas par
+// une liste fixe de noms — voir admin_strava_connections (migration 0007).
 
 const TOKEN_URL = "https://www.strava.com/oauth/token";
 const AUTHORIZE_URL = "https://www.strava.com/oauth/authorize";
-
-// Sous-ensemble volontairement restreint de ADMIN_NAMES (lib/admins.ts) :
-// seuls Duc et Aymeric testent cette fonctionnalite avant un eventuel
-// deploiement a tous les admins.
-export const STRAVA_TEST_ADMINS = ["Duc Nguyen", "Aymeric Closier"] as const;
-export type StravaTestAdminName = (typeof STRAVA_TEST_ADMINS)[number];
-
-export function isStravaTestAdmin(name: string): name is StravaTestAdminName {
-  return (STRAVA_TEST_ADMINS as readonly string[]).includes(name);
-}
 
 function siteUrl(): string {
   return process.env.NEXT_PUBLIC_SITE_URL || "https://spsapp2.vercel.app";
 }
 
-export function stravaAuthorizeUrl(adminName: StravaTestAdminName): string {
+export function stravaAuthorizeUrl(): string {
   const clientId = process.env.STRAVA_CLIENT_ID;
   if (!clientId) throw new Error("STRAVA_CLIENT_ID manquante — voir configuration Vercel.");
-  const redirectUri = `${siteUrl()}/api/admin2test/strava/callback`;
+  const redirectUri = `${siteUrl()}/api/admin/strava/callback`;
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
@@ -34,16 +29,21 @@ export function stravaAuthorizeUrl(adminName: StravaTestAdminName): string {
     // activity:read_all : necessaire pour lire le trace GPS (streams) des
     // activites de l'athlete, y compris celles non publiques.
     scope: "activity:read_all",
-    state: adminName,
   });
   return `${AUTHORIZE_URL}?${params.toString()}`;
+}
+
+interface StravaAthlete {
+  id: number;
+  firstname?: string;
+  lastname?: string;
 }
 
 interface StravaTokenResponse {
   access_token: string;
   refresh_token: string;
   expires_at: number; // secondes unix
-  athlete?: { id: number };
+  athlete?: StravaAthlete;
 }
 
 function requireStravaCredentials(): { clientId: string; clientSecret: string } {
@@ -82,49 +82,59 @@ async function refreshStravaToken(refreshToken: string): Promise<StravaTokenResp
   return res.json();
 }
 
-export async function saveStravaConnection(adminName: StravaTestAdminName, token: StravaTokenResponse) {
+function athleteName(athlete?: StravaAthlete): string {
+  const name = [athlete?.firstname, athlete?.lastname].filter(Boolean).join(" ").trim();
+  return name || `Athlète Strava ${athlete?.id ?? ""}`.trim();
+}
+
+export async function saveStravaConnection(token: StravaTokenResponse): Promise<string> {
+  if (!token.athlete?.id) throw new Error("Réponse Strava inattendue (athlète manquant).");
+  const name = athleteName(token.athlete);
   const supabase = createAdminClient();
-  const { error } = await supabase.from("admin_strava_test_connections").upsert(
+  const { error } = await supabase.from("admin_strava_connections").upsert(
     {
-      admin_name: adminName,
-      strava_athlete_id: token.athlete?.id ?? null,
+      strava_athlete_id: token.athlete.id,
+      athlete_name: name,
       access_token: token.access_token,
       refresh_token: token.refresh_token,
       expires_at: token.expires_at,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "admin_name" }
+    { onConflict: "strava_athlete_id" }
   );
   if (error) throw new Error(error.message);
+  return name;
 }
 
-export async function getStravaConnections(): Promise<Record<string, { athleteId: number | null }>> {
+export interface StravaConnection {
+  athleteId: number;
+  athleteName: string;
+}
+
+export async function getStravaConnections(): Promise<StravaConnection[]> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
-    .from("admin_strava_test_connections")
-    .select("admin_name, strava_athlete_id");
-  if (error || !data) return {};
-  const map: Record<string, { athleteId: number | null }> = {};
-  data.forEach((row: any) => {
-    map[row.admin_name] = { athleteId: row.strava_athlete_id };
-  });
-  return map;
+    .from("admin_strava_connections")
+    .select("strava_athlete_id, athlete_name")
+    .order("athlete_name", { ascending: true });
+  if (error || !data) return [];
+  return data.map((row: any) => ({ athleteId: row.strava_athlete_id, athleteName: row.athlete_name }));
 }
 
-export async function disconnectStrava(adminName: StravaTestAdminName) {
+export async function disconnectStrava(athleteId: number) {
   const supabase = createAdminClient();
-  await supabase.from("admin_strava_test_connections").delete().eq("admin_name", adminName);
+  await supabase.from("admin_strava_connections").delete().eq("strava_athlete_id", athleteId);
 }
 
-/** Recupere un access token Strava valide pour un admin, en le rafraichissant au besoin. */
-export async function getValidAccessToken(adminName: StravaTestAdminName): Promise<string> {
+/** Recupere un access token Strava valide pour un athlete connecte, en le rafraichissant au besoin. */
+export async function getValidAccessToken(athleteId: number): Promise<string> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
-    .from("admin_strava_test_connections")
+    .from("admin_strava_connections")
     .select("access_token, refresh_token, expires_at")
-    .eq("admin_name", adminName)
+    .eq("strava_athlete_id", athleteId)
     .maybeSingle();
-  if (error || !data) throw new Error(`${adminName} n'a pas encore connecté son compte Strava.`);
+  if (error || !data) throw new Error("Ce compte Strava n'est pas (ou plus) connecté.");
 
   const nowSeconds = Math.floor(Date.now() / 1000);
   if (data.expires_at > nowSeconds + 60) {
@@ -136,14 +146,14 @@ export async function getValidAccessToken(adminName: StravaTestAdminName): Promi
   // token a chaque rafraichissement, l'ancien devient invalide.
   const refreshed = await refreshStravaToken(data.refresh_token);
   await supabase
-    .from("admin_strava_test_connections")
+    .from("admin_strava_connections")
     .update({
       access_token: refreshed.access_token,
       refresh_token: refreshed.refresh_token,
       expires_at: refreshed.expires_at,
       updated_at: new Date().toISOString(),
     })
-    .eq("admin_name", adminName);
+    .eq("strava_athlete_id", athleteId);
   return refreshed.access_token;
 }
 

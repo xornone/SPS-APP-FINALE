@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { RideForm } from "@/components/RideForm";
 import { Icon } from "@/components/Icons";
+import { getStravaConnections } from "@/lib/strava";
 
-export default function NewRidePage() {
+export default async function NewRidePage() {
+  const stravaConnections = await getStravaConnections();
+
   return (
     <div>
       <div className="flex items-center gap-3 px-5 pb-2 pt-5">
@@ -15,7 +18,7 @@ export default function NewRidePage() {
         <h1 className="font-display text-xl tracking-wide">Nouvelle sortie</h1>
       </div>
       <div className="pt-3">
-        <RideForm />
+        <RideForm stravaConnections={stravaConnections} />
       </div>
     </div>
   );

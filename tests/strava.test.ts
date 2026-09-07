@@ -1,19 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildGpxFromStreams, extractStravaActivityId, isStravaTestAdmin } from "@/lib/stravaTest";
+import { buildGpxFromStreams, extractStravaActivityId } from "@/lib/strava";
 import { parseGpx } from "@/lib/gpx";
-
-describe("isStravaTestAdmin", () => {
-  it("accepte les deux admins de test", () => {
-    expect(isStravaTestAdmin("Duc Nguyen")).toBe(true);
-    expect(isStravaTestAdmin("Aymeric Closier")).toBe(true);
-  });
-
-  it("refuse un autre admin ou un nom quelconque", () => {
-    expect(isStravaTestAdmin("Thomas Trégaro")).toBe(false);
-    expect(isStravaTestAdmin("")).toBe(false);
-    expect(isStravaTestAdmin("Duc")).toBe(false);
-  });
-});
 
 describe("extractStravaActivityId", () => {
   it("extrait l'identifiant depuis un lien d'activite standard", () => {

@@ -4,10 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { fetchRide } from "@/lib/queries";
 import { RideForm } from "@/components/RideForm";
 import { Icon } from "@/components/Icons";
+import { getStravaConnections } from "@/lib/strava";
 
 export default async function EditRidePage({ params }: { params: { id: string } }) {
   const supabase = createClient();
-  const ride = await fetchRide(supabase, params.id);
+  const [ride, stravaConnections] = await Promise.all([fetchRide(supabase, params.id), getStravaConnections()]);
   if (!ride) notFound();
 
   return (
@@ -22,7 +23,7 @@ export default async function EditRidePage({ params }: { params: { id: string } 
         <h1 className="truncate font-display text-xl tracking-wide">Modifier la sortie</h1>
       </div>
       <div className="pt-3">
-        <RideForm ride={ride} />
+        <RideForm ride={ride} stravaConnections={stravaConnections} />
       </div>
     </div>
   );

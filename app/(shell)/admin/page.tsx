@@ -1,13 +1,20 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { AdminRidesList } from "@/components/AdminRidesList";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Icon } from "@/components/Icons";
+import { getStravaConnections } from "@/lib/strava";
+import { StravaConnectPanel } from "@/components/StravaConnectPanel";
 
 export default async function AdminPage() {
   const supabase = createClient();
-  const [rides, participations] = await Promise.all([fetchRides(supabase), fetchAllParticipations(supabase)]);
+  const [rides, participations, stravaConnections] = await Promise.all([
+    fetchRides(supabase),
+    fetchAllParticipations(supabase),
+    getStravaConnections(),
+  ]);
 
   const sorted = [...rides].sort((a, b) => (a.ride_date < b.ride_date ? 1 : -1));
   const counts: Record<string, number> = {};
@@ -18,6 +25,17 @@ export default async function AdminPage() {
       <div className="px-5 pb-4 pt-5">
         <h1 className="font-display text-[26px] tracking-wide">Administration</h1>
         <p className="text-[12.5px] text-black/45 dark:text-white/45">Créer et gérer les sorties du club.</p>
+      </div>
+
+      <div className="px-5 pb-5">
+        <h2 className="mb-2 font-display text-lg tracking-wide">Comptes Strava connectés</h2>
+        <p className="mb-2 text-[11.5px] text-black/40 dark:text-white/40">
+          Connecte ton compte pour importer automatiquement le tracé GPX d’une sortie depuis un lien Strava, à la
+          création de la sortie.
+        </p>
+        <Suspense fallback={null}>
+          <StravaConnectPanel connections={stravaConnections} />
+        </Suspense>
       </div>
 
       <AdminRidesList rides={sorted} counts={counts} />
