@@ -4,6 +4,7 @@ import { Avatar } from "./Avatar";
 import { Icon } from "./Icons";
 import { AdminOnly } from "./AdminOnly";
 import { AdminBadge } from "./AdminBadge";
+import { PlaceLink } from "./PlaceLink";
 import { fmtDateShort, fmtKm, fmtM, fmtTime } from "@/lib/format";
 import { GROUP_INFO, type Ride } from "@/lib/types";
 import { getMissingAdminGroups, type RegisteredAdmin } from "@/lib/admins";
@@ -49,7 +50,7 @@ export function RideCard({
       </div>
       <h3 className="text-[16.5px] font-extrabold leading-tight">{ride.title}</h3>
       <div className="flex items-center gap-1.5 text-[12.5px] text-black/50 dark:text-white/50">
-        <Icon name="flag" size={13} /> {ride.place}
+        <Icon name="flag" size={13} /> <PlaceLink place={ride.place} placeUrl={ride.place_url} />
       </div>
       <div className="flex gap-4">
         <div>

@@ -8,6 +8,7 @@ import { GroupBadge } from "./GroupBadge";
 import { AdminBadge } from "./AdminBadge";
 import { AdminOnly } from "./AdminOnly";
 import { Icon } from "./Icons";
+import { PlaceLink } from "./PlaceLink";
 import {
   daysUntil,
   fmtDateLong,
@@ -109,7 +110,8 @@ export function HomeRidesSection({
                 </span>
                 <h3 className="mb-1 mt-1.5 font-display text-[27px] leading-tight">{ride.title}</h3>
                 <p className="mb-3.5 flex items-center gap-1.5 text-[13px] text-violet-200/90">
-                  {fmtTime(ride.ride_time)} · <Icon name="flag" size={13} /> {ride.place}
+                  {fmtTime(ride.ride_time)} · <Icon name="flag" size={13} />{" "}
+                  <PlaceLink place={ride.place} placeUrl={ride.place_url} />
                 </p>
                 <div className="mb-4 flex gap-4">
                   <div>
