@@ -5,21 +5,24 @@ import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { AdminRidesList } from "@/components/AdminRidesList";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Icon } from "@/components/Icons";
-import { getStravaConnections } from "@/lib/strava";
+import { getMyStravaConnection } from "@/lib/strava";
 import { StravaConnectPanel } from "@/components/StravaConnectPanel";
 
 // Deja rendue dynamiquement de fait (createClient() appelle cookies()),
 // mais explicite ici comme sur le reste des pages admin qui doivent
-// refleter l'etat courant (comptes Strava connectes, sorties a jour) sans
+// refleter l'etat courant (compte Strava connecte, sorties a jour) sans
 // dependre d'un detail d'implementation qui pourrait changer.
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
   const supabase = createClient();
-  const [rides, participations, stravaConnections] = await Promise.all([
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const [rides, participations, stravaConnection] = await Promise.all([
     fetchRides(supabase),
     fetchAllParticipations(supabase),
-    getStravaConnections(),
+    user ? getMyStravaConnection(user.id) : Promise.resolve(null),
   ]);
 
   const sorted = [...rides].sort((a, b) => (a.ride_date < b.ride_date ? 1 : -1));
@@ -34,13 +37,13 @@ export default async function AdminPage() {
       </div>
 
       <div className="px-5 pb-5">
-        <h2 className="mb-2 font-display text-lg tracking-wide">Comptes Strava connectés</h2>
+        <h2 className="mb-2 font-display text-lg tracking-wide">Ton compte Strava</h2>
         <p className="mb-2 text-[11.5px] text-black/40 dark:text-white/40">
           Connecte ton compte pour importer automatiquement le tracé GPX d’une sortie depuis un lien Strava, à la
-          création de la sortie.
+          création de la sortie. Chaque admin ne voit que sa propre connexion.
         </p>
         <Suspense fallback={null}>
-          <StravaConnectPanel connections={stravaConnections} />
+          <StravaConnectPanel connection={stravaConnection} />
         </Suspense>
       </div>
 

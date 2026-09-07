@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { RideForm } from "@/components/RideForm";
 import { Icon } from "@/components/Icons";
-import { getStravaConnections } from "@/lib/strava";
+import { createClient } from "@/lib/supabase/server";
+import { getMyStravaConnection } from "@/lib/strava";
 
 // Sans appel a cookies()/headers(), cette page n'a aucun signal qui force
 // Next.js a la rendre dynamiquement : sans cette ligne, elle risque d'etre
@@ -11,7 +12,11 @@ import { getStravaConnections } from "@/lib/strava";
 export const dynamic = "force-dynamic";
 
 export default async function NewRidePage() {
-  const stravaConnections = await getStravaConnections();
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const stravaConnection = user ? await getMyStravaConnection(user.id) : null;
 
   return (
     <div>
@@ -25,7 +30,7 @@ export default async function NewRidePage() {
         <h1 className="font-display text-xl tracking-wide">Nouvelle sortie</h1>
       </div>
       <div className="pt-3">
-        <RideForm stravaConnections={stravaConnections} />
+        <RideForm stravaConnection={stravaConnection} />
       </div>
     </div>
   );

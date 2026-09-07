@@ -1,11 +1,11 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { parseGpx, type ParsedGpx } from "@/lib/gpx";
 import { isKnownPlaceUrl, lookupPlaceUrl } from "@/lib/knownPlaces";
 import { describeRideProfile } from "@/lib/rideProfile";
-import type { StravaConnection } from "@/lib/strava";
+import type { StravaConnection, StravaRouteSummary } from "@/lib/strava";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import { RideMap } from "./RideMap";
 import { Icon } from "./Icons";
@@ -19,7 +19,13 @@ function prependGenerated(current: string, generated: string): string {
   return trimmed ? `${generated}\n\n${trimmed}` : generated;
 }
 
-export function RideForm({ ride, stravaConnections = [] }: { ride?: Ride; stravaConnections?: StravaConnection[] }) {
+export function RideForm({
+  ride,
+  stravaConnection = null,
+}: {
+  ride?: Ride;
+  stravaConnection?: StravaConnection | null;
+}) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
 
@@ -43,9 +49,31 @@ export function RideForm({ ride, stravaConnections = [] }: { ride?: Ride; strava
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const [stravaAthleteId, setStravaAthleteId] = useState(stravaConnections[0]?.athleteId ?? null);
   const [stravaImporting, setStravaImporting] = useState(false);
   const [stravaImportError, setStravaImportError] = useState("");
+  const [stravaRoutes, setStravaRoutes] = useState<StravaRouteSummary[]>([]);
+  const [stravaRoutesError, setStravaRoutesError] = useState("");
+
+  // Liste les traces (routes) enregistrees sur le compte Strava connecte,
+  // pour un choix rapide dans un menu deroulant plutot que de devoir aller
+  // copier/coller le lien depuis Strava a chaque fois.
+  useEffect(() => {
+    if (!stravaConnection) return;
+    let cancelled = false;
+    fetch("/api/admin/strava/routes")
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data.routes) setStravaRoutes(data.routes);
+        else setStravaRoutesError(data.error || "Impossible de récupérer tes traces Strava.");
+      })
+      .catch(() => {
+        if (!cancelled) setStravaRoutesError("Impossible de récupérer tes traces Strava.");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [stravaConnection]);
 
   function toggleGroup(g: GroupLevel) {
     setGroups((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]));
@@ -71,19 +99,23 @@ export function RideForm({ ride, stravaConnections = [] }: { ride?: Ride; strava
     setDescription((prev) => prependGenerated(prev, describeRideProfile(parsed)));
   }
 
-  // Recupere le trace directement depuis Strava (compte connecte choisi
-  // via `stravaAthleteId`) plutot que de demander a l'admin d'exporter puis
-  // reimporter un fichier .gpx a la main. Reutilise ensuite exactement le
-  // meme chemin que handleFileChange une fois le GPX genere cote serveur.
-  async function handleStravaImport() {
-    if (!stravaAthleteId || !stravaUrl.trim()) return;
+  // Recupere le trace directement depuis Strava (toujours le propre compte
+  // de l'admin connecte, jamais celui d'un autre) plutot que de demander a
+  // l'admin d'exporter puis reimporter un fichier .gpx a la main. Reutilise
+  // ensuite exactement le meme chemin que handleFileChange une fois le GPX
+  // genere cote serveur. `urlOverride` permet de lancer l'import juste
+  // apres avoir choisi une trace dans le menu deroulant, sans attendre que
+  // `stravaUrl` se mette a jour (evite une valeur perimee).
+  async function handleStravaImport(urlOverride?: string) {
+    const url = (urlOverride ?? stravaUrl).trim();
+    if (!stravaConnection || !url) return;
     setStravaImporting(true);
     setStravaImportError("");
     try {
       const res = await fetch("/api/admin/strava/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ athleteId: stravaAthleteId, activityUrl: stravaUrl.trim() }),
+        body: JSON.stringify({ activityUrl: url }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -104,6 +136,13 @@ export function RideForm({ ride, stravaConnections = [] }: { ride?: Ride; strava
     } finally {
       setStravaImporting(false);
     }
+  }
+
+  function handleRouteSelect(routeId: string) {
+    if (!routeId) return;
+    const url = `https://www.strava.com/routes/${routeId}`;
+    setStravaUrl(url);
+    handleStravaImport(url);
   }
 
   // Pre-remplit automatiquement le lien du lieu quand son nom correspond a
@@ -241,38 +280,43 @@ export function RideForm({ ride, stravaConnections = [] }: { ride?: Ride; strava
           placeholder="https://www.strava.com/routes/… ou /activities/…"
           className="input"
         />
-        {stravaConnections.length > 0 && (
-          <div className="mt-2 flex items-center gap-2">
-            {stravaConnections.length > 1 ? (
+        {stravaConnection && (
+          <div className="mt-2 flex flex-col gap-1.5">
+            {stravaRoutes.length > 0 && (
               <select
-                value={stravaAthleteId ?? ""}
-                onChange={(e) => setStravaAthleteId(Number(e.target.value))}
-                className="input !w-auto flex-none py-2 text-xs"
+                defaultValue=""
+                onChange={(e) => handleRouteSelect(e.target.value)}
+                className="input py-2 text-xs"
               >
-                {stravaConnections.map((c) => (
-                  <option key={c.athleteId} value={c.athleteId}>
-                    {c.athleteName}
+                <option value="" disabled>
+                  Choisir une trace enregistrée sur ton compte…
+                </option>
+                {stravaRoutes.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name} — {r.distanceKm} km, {r.elevationGainM} m D+
                   </option>
                 ))}
               </select>
-            ) : (
-              <span className="flex-none text-[11px] text-black/45 dark:text-white/45">
-                {stravaConnections[0].athleteName}
-              </span>
             )}
-            <button
-              type="button"
-              onClick={handleStravaImport}
-              disabled={stravaImporting || !stravaUrl.trim()}
-              className="flex-1 rounded-xl border-[1.5px] border-sps-violet600 px-3 py-2 text-xs font-bold text-sps-violet600 disabled:opacity-50 dark:border-sps-violet400 dark:text-sps-violet400"
-            >
-              {stravaImporting ? "Import en cours…" : "🔄 Importer le tracé depuis Strava"}
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="flex-none text-[11px] text-black/45 dark:text-white/45">
+                {stravaConnection.athleteName}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleStravaImport()}
+                disabled={stravaImporting || !stravaUrl.trim()}
+                className="flex-1 rounded-xl border-[1.5px] border-sps-violet600 px-3 py-2 text-xs font-bold text-sps-violet600 disabled:opacity-50 dark:border-sps-violet400 dark:text-sps-violet400"
+              >
+                {stravaImporting ? "Import en cours…" : "🔄 Importer le tracé depuis le lien"}
+              </button>
+            </div>
+            {stravaRoutesError && <p className="text-[11px] text-black/35 dark:text-white/35">{stravaRoutesError}</p>}
           </div>
         )}
-        {stravaConnections.length === 0 && (
+        {!stravaConnection && (
           <p className="mt-1.5 text-[11px] text-black/35 dark:text-white/35">
-            Aucun compte Strava connecté — connecte-en un depuis la page Administration pour activer l’import
+            Ton compte Strava n’est pas connecté — connecte-le depuis la page Administration pour activer l’import
             automatique.
           </p>
         )}

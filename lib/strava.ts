@@ -1,14 +1,15 @@
 import { createAdminClient } from "./supabase/admin";
 
 // Fonctions serveur uniquement (OAuth Strava + appels API Strava) pour
-// l'import automatique du trace GPX d'une sortie depuis un lien
-// d'activite Strava, sans repasser par un export/import manuel de fichier
-// .gpx. Jamais importe depuis un composant client.
+// l'import automatique du trace GPX d'une sortie depuis un lien Strava,
+// sans repasser par un export/import manuel de fichier .gpx. Jamais
+// importe depuis un composant client.
 //
-// N'importe quel admin peut connecter son propre compte Strava (bouton
-// "Connecter à Strava" sur /admin) : chaque connexion est identifiee par
-// l'ID Strava de l'athlete (retourne par Strava a la connexion), pas par
-// une liste fixe de noms — voir admin_strava_connections (migration 0007).
+// La connexion Strava est personnelle a l'admin connecte : elle est
+// enregistree sous son admin_user_id (l'id de sa propre session Supabase),
+// jamais sous un identifiant partage — voir admin_strava_connections
+// (migration 0008). Chaque admin ne voit et n'utilise donc que son propre
+// compte Strava, jamais celui d'un autre admin.
 
 const TOKEN_URL = "https://www.strava.com/oauth/token";
 const AUTHORIZE_URL = "https://www.strava.com/oauth/authorize";
@@ -29,7 +30,8 @@ export function stravaAuthorizeUrl(): string {
     // activity:read_all : necessaire pour lire le trace GPS (streams) des
     // activites de l'athlete, y compris celles non publiques.
     // read_all : necessaire pour l'export GPX des routes (parcours
-    // planifies) — endpoint distinct des activites, avec son propre scope.
+    // planifies) et pour lister ses propres routes — endpoints distincts
+    // des activites, avec leur propre scope.
     scope: "activity:read_all,read_all",
   });
   return `${AUTHORIZE_URL}?${params.toString()}`;
@@ -98,12 +100,15 @@ function athleteName(athlete?: StravaAthlete): string {
   return name || `Athlète Strava ${athlete?.id ?? ""}`.trim();
 }
 
-export async function saveStravaConnection(token: StravaTokenResponse): Promise<string> {
+/** Enregistre (ou remplace) la connexion Strava de CET admin — jamais celle
+ * d'un autre, puisqu'elle est indexee par son propre admin_user_id. */
+export async function saveStravaConnection(adminUserId: string, token: StravaTokenResponse): Promise<string> {
   if (!token.athlete?.id) throw new Error("Réponse Strava inattendue (athlète manquant).");
   const name = athleteName(token.athlete);
   const supabase = createAdminClient();
   const { error } = await supabase.from("admin_strava_connections").upsert(
     {
+      admin_user_id: adminUserId,
       strava_athlete_id: token.athlete.id,
       athlete_name: name,
       access_token: token.access_token,
@@ -111,7 +116,7 @@ export async function saveStravaConnection(token: StravaTokenResponse): Promise<
       expires_at: token.expires_at,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "strava_athlete_id" }
+    { onConflict: "admin_user_id" }
   );
   if (error) throw new Error(error.message);
   return name;
@@ -122,30 +127,33 @@ export interface StravaConnection {
   athleteName: string;
 }
 
-export async function getStravaConnections(): Promise<StravaConnection[]> {
+/** La connexion Strava de CET admin uniquement (jamais celle des autres). */
+export async function getMyStravaConnection(adminUserId: string): Promise<StravaConnection | null> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("admin_strava_connections")
     .select("strava_athlete_id, athlete_name")
-    .order("athlete_name", { ascending: true });
-  if (error || !data) return [];
-  return data.map((row: any) => ({ athleteId: row.strava_athlete_id, athleteName: row.athlete_name }));
+    .eq("admin_user_id", adminUserId)
+    .maybeSingle();
+  if (error || !data) return null;
+  return { athleteId: data.strava_athlete_id, athleteName: data.athlete_name };
 }
 
-export async function disconnectStrava(athleteId: number) {
+export async function disconnectStrava(adminUserId: string) {
   const supabase = createAdminClient();
-  await supabase.from("admin_strava_connections").delete().eq("strava_athlete_id", athleteId);
+  await supabase.from("admin_strava_connections").delete().eq("admin_user_id", adminUserId);
 }
 
-/** Recupere un access token Strava valide pour un athlete connecte, en le rafraichissant au besoin. */
-export async function getValidAccessToken(athleteId: number): Promise<string> {
+/** Recupere un access token Strava valide pour CET admin, en le
+ * rafraichissant au besoin. */
+export async function getValidAccessToken(adminUserId: string): Promise<string> {
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("admin_strava_connections")
     .select("access_token, refresh_token, expires_at")
-    .eq("strava_athlete_id", athleteId)
+    .eq("admin_user_id", adminUserId)
     .maybeSingle();
-  if (error || !data) throw new Error("Ce compte Strava n'est pas (ou plus) connecté.");
+  if (error || !data) throw new Error("Tu n'as pas encore connecté ton compte Strava.");
 
   const nowSeconds = Math.floor(Date.now() / 1000);
   if (data.expires_at > nowSeconds + 60) {
@@ -164,7 +172,7 @@ export async function getValidAccessToken(athleteId: number): Promise<string> {
       expires_at: refreshed.expires_at,
       updated_at: new Date().toISOString(),
     })
-    .eq("strava_athlete_id", athleteId);
+    .eq("admin_user_id", adminUserId);
   return refreshed.access_token;
 }
 
@@ -224,6 +232,33 @@ export async function fetchStravaRouteGpx(accessToken: string, routeId: string):
     );
   }
   return res.text();
+}
+
+export interface StravaRouteSummary {
+  id: string;
+  name: string;
+  distanceKm: number;
+  elevationGainM: number;
+}
+
+/** Liste les routes (parcours planifies) enregistrees sur le compte Strava
+ * connecte, pour proposer un choix rapide dans le formulaire de sortie
+ * plutot que de devoir aller copier/coller le lien depuis Strava. */
+export async function fetchAthleteRoutes(accessToken: string): Promise<StravaRouteSummary[]> {
+  const res = await fetch(`https://www.strava.com/api/v3/athlete/routes?per_page=50`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) {
+    throw new Error(`Impossible de récupérer tes traces Strava (${res.status}).`);
+  }
+  const data = await res.json();
+  if (!Array.isArray(data)) return [];
+  return data.map((r: any) => ({
+    id: String(r.id),
+    name: r.name || `Trace ${r.id}`,
+    distanceKm: Math.round((r.distance || 0) / 100) / 10,
+    elevationGainM: Math.round(r.elevation_gain || 0),
+  }));
 }
 
 /** Construit un fichier GPX minimal (trace + altitude) a partir des streams

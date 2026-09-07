@@ -13,10 +13,7 @@ export async function POST(request: Request) {
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: guard.status });
 
   try {
-    const { athleteId, activityUrl } = await request.json();
-    if (typeof athleteId !== "number") {
-      return NextResponse.json({ error: "Choisis un compte Strava connecté." }, { status: 400 });
-    }
+    const { activityUrl } = await request.json();
     const resource = extractStravaResource(activityUrl || "");
     if (!resource) {
       return NextResponse.json(
@@ -28,7 +25,10 @@ export async function POST(request: Request) {
       );
     }
 
-    const accessToken = await getValidAccessToken(athleteId);
+    // Toujours le token de l'admin appelant — jamais celui d'un autre
+    // admin : impossible d'importer avec le compte Strava de quelqu'un
+    // d'autre, meme en manipulant la requete.
+    const accessToken = await getValidAccessToken(guard.user.id);
 
     // Une "route" (parcours planifie, pas encore effectue) a son propre
     // endpoint d'export GPX cote Strava — pas besoin de reconstruire le

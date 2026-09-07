@@ -8,9 +8,10 @@ function siteUrl(): string {
 
 // Callback OAuth Strava : navigation complete du navigateur (redirection
 // depuis strava.com), donc les cookies de session admin sont bien envoyes
-// si l'admin est toujours connecte a l'app. requireAdmin() ici empeche
-// qu'un lien de callback force (sans passer par /connect) puisse enregistrer
-// un jeton sans etre soi-meme un admin de l'app.
+// si l'admin est toujours connecte a l'app. requireAdmin() ici sert aussi
+// a savoir POUR QUI enregistrer la connexion (guard.user.id) : chaque
+// admin ne peut donc jamais enregistrer un jeton que sous son propre
+// identifiant.
 export async function GET(request: Request) {
   const guard = await requireAdmin();
   if (!guard.ok) {
@@ -29,7 +30,7 @@ export async function GET(request: Request) {
 
   try {
     const token = await exchangeStravaCode(code);
-    const name = await saveStravaConnection(token);
+    const name = await saveStravaConnection(guard.user.id, token);
     return NextResponse.redirect(`${siteUrl()}/admin?strava_connected=${encodeURIComponent(name)}`);
   } catch (err: any) {
     // Le detail (message Strava ou erreur Supabase) est affiche directement
