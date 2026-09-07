@@ -91,7 +91,7 @@ export function RideForm({ ride, stravaConnections = [] }: { ride?: Ride; strava
       const parsed = parseGpx(data.gpxText);
       if (!parsed) throw new Error("Trace Strava illisible.");
 
-      const file = new File([data.gpxText], `strava-${data.activityId}.gpx`, { type: "application/gpx+xml" });
+      const file = new File([data.gpxText], `strava-${data.stravaId}.gpx`, { type: "application/gpx+xml" });
       setGpxFile(file);
       setGpxFileName(file.name);
       setError("");
@@ -238,7 +238,7 @@ export function RideForm({ ride, stravaConnections = [] }: { ride?: Ride; strava
           type="url"
           value={stravaUrl}
           onChange={(e) => setStravaUrl(e.target.value)}
-          placeholder="https://www.strava.com/activities/…"
+          placeholder="https://www.strava.com/routes/… ou /activities/…"
           className="input"
         />
         {stravaConnections.length > 0 && (

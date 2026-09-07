@@ -28,7 +28,9 @@ export function stravaAuthorizeUrl(): string {
     approval_prompt: "auto",
     // activity:read_all : necessaire pour lire le trace GPS (streams) des
     // activites de l'athlete, y compris celles non publiques.
-    scope: "activity:read_all",
+    // read_all : necessaire pour l'export GPX des routes (parcours
+    // planifies) — endpoint distinct des activites, avec son propre scope.
+    scope: "activity:read_all,read_all",
   });
   return `${AUTHORIZE_URL}?${params.toString()}`;
 }
@@ -166,11 +168,24 @@ export async function getValidAccessToken(athleteId: number): Promise<string> {
   return refreshed.access_token;
 }
 
-/** Extrait l'identifiant numerique d'une activite depuis une URL Strava
- * (ex: https://www.strava.com/activities/1234567890). */
-export function extractStravaActivityId(url: string): string | null {
-  const match = url.match(/strava\.com\/activities\/(\d+)/);
-  return match ? match[1] : null;
+export interface StravaResource {
+  type: "activity" | "route";
+  id: string;
+}
+
+/** Extrait le type (activite enregistree, ou route/parcours planifie) et
+ * l'identifiant numerique depuis une URL Strava — les sorties du club sont
+ * le plus souvent partagees comme une "route" (parcours planifie), pas
+ * comme une "activity" (sortie deja effectuee), d'ou la prise en charge
+ * des deux formats :
+ * - https://www.strava.com/activities/1234567890
+ * - https://www.strava.com/routes/1234567890 */
+export function extractStravaResource(url: string): StravaResource | null {
+  const activityMatch = url.match(/strava\.com\/activities\/(\d+)/);
+  if (activityMatch) return { type: "activity", id: activityMatch[1] };
+  const routeMatch = url.match(/strava\.com\/routes\/(\d+)/);
+  if (routeMatch) return { type: "route", id: routeMatch[1] };
+  return null;
 }
 
 interface StravaStreams {
@@ -191,6 +206,24 @@ export async function fetchStravaActivityStreams(accessToken: string, activityId
     );
   }
   return res.json();
+}
+
+/** Les routes (parcours planifies, pas encore effectues) ont leur propre
+ * endpoint d'export GPX cote Strava, qui renvoie directement le fichier GPX
+ * complet — pas besoin de le reconstruire nous-memes a partir de streams
+ * comme pour une activite. */
+export async function fetchStravaRouteGpx(accessToken: string, routeId: string): Promise<string> {
+  const res = await fetch(`https://www.strava.com/api/v3/routes/${routeId}/export_gpx`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) {
+    throw new Error(
+      res.status === 404 || res.status === 403
+        ? "Route introuvable ou non accessible avec ce compte Strava (doit appartenir à l'admin connecté)."
+        : `Erreur Strava (${res.status}).`
+    );
+  }
+  return res.text();
 }
 
 /** Construit un fichier GPX minimal (trace + altitude) a partir des streams

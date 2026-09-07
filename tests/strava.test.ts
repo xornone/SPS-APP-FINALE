@@ -1,20 +1,37 @@
 import { describe, expect, it } from "vitest";
-import { buildGpxFromStreams, extractStravaActivityId } from "@/lib/strava";
+import { buildGpxFromStreams, extractStravaResource } from "@/lib/strava";
 import { parseGpx } from "@/lib/gpx";
 
-describe("extractStravaActivityId", () => {
-  it("extrait l'identifiant depuis un lien d'activite standard", () => {
-    expect(extractStravaActivityId("https://www.strava.com/activities/1234567890")).toBe("1234567890");
+describe("extractStravaResource", () => {
+  it("reconnait une activite", () => {
+    expect(extractStravaResource("https://www.strava.com/activities/1234567890")).toEqual({
+      type: "activity",
+      id: "1234567890",
+    });
   });
 
-  it("extrait l'identifiant meme avec des parametres de requete", () => {
-    expect(extractStravaActivityId("https://www.strava.com/activities/42?foo=bar")).toBe("42");
+  it("reconnait une route (parcours planifie)", () => {
+    expect(extractStravaResource("https://www.strava.com/routes/3474411250197770348")).toEqual({
+      type: "route",
+      id: "3474411250197770348",
+    });
   });
 
-  it("retourne null pour un lien qui n'est pas une activite Strava", () => {
-    expect(extractStravaActivityId("https://www.strava.com/routes/1234567890")).toBeNull();
-    expect(extractStravaActivityId("https://example.com")).toBeNull();
-    expect(extractStravaActivityId("")).toBeNull();
+  it("fonctionne meme avec des parametres de requete", () => {
+    expect(extractStravaResource("https://www.strava.com/activities/42?foo=bar")).toEqual({
+      type: "activity",
+      id: "42",
+    });
+    expect(extractStravaResource("https://www.strava.com/routes/42?foo=bar")).toEqual({
+      type: "route",
+      id: "42",
+    });
+  });
+
+  it("retourne null pour un lien qui n'est ni une activite ni une route", () => {
+    expect(extractStravaResource("https://www.strava.com/segments/1234567890")).toBeNull();
+    expect(extractStravaResource("https://example.com")).toBeNull();
+    expect(extractStravaResource("")).toBeNull();
   });
 });
 

@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminGuard";
 import {
   buildGpxFromStreams,
-  extractStravaActivityId,
+  extractStravaResource,
   fetchStravaActivityStreams,
+  fetchStravaRouteGpx,
   getValidAccessToken,
 } from "@/lib/strava";
 
@@ -16,19 +17,33 @@ export async function POST(request: Request) {
     if (typeof athleteId !== "number") {
       return NextResponse.json({ error: "Choisis un compte Strava connecté." }, { status: 400 });
     }
-    const activityId = extractStravaActivityId(activityUrl || "");
-    if (!activityId) {
+    const resource = extractStravaResource(activityUrl || "");
+    if (!resource) {
       return NextResponse.json(
-        { error: "Lien Strava invalide (ex : https://www.strava.com/activities/1234567890)." },
+        {
+          error:
+            "Lien Strava invalide (ex : https://www.strava.com/routes/1234567890 ou https://www.strava.com/activities/1234567890).",
+        },
         { status: 400 }
       );
     }
 
     const accessToken = await getValidAccessToken(athleteId);
-    const streams = await fetchStravaActivityStreams(accessToken, activityId);
-    const gpxText = buildGpxFromStreams(streams, `Sortie SPS — activité Strava ${activityId}`);
 
-    return NextResponse.json({ ok: true, gpxText, activityId });
+    // Une "route" (parcours planifie, pas encore effectue) a son propre
+    // endpoint d'export GPX cote Strava — pas besoin de reconstruire le
+    // fichier a partir de streams comme pour une "activity" (deja
+    // effectuee). Les sorties du club sont le plus souvent partagees comme
+    // une route.
+    const gpxText =
+      resource.type === "route"
+        ? await fetchStravaRouteGpx(accessToken, resource.id)
+        : buildGpxFromStreams(
+            await fetchStravaActivityStreams(accessToken, resource.id),
+            `Sortie SPS — activité Strava ${resource.id}`
+          );
+
+    return NextResponse.json({ ok: true, gpxText, stravaId: resource.id });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Import Strava impossible." }, { status: 400 });
   }
