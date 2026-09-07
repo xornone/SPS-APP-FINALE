@@ -6,6 +6,12 @@ import { RideForm } from "@/components/RideForm";
 import { Icon } from "@/components/Icons";
 import { getStravaConnections } from "@/lib/strava";
 
+// Deja rendue dynamiquement de fait (createClient() appelle cookies()),
+// mais explicite ici comme sur le reste des pages admin qui doivent
+// refleter l'etat courant (comptes Strava connectes, sortie a jour) sans
+// dependre d'un detail d'implementation qui pourrait changer.
+export const dynamic = "force-dynamic";
+
 export default async function EditRidePage({ params }: { params: { id: string } }) {
   const supabase = createClient();
   const [ride, stravaConnections] = await Promise.all([fetchRide(supabase, params.id), getStravaConnections()]);

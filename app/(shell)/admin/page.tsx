@@ -8,6 +8,12 @@ import { Icon } from "@/components/Icons";
 import { getStravaConnections } from "@/lib/strava";
 import { StravaConnectPanel } from "@/components/StravaConnectPanel";
 
+// Deja rendue dynamiquement de fait (createClient() appelle cookies()),
+// mais explicite ici comme sur le reste des pages admin qui doivent
+// refleter l'etat courant (comptes Strava connectes, sorties a jour) sans
+// dependre d'un detail d'implementation qui pourrait changer.
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const supabase = createClient();
   const [rides, participations, stravaConnections] = await Promise.all([
