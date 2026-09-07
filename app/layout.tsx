@@ -16,7 +16,7 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "SPS — Solo Plus Solo",
+  title: "SPS — Sorties",
   description: "L'application du club de cyclisme SPS : sorties, parcours et participation.",
 };
 
