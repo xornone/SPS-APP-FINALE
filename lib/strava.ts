@@ -261,9 +261,17 @@ export async function fetchAthleteRoutes(accessToken: string): Promise<StravaRou
   }
   const data = await res.json();
   if (!Array.isArray(data)) return [];
+  // Les id de route Strava peuvent depasser Number.MAX_SAFE_INTEGER (2^53) :
+  // res.json() les convertit alors en JS number et arrondit silencieusement
+  // les derniers chiffres, corrompant l'id (ex: ...293000 au lieu de la
+  // vraie valeur) — l'export GPX echoue ensuite avec 404 pour un id qui
+  // n'existe pas. Strava fournit justement "id_str" (la meme valeur en
+  // texte, non affectee par cette perte de precision) pour ce cas precis :
+  // on l'utilise en priorite, String(r.id) restant un filet de secours si
+  // jamais un objet en est depourvu.
   return data.map((r: any) => ({
-    id: String(r.id),
-    name: r.name || `Trace ${r.id}`,
+    id: r.id_str || String(r.id),
+    name: r.name || `Trace ${r.id_str || r.id}`,
     distanceKm: Math.round((r.distance || 0) / 100) / 10,
     elevationGainM: Math.round(r.elevation_gain || 0),
   }));
