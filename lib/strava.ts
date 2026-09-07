@@ -26,7 +26,15 @@ export function stravaAuthorizeUrl(): string {
     client_id: clientId,
     redirect_uri: redirectUri,
     response_type: "code",
-    approval_prompt: "auto",
+    // "force" (et non "auto") : avec "auto", si l'athlete a deja autorise
+    // l'appli par le passe (meme avec un scope plus restreint), Strava
+    // saute l'ecran de consentement et renvoie silencieusement un token
+    // avec l'ANCIEN scope deja accorde — le nouveau scope demande
+    // (read_all, ajoute apres coup pour les routes) n'est alors jamais
+    // reellement accorde, meme apres deconnexion/reconnexion cote appli.
+    // "force" reaffiche systematiquement l'ecran Strava pour que l'athlete
+    // valide bien l'ensemble des permissions demandees.
+    approval_prompt: "force",
     // activity:read_all : necessaire pour lire le trace GPS (streams) des
     // activites de l'athlete, y compris celles non publiques.
     // read_all : necessaire pour l'export GPX des routes (parcours
