@@ -10,7 +10,7 @@ import { RideComments } from "@/components/RideComments";
 import { RideParticipationSection } from "@/components/RideParticipationSection";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
-import { RIDE_SAFETY_NOTICE } from "@/lib/rideSafetyNotice";
+import { RideDescription } from "@/components/RideDescription";
 import { buildRideShareMessage } from "@/lib/shareMessage";
 import { shortRideCode } from "@/lib/shortLink";
 import { GROUP_INFO, type GroupLevel } from "@/lib/types";
@@ -142,18 +142,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         ))}
       </div>
 
-      <div className="px-5 py-4 text-[13.5px] leading-relaxed text-black/60 dark:text-white/60">
-        <h4 className="mb-2 font-display text-sm tracking-wide text-black dark:text-white">Description</h4>
-        <p className="whitespace-pre-wrap break-words">
-          {ride.description || "Pas de description pour cette sortie."}
-        </p>
-        {/* Consignes fixes affichees sur toutes les sorties, volontairement
-            separees de ride.description (voir lib/rideSafetyNotice.ts) pour
-            que le partage WhatsApp puisse les exclure sans y toucher. */}
-        <p className="mt-4 whitespace-pre-wrap break-words border-t border-black/[0.06] pt-4 dark:border-white/10">
-          {RIDE_SAFETY_NOTICE}
-        </p>
-      </div>
+      <RideDescription description={ride.description} />
 
       <RideComments rideId={ride.id} initialComments={comments} />
 
