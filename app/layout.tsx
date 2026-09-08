@@ -20,6 +20,11 @@ const manrope = Manrope({
 export const metadata: Metadata = {
   title: "SPS — Sorties",
   description: "L'application du club de cyclisme SPS : sorties, parcours et participation.",
+  appleWebApp: {
+    capable: true,
+    title: "SPS",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
