@@ -33,6 +33,7 @@ const PATHS: Record<string, string> = {
   arrowUp: '<path d="M12 20.5V5M6.3 10.3 12 4.5l5.7 5.8" stroke-linecap="round" stroke-linejoin="round"/>',
   send: '<path d="M4.2 11.8 19.5 4.5 15 19.5l-3.6-6.1-6.1-1.6Z" stroke-linejoin="round"/><path d="M11.4 13.4 19.5 4.5" stroke-linecap="round"/>',
   chat: '<path d="M12 4a8 8 0 0 0-6.9 12l-1.1 4 4.2-1.1A8 8 0 1 0 12 4Z" stroke-linejoin="round"/>',
+  chevDown: '<path d="M5 9l7 7 7-7" stroke-linecap="round" stroke-linejoin="round"/>',
 };
 
 export function Icon({

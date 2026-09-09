@@ -2,8 +2,11 @@ import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { Icon } from "@/components/Icons";
+import { MemberAssiduityRanking, type AssiduityEntry } from "@/components/MemberAssiduityRanking";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
+
+const ASSIDUITY_RANKING_SIZE = 10;
 
 // Page volontairement collective : aucun classement nominatif des membres,
 // uniquement des chiffres qui mettent en avant le club dans son ensemble.
@@ -83,6 +86,25 @@ export default async function ClassementPage() {
     if (idx >= 0 && idx < buckets.length) buckets[idx].km += p.ride!.distance_km;
   });
   const maxKm = Math.max(...buckets.map((b) => b.km), 1);
+
+  // Classement nominatif des membres les plus assidus (sorties passees) :
+  // volontairement absent des chiffres publics ci-dessus (voir le
+  // commentaire en tete de fichier), calcule ici uniquement pour l'affichage
+  // reserve aux admins (voir MemberAssiduityRanking). Les participations
+  // n'etant pas liees a un compte, un "membre" est identifie par son nom
+  // (normalise pour regrouper les casses/espaces differents d'une
+  // inscription a l'autre).
+  const attendanceByName = new Map<string, AssiduityEntry>();
+  past.forEach((p) => {
+    const display = p.participant_name.trim();
+    const key = display.toLowerCase();
+    const entry = attendanceByName.get(key);
+    if (entry) entry.count++;
+    else attendanceByName.set(key, { display, count: 1 });
+  });
+  const assiduityRanking = Array.from(attendanceByName.values())
+    .sort((a, b) => b.count - a.count)
+    .slice(0, ASSIDUITY_RANKING_SIZE);
 
   return (
     <div>
@@ -208,6 +230,8 @@ export default async function ClassementPage() {
           ))
         )}
       </div>
+
+      <MemberAssiduityRanking ranking={assiduityRanking} />
     </div>
   );
 }

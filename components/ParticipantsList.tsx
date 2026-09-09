@@ -16,7 +16,12 @@ import type { Participation } from "@/lib/types";
  * case a cocher permettant de selectionner un ou plusieurs participants a
  * retirer ; une confirmation explicite (avec les noms concernes) est
  * demandee avant tout retrait, pour eviter une manipulation involontaire.
+ * Au-dela de COLLAPSE_THRESHOLD participants, la liste est repliee par
+ * defaut (les premiers inscrits restent visibles) avec un bouton pour la
+ * derouler entierement, et un autre pour la reduire a nouveau.
  */
+const COLLAPSE_THRESHOLD = 8;
+
 export function ParticipantsList({
   rideId,
   participants,
@@ -31,6 +36,10 @@ export function ParticipantsList({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [expanded, setExpanded] = useState(false);
+
+  const isCollapsible = participants.length > COLLAPSE_THRESHOLD;
+  const visibleParticipants = isCollapsible && !expanded ? participants.slice(0, COLLAPSE_THRESHOLD) : participants;
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -78,7 +87,7 @@ export function ParticipantsList({
       {participants.length === 0 ? (
         <p className="p-6 text-center text-sm text-black/40 dark:text-white/40">Personne n&apos;est encore inscrit.</p>
       ) : (
-        participants.map((p) => (
+        visibleParticipants.map((p) => (
           <div key={p.id} className="flex items-center gap-3 px-4 py-2.5">
             {isAdmin && (
               <input
@@ -94,6 +103,17 @@ export function ParticipantsList({
             <GroupBadge group={p.group_level} withRange={false} />
           </div>
         ))
+      )}
+
+      {isCollapsible && (
+        <button
+          type="button"
+          onClick={() => setExpanded((e) => !e)}
+          className="flex w-full items-center justify-center gap-1.5 border-t border-black/[0.06] py-3 text-[12.5px] font-bold text-sps-violet600 dark:border-white/10 dark:text-sps-violet400"
+        >
+          {expanded ? "Réduire la liste" : `Voir les ${participants.length} participants`}
+          <Icon name="chevDown" size={14} className={expanded ? "rotate-180" : ""} />
+        </button>
       )}
 
       {isAdmin && selected.size > 0 && (
