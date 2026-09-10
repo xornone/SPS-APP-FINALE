@@ -25,14 +25,19 @@ function stripDiacritics(value: string): string {
 
 /**
  * Normalise un nom pour regrouper les variantes d'orthographe d'une meme
- * personne : accents ("Trégaro" / "Tregaro"), casse et espaces en trop.
- * Volontairement simple et previsible plutot qu'un rapprochement flou
- * (distance de Levenshtein, etc.) qui risquerait de fusionner deux
- * personnes differentes par erreur — seuls les accents/casse/espaces sont
- * ignores, pas les fautes de frappe plus profondes.
+ * personne : accents ("Trégaro" / "Tregaro"), casse, espaces en trop, et
+ * ordre nom/prenom ("Thomas Tregaro" / "Tregaro Thomas" — les mots sont
+ * tries pour que l'ordre n'ait plus d'importance). Volontairement simple
+ * et previsible plutot qu'un rapprochement flou (distance de Levenshtein,
+ * etc.) qui risquerait de fusionner deux personnes differentes par erreur.
+ * Le tri des mots accepte un risque similaire mais rare : deux personnes
+ * dont les noms seraient une permutation exacte l'une de l'autre (ex.
+ * "Marie Claude" et "Claude Marie") seraient a tort regroupees — juge
+ * acceptable pour un club de cette taille.
  */
 export function normalizeMemberName(name: string): string {
-  return stripDiacritics(name.trim().replace(/\s+/g, " ")).toLowerCase();
+  const cleaned = stripDiacritics(name.trim().replace(/\s+/g, " ")).toLowerCase();
+  return cleaned.split(" ").sort().join(" ");
 }
 
 /**

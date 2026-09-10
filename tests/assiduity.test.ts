@@ -14,6 +14,11 @@ describe("normalizeMemberName", () => {
     expect(normalizeMemberName("  Thomas   Tregaro  ")).toBe(normalizeMemberName("Thomas Tregaro"));
   });
 
+  it("ignore l'ordre nom/prenom", () => {
+    expect(normalizeMemberName("Thomas Tregaro")).toBe(normalizeMemberName("Tregaro Thomas"));
+    expect(normalizeMemberName("Thomas Trégaro")).toBe(normalizeMemberName("TREGARO   thomas"));
+  });
+
   it("ne fusionne pas des noms differents", () => {
     expect(normalizeMemberName("Thomas Tregaro")).not.toBe(normalizeMemberName("Thomas Tregarot"));
     expect(normalizeMemberName("Thomas Tregaro")).not.toBe(normalizeMemberName("Camille Tregaro"));
@@ -29,6 +34,11 @@ describe("buildAssiduityRanking", () => {
   it("affiche l'orthographe la plus frequente pour une meme personne", () => {
     const ranking = buildAssiduityRanking(["thomas tregaro", "Thomas Trégaro", "Thomas Trégaro"], 10);
     expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 3 });
+  });
+
+  it("compte une personne comme une seule entree malgre un ordre nom/prenom different", () => {
+    const ranking = buildAssiduityRanking(["Thomas Trégaro", "Trégaro Thomas", "Thomas Trégaro"], 10);
+    expect(ranking).toEqual([{ display: "Thomas Trégaro", count: 3 }]);
   });
 
   it("a egalite, garde la premiere orthographe rencontree", () => {
