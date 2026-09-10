@@ -2,7 +2,8 @@ import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { Icon } from "@/components/Icons";
-import { MemberAssiduityRanking, type AssiduityEntry } from "@/components/MemberAssiduityRanking";
+import { MemberAssiduityRanking } from "@/components/MemberAssiduityRanking";
+import { buildAssiduityRankingFromParticipations } from "@/lib/assiduity";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 
@@ -91,20 +92,10 @@ export default async function ClassementPage() {
   // volontairement absent des chiffres publics ci-dessus (voir le
   // commentaire en tete de fichier), calcule ici uniquement pour l'affichage
   // reserve aux admins (voir MemberAssiduityRanking). Les participations
-  // n'etant pas liees a un compte, un "membre" est identifie par son nom
-  // (normalise pour regrouper les casses/espaces differents d'une
-  // inscription a l'autre).
-  const attendanceByName = new Map<string, AssiduityEntry>();
-  past.forEach((p) => {
-    const display = p.participant_name.trim();
-    const key = display.toLowerCase();
-    const entry = attendanceByName.get(key);
-    if (entry) entry.count++;
-    else attendanceByName.set(key, { display, count: 1 });
-  });
-  const assiduityRanking = Array.from(attendanceByName.values())
-    .sort((a, b) => b.count - a.count)
-    .slice(0, ASSIDUITY_RANKING_SIZE);
+  // n'etant pas liees a un compte, un "membre" est identifie par son nom,
+  // regroupe en ignorant casse/espaces/accents (ex. "Thomas Trégaro" et
+  // "Thomas Tregaro" comptent pour la meme personne) — voir lib/assiduity.ts.
+  const assiduityRanking = buildAssiduityRankingFromParticipations(past, ASSIDUITY_RANKING_SIZE);
 
   return (
     <div>

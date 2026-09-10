@@ -4,11 +4,7 @@ import { useState } from "react";
 import { AdminOnly } from "./AdminOnly";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icons";
-
-export interface AssiduityEntry {
-  display: string;
-  count: number;
-}
+import type { AssiduityEntry } from "@/lib/assiduity";
 
 /**
  * Classement nominatif des membres les plus assidus (nombre de sorties
