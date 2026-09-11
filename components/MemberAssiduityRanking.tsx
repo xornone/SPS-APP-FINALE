@@ -6,6 +6,8 @@ import { Avatar } from "./Avatar";
 import { Icon } from "./Icons";
 import type { AssiduityEntry } from "@/lib/assiduity";
 
+const PAGE_SIZE = 10;
+
 /**
  * Classement nominatif des membres les plus assidus (nombre de sorties
  * passees) — volontairement absent de la page Statistique SPS publique
@@ -14,11 +16,21 @@ import type { AssiduityEntry } from "@/lib/assiduity";
  * aux admins via AdminOnly (verification cote client, meme modele que le
  * bouton "Publier sur WhatsApp" — voir lib/useIsAdmin.ts) et replie par
  * defaut derriere un bouton "Voir le classement".
+ *
+ * `ranking` recoit TOUS les membres (voir lib/assiduity.ts) : seuls les
+ * PAGE_SIZE premiers sont affiches au depart, avec un bouton
+ * "Afficher plus" pour derouler le reste (et "Afficher moins" pour
+ * revenir a l'affichage court) — evite une liste interminable pour un
+ * club avec beaucoup de membres actifs.
  */
 export function MemberAssiduityRanking({ ranking }: { ranking: AssiduityEntry[] }) {
   const [expanded, setExpanded] = useState(false);
+  const [showAll, setShowAll] = useState(false);
 
   if (ranking.length === 0) return null;
+
+  const visible = showAll ? ranking : ranking.slice(0, PAGE_SIZE);
+  const remaining = ranking.length - visible.length;
 
   return (
     <AdminOnly>
@@ -30,7 +42,7 @@ export function MemberAssiduityRanking({ ranking }: { ranking: AssiduityEntry[] 
           </span>
         </div>
         <p className="text-[12.5px] text-black/45 dark:text-white/45">
-          Visible par les admins uniquement · top {ranking.length}.
+          Visible par les admins uniquement · {ranking.length} membre{ranking.length > 1 ? "s" : ""}.
         </p>
       </div>
       <div className="mx-5 mb-6 overflow-hidden rounded-2xl border border-black/[0.06] bg-white dark:border-white/10 dark:bg-[#1A1422]">
@@ -47,7 +59,7 @@ export function MemberAssiduityRanking({ ranking }: { ranking: AssiduityEntry[] 
         </button>
         {expanded && (
           <div className="border-t border-black/[0.06] dark:border-white/10">
-            {ranking.map((m, i) => (
+            {visible.map((m, i) => (
               <div
                 key={m.display}
                 className="flex items-center gap-3 border-b border-black/[0.05] px-4 py-2.5 last:border-0 dark:border-white/[0.06]"
@@ -62,6 +74,17 @@ export function MemberAssiduityRanking({ ranking }: { ranking: AssiduityEntry[] 
                 </span>
               </div>
             ))}
+
+            {ranking.length > PAGE_SIZE && (
+              <button
+                type="button"
+                onClick={() => setShowAll((s) => !s)}
+                className="flex w-full items-center justify-center gap-1.5 border-t border-black/[0.06] py-3 text-[12.5px] font-bold text-sps-violet600 dark:border-white/10 dark:text-sps-violet400"
+              >
+                {showAll ? "Afficher moins" : `Afficher plus (${remaining})`}
+                <Icon name="chevDown" size={14} className={showAll ? "rotate-180" : ""} />
+              </button>
+            )}
           </div>
         )}
       </div>

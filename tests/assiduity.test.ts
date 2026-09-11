@@ -63,6 +63,11 @@ describe("buildAssiduityRanking", () => {
     expect(ranking.map((r) => r.display)).toEqual(["C", "B"]);
   });
 
+  it("retourne tout le classement quand aucune limite n'est passee", () => {
+    const ranking = buildAssiduityRanking(["A", "B", "B", "C", "C", "C"]);
+    expect(ranking.map((r) => r.display)).toEqual(["C", "B", "A"]);
+  });
+
   it("ignore les noms vides ou uniquement des espaces", () => {
     const ranking = buildAssiduityRanking(["Thomas", "", "   ", "Thomas"], 10);
     expect(ranking).toEqual([{ display: "Thomas", count: 2 }]);

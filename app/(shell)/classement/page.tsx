@@ -7,8 +7,6 @@ import { buildAssiduityRankingFromParticipations } from "@/lib/assiduity";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 
-const ASSIDUITY_RANKING_SIZE = 10;
-
 // Page volontairement collective : aucun classement nominatif des membres,
 // uniquement des chiffres qui mettent en avant le club dans son ensemble.
 // 100% publique (aucune donnee liee a une session, voir
@@ -93,9 +91,12 @@ export default async function ClassementPage() {
   // commentaire en tete de fichier), calcule ici uniquement pour l'affichage
   // reserve aux admins (voir MemberAssiduityRanking). Les participations
   // n'etant pas liees a un compte, un "membre" est identifie par son nom,
-  // regroupe en ignorant casse/espaces/accents (ex. "Thomas Trégaro" et
-  // "Thomas Tregaro" comptent pour la meme personne) — voir lib/assiduity.ts.
-  const assiduityRanking = buildAssiduityRankingFromParticipations(past, ASSIDUITY_RANKING_SIZE);
+  // regroupe en ignorant casse/espaces/accents/ordre nom-prenom (ex.
+  // "Thomas Trégaro" et "Tregaro Thomas" comptent pour la meme personne) —
+  // voir lib/assiduity.ts. Classement complet ici : c'est
+  // MemberAssiduityRanking qui n'affiche que les premiers, avec un bouton
+  // "Afficher plus" pour derouler le reste.
+  const assiduityRanking = buildAssiduityRankingFromParticipations(past);
 
   return (
     <div>

@@ -43,13 +43,15 @@ export function normalizeMemberName(name: string): string {
 /**
  * Regroupe une liste de noms de participants (un nom par participation,
  * doublons inclus) par personne (voir normalizeMemberName) et retourne le
- * classement par nombre de participations decroissant, limite a `limit`
- * entrees. L'orthographe affichee pour chaque personne est celle qu'elle a
- * utilisee le plus souvent (a egalite, la premiere rencontree) : ainsi le
- * nom affiche reste stable et lisible meme si l'orthographe a varie d'une
- * inscription a l'autre.
+ * classement complet par nombre de participations decroissant (tous les
+ * membres — c'est a l'affichage, voir MemberAssiduityRanking, de ne
+ * montrer que les premiers avec un bouton "Afficher plus"). Passer `limit`
+ * pour tronquer directement la liste si besoin. L'orthographe affichee
+ * pour chaque personne est celle qu'elle a utilisee le plus souvent (a
+ * egalite, la premiere rencontree) : ainsi le nom affiche reste stable et
+ * lisible meme si l'orthographe a varie d'une inscription a l'autre.
  */
-export function buildAssiduityRanking(names: string[], limit: number): AssiduityEntry[] {
+export function buildAssiduityRanking(names: string[], limit?: number): AssiduityEntry[] {
   const groups = new Map<string, { total: number; variants: Map<string, number> }>();
 
   for (const raw of names) {
@@ -77,13 +79,14 @@ export function buildAssiduityRanking(names: string[], limit: number): Assiduity
     return { display: bestVariant, count: group.total };
   });
 
-  return entries.sort((a, b) => b.count - a.count).slice(0, limit);
+  const sorted = entries.sort((a, b) => b.count - a.count);
+  return limit === undefined ? sorted : sorted.slice(0, limit);
 }
 
 /** Raccourci pratique a partir d'une liste de participations (voir buildAssiduityRanking). */
 export function buildAssiduityRankingFromParticipations(
   participations: Pick<Participation, "participant_name">[],
-  limit: number
+  limit?: number
 ): AssiduityEntry[] {
   return buildAssiduityRanking(
     participations.map((p) => p.participant_name),
