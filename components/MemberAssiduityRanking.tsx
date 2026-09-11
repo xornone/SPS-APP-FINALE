@@ -14,17 +14,15 @@ const PAGE_SIZE = 10;
  * (voir le commentaire en tete de app/(shell)/classement/page.tsx) pour ne
  * pas mettre les membres en competition les uns contre les autres. Reserve
  * aux admins via AdminOnly (verification cote client, meme modele que le
- * bouton "Publier sur WhatsApp" — voir lib/useIsAdmin.ts) et replie par
- * defaut derriere un bouton "Voir le classement".
+ * bouton "Publier sur WhatsApp" — voir lib/useIsAdmin.ts).
  *
- * `ranking` recoit TOUS les membres (voir lib/assiduity.ts) : seuls les
- * PAGE_SIZE premiers sont affiches au depart, avec un bouton
- * "Afficher plus" pour derouler le reste (et "Afficher moins" pour
- * revenir a l'affichage court) — evite une liste interminable pour un
- * club avec beaucoup de membres actifs.
+ * `ranking` recoit TOUS les membres (voir lib/assiduity.ts) : le top
+ * PAGE_SIZE est affiche directement (pas de repli initial a derouler), avec
+ * un bouton "Afficher plus" pour reveler le reste (et "Afficher moins" pour
+ * revenir a l'affichage court) — un seul niveau de deroulement, plus rapide
+ * a consulter qu'un repli en cascade.
  */
 export function MemberAssiduityRanking({ ranking }: { ranking: AssiduityEntry[] }) {
-  const [expanded, setExpanded] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
   if (ranking.length === 0) return null;
@@ -36,6 +34,7 @@ export function MemberAssiduityRanking({ ranking }: { ranking: AssiduityEntry[] 
     <AdminOnly>
       <div className="px-5 pb-1.5 pt-1">
         <div className="flex items-center gap-1.5">
+          <Icon name="trophy" size={16} className="text-sps-violet600 dark:text-sps-violet400" />
           <h2 className="font-display text-xl tracking-wide">Membres les plus assidus</h2>
           <span className="rounded-full bg-sps-violet600/10 px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-sps-violet600 dark:text-sps-violet400">
             Admin
@@ -46,46 +45,31 @@ export function MemberAssiduityRanking({ ranking }: { ranking: AssiduityEntry[] 
         </p>
       </div>
       <div className="mx-5 mb-6 overflow-hidden rounded-2xl border border-black/[0.06] bg-white dark:border-white/10 dark:bg-[#1A1422]">
-        <button
-          type="button"
-          onClick={() => setExpanded((e) => !e)}
-          className="flex w-full items-center justify-between px-4 py-3.5 text-[13px] font-bold"
-        >
-          <span className="flex items-center gap-2">
-            <Icon name="trophy" size={16} className="text-sps-violet600 dark:text-sps-violet400" />
-            {expanded ? "Réduire le classement" : "Voir le classement"}
-          </span>
-          <Icon name="chevDown" size={15} className={expanded ? "rotate-180" : ""} />
-        </button>
-        {expanded && (
-          <div className="border-t border-black/[0.06] dark:border-white/10">
-            {visible.map((m, i) => (
-              <div
-                key={m.display}
-                className="flex items-center gap-3 border-b border-black/[0.05] px-4 py-2.5 last:border-0 dark:border-white/[0.06]"
-              >
-                <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-sps-violet600/10 text-[11px] font-bold text-sps-violet600 dark:text-sps-violet400">
-                  {i + 1}
-                </span>
-                <Avatar name={m.display} seed={m.display} size="sm" />
-                <span className="flex-1 truncate text-[13.5px] font-bold">{m.display}</span>
-                <span className="flex-none text-[12.5px] font-bold text-black/45 dark:text-white/45">
-                  {m.count} sortie{m.count > 1 ? "s" : ""}
-                </span>
-              </div>
-            ))}
-
-            {ranking.length > PAGE_SIZE && (
-              <button
-                type="button"
-                onClick={() => setShowAll((s) => !s)}
-                className="flex w-full items-center justify-center gap-1.5 border-t border-black/[0.06] py-3 text-[12.5px] font-bold text-sps-violet600 dark:border-white/10 dark:text-sps-violet400"
-              >
-                {showAll ? "Afficher moins" : `Afficher plus (${remaining})`}
-                <Icon name="chevDown" size={14} className={showAll ? "rotate-180" : ""} />
-              </button>
-            )}
+        {visible.map((m, i) => (
+          <div
+            key={m.display}
+            className="flex items-center gap-3 border-b border-black/[0.05] px-4 py-2.5 last:border-0 dark:border-white/[0.06]"
+          >
+            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-sps-violet600/10 text-[11px] font-bold text-sps-violet600 dark:text-sps-violet400">
+              {i + 1}
+            </span>
+            <Avatar name={m.display} seed={m.display} size="sm" />
+            <span className="flex-1 truncate text-[13.5px] font-bold">{m.display}</span>
+            <span className="flex-none text-[12.5px] font-bold text-black/45 dark:text-white/45">
+              {m.count} sortie{m.count > 1 ? "s" : ""}
+            </span>
           </div>
+        ))}
+
+        {ranking.length > PAGE_SIZE && (
+          <button
+            type="button"
+            onClick={() => setShowAll((s) => !s)}
+            className="flex w-full items-center justify-center gap-1.5 border-t border-black/[0.06] py-3 text-[12.5px] font-bold text-sps-violet600 dark:border-white/10 dark:text-sps-violet400"
+          >
+            {showAll ? "Afficher moins" : `Afficher plus (${remaining})`}
+            <Icon name="chevDown" size={14} className={showAll ? "rotate-180" : ""} />
+          </button>
         )}
       </div>
     </AdminOnly>
