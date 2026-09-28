@@ -23,6 +23,12 @@ describe("normalizeMemberName", () => {
     expect(normalizeMemberName("Thomas Tregaro")).not.toBe(normalizeMemberName("Thomas Tregarot"));
     expect(normalizeMemberName("Thomas Tregaro")).not.toBe(normalizeMemberName("Camille Tregaro"));
   });
+
+  it("ignore les emoji ajoutes au nom", () => {
+    expect(normalizeMemberName("Florian Maillou 🚀")).toBe(normalizeMemberName("Florian Maillou"));
+    expect(normalizeMemberName("Théo DOUSSOT 🚴🏼")).toBe(normalizeMemberName("Théo DOUSSOT"));
+    expect(normalizeMemberName("MIMOUNI redouane ✌")).toBe(normalizeMemberName("MIMOUNI redouane"));
+  });
 });
 
 describe("buildAssiduityRanking", () => {
@@ -75,5 +81,15 @@ describe("buildAssiduityRanking", () => {
 
   it("retourne un tableau vide si aucune participation", () => {
     expect(buildAssiduityRanking([], 10)).toEqual([]);
+  });
+
+  it("compte une personne comme une seule entree malgre un emoji ajoute au nom", () => {
+    const ranking = buildAssiduityRanking(["Florian Maillou", "Florian Maillou 🚀"], 10);
+    expect(ranking).toEqual([{ display: "Florian Maillou", count: 2 }]);
+  });
+
+  it("n'affiche jamais d'emoji, meme si c'est la seule orthographe rencontree", () => {
+    const ranking = buildAssiduityRanking(["MIMOUNI redouane ✌", "MIMOUNI redouane ✌"], 10);
+    expect(ranking).toEqual([{ display: "MIMOUNI redouane", count: 2 }]);
   });
 });

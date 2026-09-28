@@ -23,20 +23,53 @@ function stripDiacritics(value: string): string {
   return out;
 }
 
+// Plages (code points) couvrant les emoji et symboles que des membres
+// ajoutent parfois a leur nom (ex. "Florian Maillou 🚀", "Théo DOUSSOT 🚴🏼",
+// "MIMOUNI redouane ✌") : pictogrammes, emoticones, transport, dingbats,
+// symboles divers, indicateurs regionaux (drapeaux), modificateurs de
+// carnation et le joiner invisible (ZWJ) qui chaine les emoji composes.
+// Volontairement large plutot qu'une liste blanche : le but est de ne
+// jamais laisser un emoji faire compter deux fois la meme personne, ni
+// polluer le nom affiche.
+const EMOJI_RANGES: Array<[number, number]> = [
+  [0x2300, 0x23ff], // symboles divers techniques (⌚ etc.)
+  [0x2600, 0x27bf], // symboles divers + dingbats (✌ ☀ ✔ etc.)
+  [0x2b00, 0x2bff], // fleches/etoiles supplementaires
+  [0x1f1e6, 0x1f1ff], // indicateurs regionaux (drapeaux)
+  [0x1f300, 0x1faff], // emoji/pictogrammes principaux (🚀 🚴 etc.)
+  [0xfe0e, 0xfe0f], // selecteurs de variation (texte/emoji)
+];
+
+function isEmojiCodePoint(code: number): boolean {
+  if (code === 0x200d) return true; // zero-width joiner (emoji composes)
+  return EMOJI_RANGES.some(([start, end]) => code >= start && code <= end);
+}
+
+function stripEmoji(value: string): string {
+  let out = "";
+  for (const ch of value) {
+    const code = ch.codePointAt(0) ?? 0;
+    if (isEmojiCodePoint(code)) continue;
+    out += ch;
+  }
+  return out.replace(/\s+/g, " ").trim();
+}
+
 /**
  * Normalise un nom pour regrouper les variantes d'orthographe d'une meme
- * personne : accents ("Trégaro" / "Tregaro"), casse, espaces en trop, et
- * ordre nom/prenom ("Thomas Tregaro" / "Tregaro Thomas" — les mots sont
- * tries pour que l'ordre n'ait plus d'importance). Volontairement simple
- * et previsible plutot qu'un rapprochement flou (distance de Levenshtein,
- * etc.) qui risquerait de fusionner deux personnes differentes par erreur.
- * Le tri des mots accepte un risque similaire mais rare : deux personnes
- * dont les noms seraient une permutation exacte l'une de l'autre (ex.
- * "Marie Claude" et "Claude Marie") seraient a tort regroupees — juge
- * acceptable pour un club de cette taille.
+ * personne : emoji ("Florian Maillou 🚀" / "Florian Maillou"), accents
+ * ("Trégaro" / "Tregaro"), casse, espaces en trop, et ordre nom/prenom
+ * ("Thomas Tregaro" / "Tregaro Thomas" — les mots sont tries pour que
+ * l'ordre n'ait plus d'importance). Volontairement simple et previsible
+ * plutot qu'un rapprochement flou (distance de Levenshtein, etc.) qui
+ * risquerait de fusionner deux personnes differentes par erreur. Le tri
+ * des mots accepte un risque similaire mais rare : deux personnes dont
+ * les noms seraient une permutation exacte l'une de l'autre (ex. "Marie
+ * Claude" et "Claude Marie") seraient a tort regroupees — juge acceptable
+ * pour un club de cette taille.
  */
 export function normalizeMemberName(name: string): string {
-  const cleaned = stripDiacritics(name.trim().replace(/\s+/g, " ")).toLowerCase();
+  const cleaned = stripDiacritics(stripEmoji(name.trim().replace(/\s+/g, " "))).toLowerCase();
   return cleaned.split(" ").sort().join(" ");
 }
 
@@ -55,7 +88,7 @@ export function buildAssiduityRanking(names: string[], limit?: number): Assiduit
   const groups = new Map<string, { total: number; variants: Map<string, number> }>();
 
   for (const raw of names) {
-    const display = raw.trim().replace(/\s+/g, " ");
+    const display = stripEmoji(raw.trim().replace(/\s+/g, " "));
     if (!display) continue;
     const key = normalizeMemberName(display);
     let group = groups.get(key);
