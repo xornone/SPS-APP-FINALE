@@ -143,7 +143,8 @@ function GpxRow({ ride, gpxUrl }: { ride: Ride; gpxUrl: string }) {
               {dateLabel} · {timeLabel}
             </span>
             <span className="flex items-center gap-1">
-              <Icon name="flag" size={11} /> <PlaceLink place={ride.place} placeUrl={ride.place_url} />
+              {/* DEBUG TEMPORAIRE : PlaceLink remplace par du texte brut pour isoler si le crash vient de lui */}
+              <Icon name="flag" size={11} /> {ride.place}
             </span>
           </p>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-black/45 dark:text-white/45">
