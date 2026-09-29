@@ -1,11 +1,6 @@
-import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchRides } from "@/lib/queries";
-import { Icon } from "@/components/Icons";
-import { GroupBadge } from "@/components/GroupBadge";
-import { PlaceLink } from "@/components/PlaceLink";
-import { GpxDistanceFilter } from "@/components/GpxDistanceFilter";
-import { fmtDateShort, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
+import { GpxList, type GpxEntry } from "@/components/GpxList";
 import type { Ride } from "@/lib/types";
 
 // Page 100% publique (aucune donnee liee a une session, meme client que
@@ -27,22 +22,21 @@ export default async function GpxPage() {
 
   // Seules les sorties avec une trace GPX effectivement deposee ont leur
   // place ici : le but de cet onglet est un catalogue de telechargements,
-  // pas une liste de toutes les sorties (voir Accueil pour ca).
+  // pas une liste de toutes les sorties (voir Accueil pour ca). Plus de
+  // distinction a venir / passees : une seule liste, triee par distance
+  // dans GpxList.
   const withGpx = rides.map((ride) => withGpxUrl(ride, supabase)).filter((r): r is { ride: Ride; gpxUrl: string } => !!r.gpxUrl);
 
-  const upcoming = withGpx.filter((r) => !isPastDate(r.ride.ride_date));
-  const past = withGpx
-    .filter((r) => isPastDate(r.ride.ride_date))
-    .sort((a, b) => b.ride.ride_date.localeCompare(a.ride.ride_date));
-
-  // Forme allegee pour le filtre client (voir le commentaire dans
-  // GpxDistanceFilter.tsx) : on evite de faire traverser route_points (la
-  // trace GPS parsee, potentiellement volumineuse) au navigateur pour
-  // chaque sortie, alors que seuls id/distance/D+/lien GPX sont utiles ici.
-  const filterEntries = withGpx.map(({ ride, gpxUrl }) => ({
+  const entries: GpxEntry[] = withGpx.map(({ ride, gpxUrl }) => ({
     id: ride.id,
+    title: ride.title,
+    rideDate: ride.ride_date,
+    rideTime: ride.ride_time,
+    place: ride.place,
+    placeUrl: ride.place_url,
     distanceKm: ride.distance_km,
     elevationGainM: ride.elevation_gain_m,
+    groups: (ride.ride_groups || []).map((g) => g.group_level),
     gpxUrl,
   }));
 
@@ -60,81 +54,8 @@ export default async function GpxPage() {
           Aucune trace GPX disponible pour le moment.
         </div>
       ) : (
-        <>
-          <GpxDistanceFilter entries={filterEntries} />
-
-          <div className="flex flex-col gap-6 px-5">
-            {upcoming.length > 0 && (
-              <section className="flex flex-col gap-2.5">
-                <h2 className="text-[11px] font-bold uppercase tracking-wide text-black/40 dark:text-white/40">
-                  A venir
-                </h2>
-                {upcoming.map(({ ride, gpxUrl }) => (
-                  <GpxRow key={ride.id} ride={ride} gpxUrl={gpxUrl} />
-                ))}
-              </section>
-            )}
-
-            {past.length > 0 && (
-              <section className="flex flex-col gap-2.5">
-                <h2 className="text-[11px] font-bold uppercase tracking-wide text-black/40 dark:text-white/40">
-                  Sorties passees
-                </h2>
-                {past.map(({ ride, gpxUrl }) => (
-                  <GpxRow key={ride.id} ride={ride} gpxUrl={gpxUrl} />
-                ))}
-              </section>
-            )}
-          </div>
-        </>
+        <GpxList entries={entries} />
       )}
-    </div>
-  );
-}
-
-function GpxRow({ ride, gpxUrl }: { ride: Ride; gpxUrl: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-[20px] border border-black/[0.06] bg-white p-4 shadow-cardSm dark:border-white/10 dark:bg-[#1A1422]">
-      <div className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-sps-violet600/10 text-sps-violet600 dark:text-sps-violet400">
-        <Icon name="gpx" size={20} />
-      </div>
-      <Link href={`/rides/${ride.id}`} className="min-w-0 flex-1">
-        <p className="truncate text-[14.5px] font-extrabold leading-tight">{ride.title}</p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-black/50 dark:text-white/50">
-          <span>
-            {fmtDateShort(ride.ride_date)} · {fmtTime(ride.ride_time)}
-          </span>
-          <span className="flex items-center gap-1">
-            <Icon name="flag" size={11} /> <PlaceLink place={ride.place} placeUrl={ride.place_url} />
-          </span>
-        </p>
-        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-black/45 dark:text-white/45">
-          <span>
-            <b className="text-black/70 dark:text-white/70">{fmtKm(ride.distance_km)}</b> · <b className="text-black/70 dark:text-white/70">{fmtM(ride.elevation_gain_m)}</b> D+
-          </span>
-          <span className="flex gap-1">
-            {(ride.ride_groups || []).map((g) => (
-              <GroupBadge key={g.group_level} group={g.group_level} withRange={false} />
-            ))}
-          </span>
-        </p>
-      </Link>
-      {/*
-        Pas de onClick ici : GpxRow est un composant serveur, et un
-        gestionnaire d'evenement sur un element natif ne peut pas etre passe
-        depuis un composant serveur (React refuse de le serialiser) — c'etait
-        la cause de l'erreur 500 sur cette page. Il n'est de toute facon pas
-        necessaire : ce lien est un frere de <Link>, pas imbrique dedans, un
-        clic dessus ne declenche donc jamais la navigation de <Link>.
-      */}
-      <a
-        href={gpxUrl}
-        download
-        className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
-        aria-label={`Telecharger le GPX de ${ride.title}`}
-      >
-        <Icon name="download" size={17} />
-      </a>
     </div>
   );
 }
