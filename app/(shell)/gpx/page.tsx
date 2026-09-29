@@ -114,6 +114,14 @@ function GpxRow({ ride, gpxUrl }: { ride: Ride; gpxUrl: string }) {
   // tard par React lors du rendu des enfants (donc hors de portee d'un
   // try/catch place dans le composant parent). A retirer une fois la cause
   // de l'erreur 500 identifiee.
+  //
+  // IMPORTANT : PlaceLink est un composant client ("use client") — dans un
+  // composant serveur, son import n'est pas la fonction elle-meme mais une
+  // reference client speciale, qui ne peut etre utilisee qu'en JSX
+  // (<PlaceLink .../>), jamais appelee directement comme une fonction JS
+  // (PlaceLink(...) leve "... is not a function"). On le laisse donc en
+  // JSX normal ; seul GroupBadge (un composant serveur ordinaire) peut etre
+  // appele directement pour etre couvert par ce try/catch.
   try {
     const dateLabel = fmtDateShort(ride.ride_date);
     const timeLabel = fmtTime(ride.ride_time);
@@ -122,7 +130,6 @@ function GpxRow({ ride, gpxUrl }: { ride: Ride; gpxUrl: string }) {
     const badges = (ride.ride_groups || []).map((g) => (
       <span key={g.group_level}>{GroupBadge({ group: g.group_level, withRange: false })}</span>
     ));
-    const placeEl = PlaceLink({ place: ride.place, placeUrl: ride.place_url });
 
     return (
       <div className="flex items-center gap-3 rounded-[20px] border border-black/[0.06] bg-white p-4 shadow-cardSm dark:border-white/10 dark:bg-[#1A1422]">
@@ -136,7 +143,7 @@ function GpxRow({ ride, gpxUrl }: { ride: Ride; gpxUrl: string }) {
               {dateLabel} · {timeLabel}
             </span>
             <span className="flex items-center gap-1">
-              <Icon name="flag" size={11} /> {placeEl}
+              <Icon name="flag" size={11} /> <PlaceLink place={ride.place} placeUrl={ride.place_url} />
             </span>
           </p>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-black/45 dark:text-white/45">
