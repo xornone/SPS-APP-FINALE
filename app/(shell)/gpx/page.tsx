@@ -4,6 +4,7 @@ import { fetchRides } from "@/lib/queries";
 import { Icon } from "@/components/Icons";
 import { GroupBadge } from "@/components/GroupBadge";
 import { PlaceLink } from "@/components/PlaceLink";
+import { GpxDistanceFilter } from "@/components/GpxDistanceFilter";
 import { fmtDateShort, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import type { Ride } from "@/lib/types";
 
@@ -48,7 +49,10 @@ export default async function GpxPage() {
           Aucune trace GPX disponible pour le moment.
         </div>
       ) : (
-        <div className="flex flex-col gap-6 px-5">
+        <>
+          <GpxDistanceFilter entries={withGpx} />
+
+          <div className="flex flex-col gap-6 px-5">
           {upcoming.length > 0 && (
             <section className="flex flex-col gap-2.5">
               <h2 className="text-[11px] font-bold uppercase tracking-wide text-black/40 dark:text-white/40">
@@ -70,7 +74,8 @@ export default async function GpxPage() {
               ))}
             </section>
           )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
