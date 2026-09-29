@@ -109,41 +109,60 @@ async function renderGpxPage() {
 }
 
 function GpxRow({ ride, gpxUrl }: { ride: Ride; gpxUrl: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-[20px] border border-black/[0.06] bg-white p-4 shadow-cardSm dark:border-white/10 dark:bg-[#1A1422]">
-      <div className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-sps-violet600/10 text-sps-violet600 dark:text-sps-violet400">
-        <Icon name="gpx" size={20} />
+  // DEBUG TEMPORAIRE — force une evaluation synchrone (et donc interceptable
+  // par ce try/catch) de tout ce qui, en JSX normal, serait evalue plus
+  // tard par React lors du rendu des enfants (donc hors de portee d'un
+  // try/catch place dans le composant parent). A retirer une fois la cause
+  // de l'erreur 500 identifiee.
+  try {
+    const dateLabel = fmtDateShort(ride.ride_date);
+    const timeLabel = fmtTime(ride.ride_time);
+    const kmLabel = fmtKm(ride.distance_km);
+    const mLabel = fmtM(ride.elevation_gain_m);
+    const badges = (ride.ride_groups || []).map((g) => (
+      <span key={g.group_level}>{GroupBadge({ group: g.group_level, withRange: false })}</span>
+    ));
+    const placeEl = PlaceLink({ place: ride.place, placeUrl: ride.place_url });
+
+    return (
+      <div className="flex items-center gap-3 rounded-[20px] border border-black/[0.06] bg-white p-4 shadow-cardSm dark:border-white/10 dark:bg-[#1A1422]">
+        <div className="flex h-11 w-11 flex-none items-center justify-center rounded-2xl bg-sps-violet600/10 text-sps-violet600 dark:text-sps-violet400">
+          <Icon name="gpx" size={20} />
+        </div>
+        <Link href={`/rides/${ride.id}`} className="min-w-0 flex-1">
+          <p className="truncate text-[14.5px] font-extrabold leading-tight">{ride.title}</p>
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-black/50 dark:text-white/50">
+            <span>
+              {dateLabel} · {timeLabel}
+            </span>
+            <span className="flex items-center gap-1">
+              <Icon name="flag" size={11} /> {placeEl}
+            </span>
+          </p>
+          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-black/45 dark:text-white/45">
+            <span>
+              <b className="text-black/70 dark:text-white/70">{kmLabel}</b> · <b className="text-black/70 dark:text-white/70">{mLabel}</b> D+
+            </span>
+            <span className="flex gap-1">{badges}</span>
+          </p>
+        </Link>
+        <a
+          href={gpxUrl}
+          download
+          onClick={(e) => e.stopPropagation()}
+          className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
+          aria-label={`Telecharger le GPX de ${ride.title}`}
+        >
+          <Icon name="download" size={17} />
+        </a>
       </div>
-      <Link href={`/rides/${ride.id}`} className="min-w-0 flex-1">
-        <p className="truncate text-[14.5px] font-extrabold leading-tight">{ride.title}</p>
-        <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[12px] text-black/50 dark:text-white/50">
-          <span>
-            {fmtDateShort(ride.ride_date)} · {fmtTime(ride.ride_time)}
-          </span>
-          <span className="flex items-center gap-1">
-            <Icon name="flag" size={11} /> <PlaceLink place={ride.place} placeUrl={ride.place_url} />
-          </span>
-        </p>
-        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-black/45 dark:text-white/45">
-          <span>
-            <b className="text-black/70 dark:text-white/70">{fmtKm(ride.distance_km)}</b> · <b className="text-black/70 dark:text-white/70">{fmtM(ride.elevation_gain_m)}</b> D+
-          </span>
-          <span className="flex gap-1">
-            {(ride.ride_groups || []).map((g) => (
-              <GroupBadge key={g.group_level} group={g.group_level} withRange={false} />
-            ))}
-          </span>
-        </p>
-      </Link>
-      <a
-        href={gpxUrl}
-        download
-        onClick={(e) => e.stopPropagation()}
-        className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
-        aria-label={`Telecharger le GPX de ${ride.title}`}
-      >
-        <Icon name="download" size={17} />
-      </a>
-    </div>
-  );
+    );
+  } catch (err) {
+    const e = err as Error;
+    return (
+      <pre className="overflow-auto whitespace-pre-wrap rounded-xl border border-red-500/30 bg-red-500/5 p-3 text-[11px] text-red-700">
+        {`ride ${ride.id} (${ride.title}): ${String(e?.message || e)}`}
+      </pre>
+    );
+  }
 }
