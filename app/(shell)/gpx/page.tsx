@@ -22,6 +22,22 @@ function withGpxUrl(ride: Ride, supabase: ReturnType<typeof createPublicClient>)
 }
 
 export default async function GpxPage() {
+  try {
+    return await renderGpxPage();
+  } catch (err) {
+    // DEBUG TEMPORAIRE — a retirer une fois la cause de l'erreur 500 identifiee.
+    const e = err as Error;
+    return (
+      <pre className="mx-5 mt-5 overflow-auto whitespace-pre-wrap rounded-xl border border-red-500/30 bg-red-500/5 p-4 text-[11px] text-red-700">
+        {String(e?.message || e)}
+        {"\n\n"}
+        {String(e?.stack || "")}
+      </pre>
+    );
+  }
+}
+
+async function renderGpxPage() {
   const supabase = createPublicClient();
   const rides = await fetchRides(supabase);
 
