@@ -51,6 +51,17 @@ async function renderGpxPage() {
     .filter((r) => isPastDate(r.ride.ride_date))
     .sort((a, b) => b.ride.ride_date.localeCompare(a.ride.ride_date));
 
+  // Forme allegee pour le filtre client (voir le commentaire dans
+  // GpxDistanceFilter.tsx) : on evite de faire traverser route_points (la
+  // trace GPS parsee, potentiellement volumineuse) au navigateur pour
+  // chaque sortie, alors que seuls id/distance/D+/lien GPX sont utiles ici.
+  const filterEntries = withGpx.map(({ ride, gpxUrl }) => ({
+    id: ride.id,
+    distanceKm: ride.distance_km,
+    elevationGainM: ride.elevation_gain_m,
+    gpxUrl,
+  }));
+
   return (
     <div>
       <div className="px-5 pb-3 pt-5">
@@ -66,7 +77,7 @@ async function renderGpxPage() {
         </div>
       ) : (
         <>
-          <GpxDistanceFilter entries={withGpx} />
+          <GpxDistanceFilter entries={filterEntries} />
 
           <div className="flex flex-col gap-6 px-5">
           {upcoming.length > 0 && (

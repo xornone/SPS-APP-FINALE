@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { Icon } from "./Icons";
 import { fmtKm, fmtM } from "@/lib/format";
-import type { Ride } from "@/lib/types";
 
 const STEP = 10;
 // Demi-largeur de la fenetre de correspondance autour de la distance
@@ -12,8 +11,19 @@ const STEP = 10;
 // zone morte ni chevauchement.
 const TOLERANCE_KM = 5;
 
+// Volontairement une forme allegee (pas le Ride complet) : les sorties
+// avec trace GPX portent souvent route_points, un tableau de coordonnees
+// potentiellement volumineux (trace GPS parsee, des centaines/milliers de
+// points). Ce composant n'en a pas besoin — ne faire traverser la
+// frontiere serveur/client qu'avec les quelques champs utiles ici evite de
+// gonfler inutilement le payload envoye au navigateur, surtout que cet
+// onglet agrege a la fois les sorties a venir et TOUTES les sorties
+// passees (contrairement a l'Accueil, qui ne fait traverser cette
+// frontiere que pour les sorties a venir).
 export interface GpxEntry {
-  ride: Ride;
+  id: string;
+  distanceKm: number;
+  elevationGainM: number;
   gpxUrl: string;
 }
 
@@ -29,7 +39,7 @@ export interface GpxEntry {
  * donnees (entries) viennent du serveur (voir app/(shell)/gpx/page.tsx).
  */
 export function GpxDistanceFilter({ entries }: { entries: GpxEntry[] }) {
-  const maxDistance = entries.reduce((max, e) => Math.max(max, e.ride.distance_km), 0);
+  const maxDistance = entries.reduce((max, e) => Math.max(max, e.distanceKm), 0);
   const sliderMax = Math.max(100, Math.ceil(maxDistance / STEP) * STEP);
 
   const ticks = useMemo(() => {
@@ -44,8 +54,8 @@ export function GpxDistanceFilter({ entries }: { entries: GpxEntry[] }) {
   const matches = useMemo(() => {
     if (validated === null) return [];
     return entries
-      .filter((e) => Math.abs(e.ride.distance_km - validated) <= TOLERANCE_KM)
-      .sort((a, b) => Math.abs(a.ride.distance_km - validated) - Math.abs(b.ride.distance_km - validated));
+      .filter((e) => Math.abs(e.distanceKm - validated) <= TOLERANCE_KM)
+      .sort((a, b) => Math.abs(a.distanceKm - validated) - Math.abs(b.distanceKm - validated));
   }, [entries, validated]);
 
   return (
@@ -92,14 +102,14 @@ export function GpxDistanceFilter({ entries }: { entries: GpxEntry[] }) {
               Aucune trace ne correspond a {validated} km pour le moment. Essaie une autre distance.
             </p>
           ) : (
-            matches.map(({ ride, gpxUrl }) => (
+            matches.map(({ id, distanceKm, elevationGainM, gpxUrl }) => (
               <div
-                key={ride.id}
+                key={id}
                 className="flex items-center justify-between gap-3 rounded-2xl border border-black/[0.06] px-3.5 py-3 dark:border-white/10"
               >
                 <p className="text-[14px] font-extrabold">
-                  {fmtKm(ride.distance_km)} <span className="font-semibold text-black/40 dark:text-white/40">·</span>{" "}
-                  {fmtM(ride.elevation_gain_m)} D+
+                  {fmtKm(distanceKm)} <span className="font-semibold text-black/40 dark:text-white/40">·</span>{" "}
+                  {fmtM(elevationGainM)} D+
                 </p>
                 <a
                   href={gpxUrl}
