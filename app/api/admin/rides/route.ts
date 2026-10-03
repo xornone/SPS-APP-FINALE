@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminGuard";
+import { sendPushToAll } from "@/lib/webpush";
+import { fmtDateShort, fmtTime } from "@/lib/format";
 
 const GROUP_SPEED: Record<string, string> = {
   vert: "24–26 km/h",
@@ -53,6 +55,18 @@ export async function POST(request: Request) {
     // sans attendre une revalidation ISR (voir la meme logique sur les
     // routes /api/participations).
     revalidatePath("/home");
+
+    // Best-effort : une erreur d'envoi (cles VAPID absentes, abonnes
+    // perimes...) ne doit jamais faire echouer la creation de la sortie.
+    try {
+      await sendPushToAll({
+        title: "Nouvelle sortie",
+        body: `${ride.title} — ${fmtDateShort(ride.ride_date)} à ${fmtTime(ride.ride_time)}`,
+        url: `/rides/${ride.id}`,
+      });
+    } catch (pushErr) {
+      console.error("[push] echec de notification (nouvelle sortie) :", pushErr);
+    }
 
     return NextResponse.json({ ride });
   } catch (err: any) {

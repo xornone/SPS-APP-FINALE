@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { AdminRidesList } from "@/components/AdminRidesList";
+import { AdminNotificationComposer } from "@/components/AdminNotificationComposer";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Icon } from "@/components/Icons";
 import { getMyStravaConnection } from "@/lib/strava";
@@ -45,6 +46,14 @@ export default async function AdminPage() {
         <Suspense fallback={null}>
           <StravaConnectPanel connection={stravaConnection} />
         </Suspense>
+      </div>
+
+      <div className="px-5 pb-5">
+        <h2 className="mb-2 font-display text-lg tracking-wide">Notifications</h2>
+        <p className="mb-2 text-[11.5px] text-black/40 dark:text-white/40">
+          Envoie un message push à tous les membres ayant activé les notifications.
+        </p>
+        <AdminNotificationComposer />
       </div>
 
       <AdminRidesList rides={sorted} counts={counts} />

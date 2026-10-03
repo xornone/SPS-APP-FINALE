@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminGuard";
+import { sendPushToAll } from "@/lib/webpush";
 
 const GROUP_SPEED: Record<string, string> = {
   vert: "24–26 km/h",
@@ -50,6 +51,18 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // lib/admins.ts).
     revalidatePath("/home");
     revalidatePath(`/rides/${params.id}`);
+
+    // Best-effort, comme a la creation : ne doit jamais faire echouer la
+    // modification de la sortie.
+    try {
+      await sendPushToAll({
+        title: "Sortie modifiée",
+        body: title ? `${title} a été mise à jour.` : "Une sortie a été mise à jour.",
+        url: `/rides/${params.id}`,
+      });
+    } catch (pushErr) {
+      console.error("[push] echec de notification (sortie modifiee) :", pushErr);
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {
