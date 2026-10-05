@@ -38,6 +38,7 @@ export function RideForm({
   const [distance, setDistance] = useState(ride ? String(ride.distance_km) : "");
   const [elevation, setElevation] = useState(ride ? String(ride.elevation_gain_m) : "");
   const [stravaUrl, setStravaUrl] = useState(ride?.strava_url || "");
+  const [showSafetyNotice, setShowSafetyNotice] = useState(ride ? ride.show_safety_notice !== false : true);
   const [groups, setGroups] = useState<GroupLevel[]>(
     ride?.ride_groups?.map((g) => g.group_level) || ["vert", "rouge"]
   );
@@ -187,7 +188,7 @@ export function RideForm({
     setSaving(true);
     setError("");
 
-    const payload = { title, description, ride_date: date, ride_time: time, place, place_url: placeUrl.trim(), distance_km: distance, elevation_gain_m: elevation, strava_url: stravaUrl.trim(), groups };
+    const payload = { title, description, ride_date: date, ride_time: time, place, place_url: placeUrl.trim(), distance_km: distance, elevation_gain_m: elevation, strava_url: stravaUrl.trim(), show_safety_notice: showSafetyNotice, groups };
 
     try {
       let rideId = ride?.id;
@@ -262,6 +263,20 @@ export function RideForm({
             Suggestion générée à partir du GPX (montées détectées) — à relire et compléter (lieu de rendez-vous, consignes…).
           </p>
         )}
+        <label className="mt-2.5 flex cursor-pointer items-start gap-2.5 text-[12.5px] text-black/70 dark:text-white/70">
+          <input
+            type="checkbox"
+            checked={showSafetyNotice}
+            onChange={(e) => setShowSafetyNotice(e.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-none accent-sps-violet600"
+          />
+          <span>
+            Afficher les consignes de sécurité sous la description
+            <span className="block text-[11px] text-black/35 dark:text-white/35">
+              « Si ton niveau n’est pas adapté… », équipement obligatoire, trace GPS, horaires, infos.
+            </span>
+          </span>
+        </label>
       </div>
       <div className="grid grid-cols-2 gap-3 px-5 pb-3.5">
         <Field label="Date" bare>

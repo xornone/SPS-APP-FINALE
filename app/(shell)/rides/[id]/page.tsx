@@ -142,7 +142,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         ))}
       </div>
 
-      <RideDescription description={ride.description} />
+      <RideDescription description={ride.description} showSafetyNotice={ride.show_safety_notice !== false} />
 
       <RideComments rideId={ride.id} initialComments={comments} />
 

@@ -23,6 +23,7 @@ export interface Ride {
   distance_km: number;
   elevation_gain_m: number;
   strava_url: string | null;
+  show_safety_notice: boolean;
   gpx_path: string | null;
   route_points: [number, number][] | null; // [lat, lon]
   route_elevations: number[] | null;

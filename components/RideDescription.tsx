@@ -3,17 +3,23 @@
 import { useEffect, useRef, useState } from "react";
 import { RIDE_SAFETY_NOTICE } from "@/lib/rideSafetyNotice";
 
-// Description ecrite par l'admin + consignes fixes (lib/rideSafetyNotice.ts)
-// fusionnees en un seul bloc de texte, dans un unique <p> : necessaire pour
+// Description ecrite par l'admin + consignes fixes (lib/rideSafetyNotice.ts,
+// uniquement si showSafetyNotice est vrai : case a cocher du formulaire de
+// sortie) fusionnees en un seul bloc de texte, dans un unique <p> : necessaire pour
 // que line-clamp compte les lignes de facon fiable (compter sur deux <p>
 // separes ne marche pas de maniere consistante, notamment sur Safari/iOS,
 // tres present chez les membres du club). Cela ne change rien au partage
 // WhatsApp : lib/shareMessage.ts continue a ne lire que ride.description et
 // n'importe jamais ce composant.
-export function RideDescription({ description }: { description: string }) {
-  const text = description
-    ? `${description}\n\n${RIDE_SAFETY_NOTICE}`
-    : `Pas de description pour cette sortie.\n\n${RIDE_SAFETY_NOTICE}`;
+export function RideDescription({
+  description,
+  showSafetyNotice = true,
+}: {
+  description: string;
+  showSafetyNotice?: boolean;
+}) {
+  const base = description || "Pas de description pour cette sortie.";
+  const text = showSafetyNotice ? `${base}\n\n${RIDE_SAFETY_NOTICE}` : base;
 
   const [expanded, setExpanded] = useState(false);
   // Le bouton "Afficher plus" ne doit apparaitre que si le texte depasse
