@@ -22,7 +22,7 @@ export function JerseyPreorderBanner() {
               Édition 2027
             </div>
             <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-fuchsia-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-300">
-              Limite commande : 15/10/26
+              Limite pré-commande : 15/10/26
             </div>
           </div>
 
