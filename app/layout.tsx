@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, Manrope } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { PullToRefresh } from "@/components/PullToRefresh";
 import "./globals.css";
 
 const bebas = Bebas_Neue({
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className={`min-h-dvh antialiased ${bebas.variable} ${manrope.variable}`}>
+        <PullToRefresh />
         {children}
         <Analytics />
         <SpeedInsights />
