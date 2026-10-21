@@ -62,13 +62,13 @@ const ARTICLES: ArticleItem[] = [
   },
   {
     id: "cuissard",
-    tabLabel: "Cuissard DUALKNIT",
+    tabLabel: "Cuissard X",
     badge: "Édition 2027 · Collection Officielle",
-    title: "CUISSARD SPS · DUALKNIT PRO",
+    title: "CUISSARD SPS · X",
     subtitle: "GOBIK · Peau Graphène Elastic Interface®",
     quote: "« Performance maximale, coupe franche et sensation seconde peau. »",
     image: "/images/cuissard-sps.png",
-    alt: "Nouveau cuissard officiel SPS 2027 Gobik DualKnit Pro",
+    alt: "Nouveau cuissard officiel SPS 2027 Gobik Modèle X",
     buttonLabel: "Pré-commander le cuissard sur HelloAsso",
     metrics: [
       { value: "165 g", label: "Poids (M)" },
@@ -76,7 +76,7 @@ const ARTICLES: ArticleItem[] = [
       { value: "17-35°C", label: "Température" },
       { value: "PEAU ↗", label: "Graphène", href: GOBIK_FITTING_GUIDE_URL },
     ],
-    narrativeBadge: "Tissu DUALKNIT PRO & Fil de Graphène",
+    narrativeBadge: "Modèle X · DUALKNIT PRO & Fil de Graphène",
     narrativeP1:
       "Développé pour offrir des performances maximales, ce cuissard combine un design minimaliste avec des matériaux de dernière génération. Son tissu DUALKNIT PRO, en maille circulaire, garantit une excellente élasticité, opacité, respirabilité et une grande durabilité. La forte présence de polyamide procure un toucher doux et un séchage rapide, en maintenant la peau confortable même lors des sorties prolongées.",
     narrativeP2:
