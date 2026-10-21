@@ -24,14 +24,42 @@ export function PullToRefresh() {
   }, [isRefreshing]);
 
   useEffect(() => {
-    // --- Touch handlers (Mobile & Emulators) ---
-    const handleTouchStart = (e: TouchEvent) => {
-      if (window.scrollY <= 0 && !isRefreshingRef.current) {
-        startYRef.current = e.touches[0].clientY;
-        startXRef.current = e.touches[0].clientX;
-      }
+    const cleanupTouch = () => {
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", handleTouchEnd);
     };
 
+    const cleanupMouse = () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    const triggerRefresh = () => {
+      isRefreshingRef.current = true;
+      setIsRefreshing(true);
+      pullYRef.current = 48;
+      setPullY(48);
+
+      try {
+        if (typeof navigator !== "undefined" && navigator.vibrate) {
+          navigator.vibrate(15);
+        }
+      } catch {
+        // Ignorer si non supporté
+      }
+
+      router.refresh();
+
+      setTimeout(() => {
+        setIsRefreshing(false);
+        isRefreshingRef.current = false;
+        pullYRef.current = 0;
+        setPullY(0);
+      }, 850);
+    };
+
+    // --- Touch handlers (dynamiquement attachés pour préserver le 120 FPS natif) ---
     const handleTouchMove = (e: TouchEvent) => {
       if (startYRef.current === null || startXRef.current === null || isRefreshingRef.current) return;
 
@@ -40,14 +68,13 @@ export function PullToRefresh() {
       const diffY = currentY - startYRef.current;
       const diffX = currentX - startXRef.current;
 
-      // Seulement si le mouvement est principalement vertical vers le bas et au sommet de la page
+      // Si l'utilisateur tire vers le bas au sommet de la page
       if (diffY > 0 && Math.abs(diffY) > Math.abs(diffX) && window.scrollY <= 0) {
         if (!isPullingRef.current) {
           isPullingRef.current = true;
           setIsPulling(true);
         }
 
-        // Amortissement élastique logarithmique / exponentiel
         const damped = Math.min(MAX_PULL, Math.pow(diffY, 0.82) * 1.6);
         pullYRef.current = damped;
         setPullY(damped);
@@ -56,16 +83,19 @@ export function PullToRefresh() {
           e.preventDefault();
         }
       } else if (diffY <= 0) {
+        // L'utilisateur scroll vers le haut/contenu : libérer immédiatement les écouteurs
         if (isPullingRef.current) {
           isPullingRef.current = false;
           setIsPulling(false);
         }
         pullYRef.current = 0;
         setPullY(0);
+        cleanupTouch();
       }
     };
 
     const handleTouchEnd = () => {
+      cleanupTouch();
       if (startYRef.current === null) return;
       startYRef.current = null;
       startXRef.current = null;
@@ -77,49 +107,27 @@ export function PullToRefresh() {
       setIsPulling(false);
 
       if (wasPulling && currentPull >= THRESHOLD && !isRefreshingRef.current) {
-        isRefreshingRef.current = true;
-        setIsRefreshing(true);
-        pullYRef.current = 48;
-        setPullY(48);
-
-        // Feedback haptique subtil si supporté
-        try {
-          if (typeof navigator !== "undefined" && navigator.vibrate) {
-            navigator.vibrate(15);
-          }
-        } catch {
-          // Ignorer si non supporté
-        }
-
-        // Rafraîchir les données de la page
-        router.refresh();
-
-        setTimeout(() => {
-          setIsRefreshing(false);
-          isRefreshingRef.current = false;
-          pullYRef.current = 0;
-          setPullY(0);
-        }, 850);
+        triggerRefresh();
       } else {
         pullYRef.current = 0;
         setPullY(0);
       }
     };
 
-    // --- Mouse drag handlers (Desktop testable) ---
-    const handleMouseDown = (e: MouseEvent) => {
-      // Actif seulement si clic gauche tout en haut de la page (les 100 premiers pixels)
-      if (e.button === 0 && window.scrollY <= 0 && e.clientY < 100 && !isRefreshingRef.current) {
-        // Ne pas déclencher si on clique sur un bouton ou lien
-        const target = e.target as HTMLElement | null;
-        if (target && (target.closest("button") || target.closest("a") || target.closest("input"))) {
-          return;
-        }
-        startYRef.current = e.clientY;
-        startXRef.current = e.clientX;
+    const handleTouchStart = (e: TouchEvent) => {
+      // N'activer QUE si on est tout en haut de page et pas déjà en cours de refresh
+      if (window.scrollY <= 0 && !isRefreshingRef.current) {
+        startYRef.current = e.touches[0].clientY;
+        startXRef.current = e.touches[0].clientX;
+
+        // Attache les événements touchmove SEULEMENT pendant le geste
+        window.addEventListener("touchmove", handleTouchMove, { passive: false });
+        window.addEventListener("touchend", handleTouchEnd, { passive: true });
+        window.addEventListener("touchcancel", handleTouchEnd, { passive: true });
       }
     };
 
+    // --- Mouse handlers (Desktop testable, attachés dynamiquement) ---
     const handleMouseMove = (e: MouseEvent) => {
       if (startYRef.current === null || startXRef.current === null || isRefreshingRef.current) return;
       const diffY = e.clientY - startYRef.current;
@@ -133,30 +141,41 @@ export function PullToRefresh() {
         const damped = Math.min(MAX_PULL, Math.pow(diffY, 0.82) * 1.6);
         pullYRef.current = damped;
         setPullY(damped);
+      } else if (diffY <= 0) {
+        cleanupMouse();
       }
     };
 
     const handleMouseUp = () => {
+      cleanupMouse();
       if (startYRef.current !== null) {
         handleTouchEnd();
       }
     };
 
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button === 0 && window.scrollY <= 0 && e.clientY < 100 && !isRefreshingRef.current) {
+        const target = e.target as HTMLElement | null;
+        if (target && (target.closest("button") || target.closest("a") || target.closest("input"))) {
+          return;
+        }
+        startYRef.current = e.clientY;
+        startXRef.current = e.clientX;
 
+        window.addEventListener("mousemove", handleMouseMove);
+        window.addEventListener("mouseup", handleMouseUp);
+      }
+    };
+
+    // Uniquement les écouteurs passifs minimaux de départ
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
       window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      cleanupTouch();
+      cleanupMouse();
     };
   }, [router]);
 

@@ -1,10 +1,15 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Participation, Ride, RideComment } from "./types";
 
+// Colonnes légères pour les listes (Accueil, Classement, Admin). Exclut
+// route_points et route_elevations qui représentent ~98% du payload (~1,4 Mo de coordonnées GPS).
+export const RIDE_SUMMARY_COLUMNS =
+  "id, title, description, ride_date, ride_time, place, place_url, distance_km, elevation_gain_m, strava_url, show_safety_notice, gpx_path, created_by, created_at, updated_at, ride_groups(*)";
+
 export async function fetchRides(supabase: SupabaseClient): Promise<Ride[]> {
   const { data, error } = await supabase
     .from("rides")
-    .select("*, ride_groups(*)")
+    .select(RIDE_SUMMARY_COLUMNS)
     .order("ride_date", { ascending: true });
   if (error) throw error;
   return (data || []) as unknown as Ride[];

@@ -8,7 +8,7 @@ export function RideMap({
   points,
   className = "",
 }: {
-  points: [number, number][] | null;
+  points?: [number, number][] | null;
   className?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);

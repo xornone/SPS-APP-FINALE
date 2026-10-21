@@ -4,6 +4,9 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  images: {
+    formats: ["image/avif", "image/webp"],
+  },
   experimental: {
     // Sans ca, Next.js peut reafficher une page deja visitee (Accueil,
     // Sorties, une fiche sortie, Classement) depuis son propre cache cote

@@ -42,7 +42,7 @@ const ARTICLES: ArticleItem[] = [
     title: "MAILLOT SPS · CX SCA",
     subtitle: "GOBIK · L’Évolution du CX PRO 4.0 (2026)",
     quote: "« Le maillot qui vous fait vous sentir rapide dès le premier instant. »",
-    image: "/images/maillot-sps.png",
+    image: "/images/maillot-sps.webp",
     alt: "Nouveau maillot officiel SPS 2027 Gobik CX SCA",
     buttonLabel: "Pré-commander sur HelloAsso",
     metrics: [
@@ -70,7 +70,7 @@ const ARTICLES: ArticleItem[] = [
     title: "MAILLOT SPS · PULSE",
     subtitle: "GOBIK · Manches Longues Mi-Saison & Hiver",
     quote: "« Chaleur, confort et ajustement régulier pour rouler par temps frais. »",
-    image: "/images/maillot-pulse-sps.png",
+    image: "/images/maillot-pulse-sps.webp",
     alt: "Nouveau maillot manches longues officiel SPS 2027 Gobik Pulse",
     buttonLabel: "Pré-commander sur HelloAsso",
     metrics: [
@@ -98,7 +98,7 @@ const ARTICLES: ArticleItem[] = [
     title: "GILET SPS · PLUS 2.0",
     subtitle: "GOBIK · Coupe-Vent Ultra Léger & Compact",
     quote: "« Protection coupe-vent ultralégère et aérodynamique sans compromis. »",
-    image: "/images/gilet-plus-sps.png",
+    image: "/images/gilet-plus-sps.webp",
     alt: "Nouveau gilet officiel SPS 2027 Gobik Plus 2.0",
     buttonLabel: "Pré-commander sur HelloAsso",
     metrics: [
@@ -126,7 +126,7 @@ const ARTICLES: ArticleItem[] = [
     title: "CUISSARD SPS · X",
     subtitle: "GOBIK · Peau Graphène Elastic Interface®",
     quote: "« Performance maximale, coupe franche et sensation seconde peau. »",
-    image: "/images/cuissard-sps.png",
+    image: "/images/cuissard-sps.webp",
     alt: "Nouveau cuissard officiel SPS 2027 Gobik Modèle X",
     buttonLabel: "Pré-commander sur HelloAsso",
     metrics: [
@@ -154,7 +154,7 @@ const ARTICLES: ArticleItem[] = [
     title: "MAILLOT SPS · FLASH",
     subtitle: "GOBIK · T-shirt Running Ultraléger (95 g)",
     quote: "« Conçu pour courir avec un minimum de distractions et un contrôle thermique maximal. »",
-    image: "/images/running-flash-sps.png",
+    image: "/images/running-flash-sps.webp",
     alt: "Nouveau maillot running officiel SPS 2027 Gobik Flash",
     buttonLabel: "Pré-commander sur HelloAsso",
     metrics: [
@@ -309,6 +309,7 @@ export function PreorderShowcase() {
               alt={article.alt}
               width={727}
               height={1024}
+              sizes="(max-width: 480px) 285px, 285px"
               priority
               className="h-auto w-full max-w-[285px] drop-shadow-[0_20px_35px_rgba(168,85,247,0.45)] transition-all duration-500 group-hover:drop-shadow-[0_25px_45px_rgba(217,70,239,0.65)]"
             />

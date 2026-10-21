@@ -44,7 +44,7 @@ export function JerseyPreorderBanner() {
         <div className="relative z-10 flex-shrink-0">
           <div className="relative h-24 w-20 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2">
             <Image
-              src="/images/maillot-sps.png"
+              src="/images/maillot-sps.webp"
               alt="Maillot SPS"
               fill
               sizes="80px"

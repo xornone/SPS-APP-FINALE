@@ -30,6 +30,7 @@ export function BottomNav() {
           <Link
             key={t.href}
             href={t.href}
+            prefetch={true}
             className={`flex flex-1 flex-col items-center gap-1 rounded-2xl py-1.5 text-[10.5px] font-bold ${
               active ? "text-sps-violet600 dark:text-sps-violet400" : "text-black/35 dark:text-white/35"
             }`}

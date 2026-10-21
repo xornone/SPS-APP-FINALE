@@ -30,7 +30,7 @@ async function geocodePlace(place: string): Promise<[number, number] | null> {
 }
 
 export async function getRideCoordinates(
-  routePoints: [number, number][] | null,
+  routePoints: [number, number][] | null | undefined,
   place: string
 ): Promise<[number, number] | null> {
   if (routePoints && routePoints.length > 0) return routePoints[0];

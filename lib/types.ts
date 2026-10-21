@@ -25,8 +25,8 @@ export interface Ride {
   strava_url: string | null;
   show_safety_notice: boolean;
   gpx_path: string | null;
-  route_points: [number, number][] | null; // [lat, lon]
-  route_elevations: number[] | null;
+  route_points?: [number, number][] | null; // [lat, lon]
+  route_elevations?: number[] | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
