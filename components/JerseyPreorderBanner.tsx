@@ -22,15 +22,15 @@ export function JerseyPreorderBanner() {
           </div>
 
           <h2 className="mt-2 font-display text-[22px] tracking-wide leading-none text-white">
-            MAILLOT SPS · CX SCA
+            MAILLOT & CUISSARD SPS
           </h2>
 
           <p className="mt-1 text-[12px] text-purple-200/80">
-            L'évolution du CX PRO 4.0 · Précommandes ouvertes
+            Collection officielle 2027 · Précommandes ouvertes
           </p>
 
           <div className="mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-fuchsia-300 group-hover:text-fuchsia-200">
-            <span>Découvrir le maillot</span>
+            <span>Découvrir la collection</span>
             <Icon name="chevR" size={14} className="transition-transform group-hover:translate-x-0.5" />
           </div>
         </div>
