@@ -5,7 +5,7 @@ import { Icon } from "./Icons";
 
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
     setMounted(true);

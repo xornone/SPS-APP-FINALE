@@ -31,16 +31,16 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#33124F",
+  themeColor: "#130D1A",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr" className="dark" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('sps-theme');var d=document.documentElement.classList;if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){d.add('dark')}else{d.remove('dark')}}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem('sps-theme');var d=document.documentElement.classList;if(t==='light'){d.remove('dark')}else{d.add('dark')}}catch(e){}})()`,
           }}
         />
       </head>
