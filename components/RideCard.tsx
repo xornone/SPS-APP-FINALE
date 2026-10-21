@@ -32,6 +32,7 @@ export function RideCard({
   return (
     <Link
       href={`/rides/${ride.id}`}
+      prefetch={true}
       className="flex flex-col gap-2.5 rounded-[20px] border border-black/[0.06] bg-white p-4 shadow-cardSm dark:border-white/10 dark:bg-[#1A1422]"
     >
       <div className="flex items-center justify-between gap-2">

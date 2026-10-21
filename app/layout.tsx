@@ -38,6 +38,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="fr" className="dark" suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://mt0.google.com" crossOrigin="" />
+        <link rel="preconnect" href="https://mt1.google.com" crossOrigin="" />
+        <link rel="dns-prefetch" href="https://mt0.google.com" />
+        <link rel="dns-prefetch" href="https://api.open-meteo.com" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('sps-theme');var d=document.documentElement.classList;if(t==='light'){d.remove('dark')}else{d.add('dark')}}catch(e){}})()`,

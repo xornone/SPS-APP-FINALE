@@ -257,6 +257,7 @@ function RecordRow({
   return (
     <Link
       href={`/rides/${ride.id}`}
+      prefetch={true}
       className="flex items-center gap-3 border-b border-black/[0.05] px-4 py-3 last:border-0 dark:border-white/[0.06]"
     >
       <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-sps-violet600/10 text-sps-violet600 dark:text-sps-violet400">

@@ -99,6 +99,7 @@ export function HomeRidesSection({
               <Link
                 key={ride.id}
                 href={`/rides/${ride.id}`}
+                prefetch={true}
                 className="relative block overflow-hidden rounded-[26px] bg-gradient-to-br from-sps-violet700 to-sps-violet900 p-5 text-[#F4EEFF] shadow-card"
               >
                 <span className="text-[11.5px] font-extrabold uppercase tracking-wide text-violet-200">

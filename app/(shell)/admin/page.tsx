@@ -83,6 +83,7 @@ export default async function AdminPage() {
       <div className="pointer-events-none fixed bottom-24 left-1/2 z-20 w-full max-w-md -translate-x-1/2 px-5">
         <Link
           href="/admin/rides/new"
+          prefetch={true}
           className="pointer-events-auto ml-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-sps-violet500 to-sps-violet700 text-white shadow-lg"
         >
           <Icon name="plus" size={24} />

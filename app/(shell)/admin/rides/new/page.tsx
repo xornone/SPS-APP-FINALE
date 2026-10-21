@@ -1,28 +1,30 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { RideForm } from "@/components/RideForm";
 import { Icon } from "@/components/Icons";
 import { createClient } from "@/lib/supabase/server";
 import { getMyStravaConnection } from "@/lib/strava";
 
-// Sans appel a cookies()/headers(), cette page n'a aucun signal qui force
-// Next.js a la rendre dynamiquement : sans cette ligne, elle risque d'etre
-// mise en cache statique au build, et donc de continuer a afficher "aucun
-// compte Strava connecte" indefiniment meme apres qu'un admin se soit
-// connecte en production.
 export const dynamic = "force-dynamic";
 
 export default async function NewRidePage() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const stravaConnection = user ? await getMyStravaConnection(user.id) : null;
+  const reqHeaders = headers();
+  const headerUserId = reqHeaders.get("x-user-id");
+
+  const userId =
+    headerUserId ||
+    (await createClient()
+      .auth.getUser()
+      .then(({ data }) => data.user?.id || null));
+
+  const stravaConnection = userId ? await getMyStravaConnection(userId) : null;
 
   return (
     <div>
       <div className="flex items-center gap-3 px-5 pb-2 pt-5">
         <Link
           href="/admin"
+          prefetch={true}
           className="flex h-9 w-9 flex-none items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
         >
           <Icon name="chevL" size={18} />

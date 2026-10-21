@@ -19,6 +19,8 @@ html,
 body {
   @apply bg-[#FBF9FC] text-[#150F1C];
   overscroll-behavior-y: contain;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html.dark,

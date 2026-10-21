@@ -29,21 +29,25 @@ export const dynamic = "force-dynamic";
 export default async function RideDetailPage({ params }: { params: { id: string } }) {
   const supabase = createPublicClient();
 
-  const ride = await fetchRide(supabase, params.id);
+  // Lance immédiatement toutes les requêtes en parallèle dès le début
+  // (élimine 200 à 300ms de waterfall réseau)
+  const ridePromise = fetchRide(supabase, params.id);
+  const participationsPromise = fetchParticipationsForRide(supabase, params.id);
+  const commentsPromise = fetchCommentsForRide(supabase, params.id);
+
+  const ride = await ridePromise;
   if (!ride) notFound();
 
   const groups = (ride.ride_groups || []).map((g) => g.group_level);
 
-  // Participations, commentaires et meteo sont eux aussi independants les
-  // uns des autres : meme logique, on les recupere en parallele plutot
-  // qu'en chaine (c'etait le principal point lent de cette page — jusqu'a
-  // 4 allers-retours reseau successifs au lieu d'un seul groupe parallele).
+  const weatherPromise = getRideCoordinates(ride.route_points, ride.place).then((coords) =>
+    coords ? fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time) : null
+  );
+
   const [participations, comments, weather] = await Promise.all([
-    fetchParticipationsForRide(supabase, ride.id),
-    fetchCommentsForRide(supabase, ride.id),
-    getRideCoordinates(ride.route_points, ride.place).then((coords) =>
-      coords ? fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time) : null
-    ),
+    participationsPromise,
+    commentsPromise,
+    weatherPromise,
   ]);
 
   const past = isPastDate(ride.ride_date);
@@ -66,6 +70,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
       <div className="flex items-center justify-between px-5 pb-2 pt-5">
         <Link
           href="/home"
+          prefetch={true}
           className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
         >
           <Icon name="chevL" size={18} />

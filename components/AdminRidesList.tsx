@@ -38,6 +38,7 @@ export function AdminRidesList({ rides, counts }: { rides: Ride[]; counts: Recor
           <div className="flex flex-none gap-1.5">
             <Link
               href={`/admin/rides/${r.id}/edit`}
+              prefetch={true}
               className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-black/[0.08] bg-black/[0.02] dark:border-white/10 dark:bg-white/5"
             >
               <Icon name="pencil" size={15} />
