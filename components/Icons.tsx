@@ -34,6 +34,10 @@ const PATHS: Record<string, string> = {
   send: '<path d="M4.2 11.8 19.5 4.5 15 19.5l-3.6-6.1-6.1-1.6Z" stroke-linejoin="round"/><path d="M11.4 13.4 19.5 4.5" stroke-linecap="round"/>',
   chat: '<path d="M12 4a8 8 0 0 0-6.9 12l-1.1 4 4.2-1.1A8 8 0 1 0 12 4Z" stroke-linejoin="round"/>',
   chevDown: '<path d="M5 9l7 7 7-7" stroke-linecap="round" stroke-linejoin="round"/>',
+  shirt: '<path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z" stroke-linejoin="round"/>',
+  sparkles: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" stroke-linejoin="round"/>',
+  feather: '<path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" stroke-linejoin="round"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/>',
+  thermometer: '<path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" stroke-linejoin="round"/>',
 };
 
 export function Icon({

@@ -15,6 +15,7 @@ import { Icon } from "./Icons";
 // filtres qu'avait Sorties.
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
+  { href: "/precommandes", label: "Précommandes", icon: "shirt" as const },
   { href: "/classement", label: "Statistique SPS", icon: "trophy" as const },
   { href: "/admin", label: "Admin", icon: "gear" as const },
 ];
