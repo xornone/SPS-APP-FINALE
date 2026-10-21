@@ -29,9 +29,14 @@ export function JerseyPreorderBanner() {
             Cyclisme & Running · Précommandes ouvertes
           </p>
 
-          <div className="mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-fuchsia-300 group-hover:text-fuchsia-200">
-            <span>Découvrir la collection</span>
-            <Icon name="chevR" size={14} className="transition-transform group-hover:translate-x-0.5" />
+          <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px]">
+            <span className="inline-flex items-center gap-1 font-bold text-fuchsia-300 group-hover:text-fuchsia-200">
+              <span>Découvrir la collection</span>
+              <Icon name="chevR" size={14} className="transition-transform group-hover:translate-x-0.5" />
+            </span>
+            <span className="text-[11.5px] font-semibold text-purple-200/90">
+              · Deadline 15 Novembre
+            </span>
           </div>
         </div>
 
