@@ -16,9 +16,14 @@ export function JerseyPreorderBanner() {
         />
 
         <div className="relative z-10 flex flex-1 flex-col pr-2">
-          <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-fuchsia-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-300">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-fuchsia-400" />
-            Édition 2027
+          <div className="flex flex-wrap items-center gap-1.5">
+            <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-fuchsia-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-300">
+              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-fuchsia-400" />
+              Édition 2027
+            </div>
+            <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-fuchsia-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-300">
+              Limite commande : 15/10/26
+            </div>
           </div>
 
           <h2 className="mt-2 font-display text-[22px] tracking-wide leading-none text-white">
@@ -29,14 +34,9 @@ export function JerseyPreorderBanner() {
             Cyclisme & Running · Précommandes ouvertes
           </p>
 
-          <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px]">
-            <span className="inline-flex items-center gap-1 font-bold text-fuchsia-300 group-hover:text-fuchsia-200">
-              <span>Découvrir la collection</span>
-              <Icon name="chevR" size={14} className="transition-transform group-hover:translate-x-0.5" />
-            </span>
-            <span className="text-[11.5px] font-semibold text-purple-200/90">
-              · Deadline 15 Novembre
-            </span>
+          <div className="mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-fuchsia-300 group-hover:text-fuchsia-200">
+            <span>Découvrir la collection</span>
+            <Icon name="chevR" size={14} className="transition-transform group-hover:translate-x-0.5" />
           </div>
         </div>
 
