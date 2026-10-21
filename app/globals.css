@@ -18,6 +18,7 @@ html.dark {
 html,
 body {
   @apply bg-[#FBF9FC] text-[#150F1C];
+  overscroll-behavior-y: contain;
 }
 
 html.dark,
