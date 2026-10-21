@@ -42,7 +42,7 @@ const ARTICLES: ArticleItem[] = [
     quote: "« Le maillot qui vous fait vous sentir rapide dès le premier instant. »",
     image: "/images/maillot-sps.png",
     alt: "Nouveau maillot officiel SPS 2027 Gobik CX SCA",
-    buttonLabel: "Pré-commander le maillot sur HelloAsso",
+    buttonLabel: "Pré-commander sur HelloAsso",
     metrics: [
       { value: "123 g", label: "Poids (M)" },
       { value: "UPF 50", label: "Anti-UV" },
@@ -69,7 +69,7 @@ const ARTICLES: ArticleItem[] = [
     quote: "« Performance maximale, coupe franche et sensation seconde peau. »",
     image: "/images/cuissard-sps.png",
     alt: "Nouveau cuissard officiel SPS 2027 Gobik Modèle X",
-    buttonLabel: "Pré-commander le cuissard sur HelloAsso",
+    buttonLabel: "Pré-commander sur HelloAsso",
     metrics: [
       { value: "165 g", label: "Poids (M)" },
       { value: "UPF 50", label: "Anti-UV" },
