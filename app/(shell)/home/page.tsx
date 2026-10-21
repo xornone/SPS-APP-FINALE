@@ -3,6 +3,7 @@ import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { HomeRidesSection } from "@/components/HomeRidesSection";
 import { NotificationOptIn } from "@/components/NotificationOptIn";
 import { JerseyPreorderBanner } from "@/components/JerseyPreorderBanner";
+import { AdminOnly } from "@/components/AdminOnly";
 import { isPastDate } from "@/lib/format";
 
 // Page 100% publique (aucune donnee liee a une session, voir
@@ -35,7 +36,9 @@ export default async function HomePage() {
       <div className="px-5 pb-3 pt-5">
         <h1 className="font-display text-[26px] tracking-wide">Bonjour 👋</h1>
       </div>
-      <JerseyPreorderBanner />
+      <AdminOnly>
+        <JerseyPreorderBanner />
+      </AdminOnly>
       <NotificationOptIn />
       <HomeRidesSection featured={featured} rest={rest} participations={participations} />
     </div>

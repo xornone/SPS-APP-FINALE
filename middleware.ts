@@ -1,14 +1,12 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Seul /admin exige une session pour AFFICHER la page : le reste de l'app
-// (accueil, sorties, carte) est public — les membres n'ont pas de compte,
-// ils s'inscrivent aux sorties avec juste leur nom.
-const PROTECTED_PREFIX = "/admin";
+// /admin et /precommandes (avant-première réservée aux admins) exigent une session.
+const PROTECTED_PREFIXES = ["/admin", "/precommandes"];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const isProtected = path.startsWith(PROTECTED_PREFIX);
+  const isProtected = PROTECTED_PREFIXES.some((prefix) => path.startsWith(prefix));
   const isLogin = path === "/login";
   // Une route API (retrait d'un participant ou d'un commentaire, gestion
   // des sorties depuis /api/admin/*...) peut verifier elle-meme une session
