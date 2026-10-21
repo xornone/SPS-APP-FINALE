@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PreorderShowcase } from "@/components/PreorderShowcase";
@@ -12,13 +13,20 @@ export const metadata: Metadata = {
 };
 
 export default async function PrecommandesPage() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const reqHeaders = headers();
+  const headerUserId = reqHeaders.get("x-user-id");
 
-  if (!user) {
-    redirect("/login?next=/precommandes");
+  // Si l'utilisateur est déjà vérifié par le middleware, affichage instantané
+  // sans second appel réseau bloquant.
+  if (!headerUserId) {
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      redirect("/login?next=/precommandes");
+    }
   }
 
   return <PreorderShowcase />;

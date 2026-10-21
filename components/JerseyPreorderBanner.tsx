@@ -7,6 +7,7 @@ export function JerseyPreorderBanner() {
     <div className="px-5 pb-3">
       <Link
         href="/precommandes"
+        prefetch={true}
         className="group relative flex items-center justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-[#2D1047] via-[#421568] to-[#1C0A30] p-4 text-white shadow-card transition-all duration-200 hover:shadow-lg active:scale-[0.99]"
       >
         {/* Lueur d'ambiance */}

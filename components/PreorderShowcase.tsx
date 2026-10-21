@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/Icons";
@@ -179,6 +179,14 @@ const ARTICLES: ArticleItem[] = [
 export function PreorderShowcase() {
   const [activeIndex, setActiveIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
+
+  useEffect(() => {
+    // Précharger en arrière-plan les visuels WebP pour un affichage et un swipe instantanés
+    ARTICLES.forEach((item) => {
+      const img = new window.Image();
+      img.src = item.image;
+    });
+  }, []);
 
   const article = ARTICLES[activeIndex];
 
