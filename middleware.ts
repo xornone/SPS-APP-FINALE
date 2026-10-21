@@ -67,6 +67,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (user) {
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set("x-user-id", user.id);
+    if (user.email) requestHeaders.set("x-user-email", user.email);
+    const finalResponse = NextResponse.next({ request: { headers: requestHeaders } });
+    response.cookies.getAll().forEach((c) => {
+      finalResponse.cookies.set(c.name, c.value, c);
+    });
+    return finalResponse;
+  }
+
   return response;
 }
 

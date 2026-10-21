@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { AdminRidesList } from "@/components/AdminRidesList";
@@ -18,14 +19,26 @@ import { StravaConnectPanel } from "@/components/StravaConnectPanel";
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  const reqHeaders = headers();
+  const headerUserId = reqHeaders.get("x-user-id");
+  const headerUserEmail = reqHeaders.get("x-user-email");
+
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const [rides, participations, stravaConnection] = await Promise.all([
+
+  // Si l'utilisateur est déjà validé par le middleware, on évite l'appel réseau
+  // supplémentaire supabase.auth.getUser() qui bloquait le rendu.
+  const userPromise = headerUserId
+    ? Promise.resolve({ id: headerUserId, email: headerUserEmail })
+    : supabase.auth.getUser().then(({ data }) => (data.user ? { id: data.user.id, email: data.user.email } : null));
+
+  // Toutes les requêtes s'exécutent en parallèle immédiat
+  const [user, rides, participations, stravaConnection] = await Promise.all([
+    userPromise,
     fetchRides(supabase),
     fetchAllParticipations(supabase),
-    user ? getMyStravaConnection(user.id) : Promise.resolve(null),
+    headerUserId
+      ? getMyStravaConnection(headerUserId)
+      : userPromise.then((u) => (u ? getMyStravaConnection(u.id) : null)),
   ]);
 
   const sorted = [...rides].sort((a, b) => (a.ride_date < b.ride_date ? 1 : -1));
