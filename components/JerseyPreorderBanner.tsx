@@ -22,7 +22,7 @@ export function JerseyPreorderBanner() {
           </div>
 
           <h2 className="mt-2 font-display text-[22px] tracking-wide leading-none text-white">
-            MAILLOT & CUISSARD SPS
+            MAILLOTS & CUISSARD SPS
           </h2>
 
           <p className="mt-1 text-[12px] text-purple-200/80">

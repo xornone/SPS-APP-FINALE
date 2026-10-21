@@ -11,6 +11,7 @@ const GOBIK_FITTING_GUIDE_URL = "https://gobik.com/fr/pages/fitting-guide";
 interface ArticleItem {
   id: string;
   tabLabel: string;
+  icon: "shirt" | "sparkles" | "thermometer";
   badge: string;
   title: string;
   subtitle: string;
@@ -36,6 +37,7 @@ const ARTICLES: ArticleItem[] = [
   {
     id: "maillot",
     tabLabel: "Maillot CX SCA",
+    icon: "shirt",
     badge: "Édition 2027 · Collection Officielle",
     title: "MAILLOT SPS · CX SCA",
     subtitle: "GOBIK · L’Évolution du CX PRO 4.0 (2026)",
@@ -63,6 +65,7 @@ const ARTICLES: ArticleItem[] = [
   {
     id: "cuissard",
     tabLabel: "Cuissard X",
+    icon: "sparkles",
     badge: "Édition 2027 · Collection Officielle",
     title: "CUISSARD SPS · X",
     subtitle: "GOBIK · Peau Graphène Elastic Interface®",
@@ -86,6 +89,34 @@ const ARTICLES: ArticleItem[] = [
     featureGuideUrl: GOBIK_FITTING_GUIDE_URL,
     featureDesc:
       "Peau de chamois haute performance avec fil de graphène thermorégulateur, bretelles ergonomiques à coupe franche et tissu DUALKNIT PRO pour un maintien d'endurance exceptionnel sans aucune compression.",
+  },
+  {
+    id: "pulse",
+    tabLabel: "Maillot Pulse",
+    icon: "thermometer",
+    badge: "Édition 2027 · Collection Officielle",
+    title: "MAILLOT SPS · PULSE",
+    subtitle: "GOBIK · Manches Longues Mi-Saison & Hiver",
+    quote: "« Chaleur, confort et ajustement régulier pour rouler par temps frais. »",
+    image: "/images/maillot-pulse-sps.png",
+    alt: "Nouveau maillot manches longues officiel SPS 2027 Gobik Pulse",
+    buttonLabel: "Pré-commander sur HelloAsso",
+    metrics: [
+      { value: "260 g", label: "Poids (M)" },
+      { value: "8-16°C", label: "Température" },
+      { value: "GRATTÉ", label: "Intérieur thermique" },
+      { value: "FIT ↗", label: "Regular Fit", href: GOBIK_FITTING_GUIDE_URL },
+    ],
+    narrativeBadge: "Modèle Pulse · Manches Longues Hiver & Mi-Saison",
+    narrativeP1:
+      "Modèle à manches longues conçu pour offrir chaleur et confort lors des sorties par températures fraîches. Son tissu technique avec intérieur gratté retient la chaleur corporelle et permet l’utilisation d’une couche de base sans compromettre l’ajustement. Idéal pour les cyclistes à la recherche d’un vêtement d’hiver polyvalent et adaptable à différentes morphologies.",
+    narrativeP2:
+      "Il intègre des poignets anatomiquement optimisés avec découpe laser, une fermeture éclair inversée et dissimulée, ainsi que 3 poches arrière avec système GRS breveté et détails réfléchissants sur la poche et le col.",
+    featureTitle: "Coupe Gobik : REGULAR FIT",
+    featureGuideText: "Guide Gobik",
+    featureGuideUrl: GOBIK_FITTING_GUIDE_URL,
+    featureDesc:
+      "La coupe REGULAR FIT de Gobik offre un ajustement plus classique et polyvalent, idéal pour les entraînements réguliers d'automne et de printemps ou comme seconde couche sous une veste d'hiver.",
   },
 ];
 
@@ -146,21 +177,21 @@ export function PreorderShowcase() {
 
         {/* Sélecteur carrousel en onglets pill / segmented control */}
         <div className="mt-4 flex justify-center">
-          <div className="inline-flex items-center rounded-full border border-white/15 bg-black/40 p-1 backdrop-blur-xl shadow-lg">
+          <div className="inline-flex flex-wrap items-center justify-center gap-1 rounded-2xl sm:rounded-full border border-white/15 bg-black/40 p-1 backdrop-blur-xl shadow-lg">
             {ARTICLES.map((item, idx) => {
               const isActive = idx === activeIndex;
               return (
                 <button
                   key={item.id}
                   onClick={() => setActiveIndex(idx)}
-                  className={`relative flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold transition-all duration-300 ${
+                  className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11.5px] sm:text-xs font-bold transition-all duration-300 ${
                     isActive
                       ? "bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white shadow-[0_2px_12px_rgba(217,70,239,0.5)]"
                       : "text-purple-200/70 hover:text-white"
                   }`}
                   aria-pressed={isActive}
                 >
-                  <Icon name={idx === 0 ? "shirt" : "sparkles"} size={13} />
+                  <Icon name={item.icon} size={13} />
                   <span>{item.tabLabel}</span>
                 </button>
               );
@@ -204,7 +235,7 @@ export function PreorderShowcase() {
           <Icon name="chevR" size={16} />
         </button>
 
-        {/* Maillot / Cuissard cliquable vers HelloAsso */}
+        {/* Vêtement cliquable vers HelloAsso */}
         <Link
           href={HELLO_ASSO_URL}
           target="_blank"
@@ -316,7 +347,7 @@ export function PreorderShowcase() {
       <div className="mt-8 px-5">
         <div className="relative rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-5 backdrop-blur-md">
           <div className="flex items-center gap-2 text-fuchsia-400">
-            <Icon name={activeIndex === 0 ? "shirt" : "sparkles"} size={18} />
+            <Icon name={article.icon} size={18} />
             <span className="text-[11px] font-bold uppercase tracking-widest text-fuchsia-300">
               {article.narrativeBadge}
             </span>
