@@ -38,6 +38,7 @@ const PATHS: Record<string, string> = {
   sparkles: '<path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z" stroke-linejoin="round"/>',
   feather: '<path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" stroke-linejoin="round"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/>',
   thermometer: '<path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" stroke-linejoin="round"/>',
+  wind: '<path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" stroke-linecap="round"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2" stroke-linecap="round"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2" stroke-linecap="round"/>',
 };
 
 export function Icon({

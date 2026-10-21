@@ -11,7 +11,7 @@ const GOBIK_FITTING_GUIDE_URL = "https://gobik.com/fr/pages/fitting-guide";
 interface ArticleItem {
   id: string;
   tabLabel: string;
-  icon: "shirt" | "sparkles" | "thermometer";
+  icon: "shirt" | "sparkles" | "thermometer" | "wind";
   badge: string;
   title: string;
   subtitle: string;
@@ -118,6 +118,34 @@ const ARTICLES: ArticleItem[] = [
     featureDesc:
       "La coupe REGULAR FIT de Gobik offre un ajustement plus classique et polyvalent, idéal pour les entraînements réguliers d'automne et de printemps ou comme seconde couche sous une veste d'hiver.",
   },
+  {
+    id: "gilet",
+    tabLabel: "Gilet Plus 2.0",
+    icon: "wind",
+    badge: "Édition 2027 · Collection Officielle",
+    title: "GILET SPS · PLUS 2.0",
+    subtitle: "GOBIK · Coupe-Vent Ultra Léger & Compact",
+    quote: "« Protection coupe-vent ultralégère et aérodynamique sans compromis. »",
+    image: "/images/gilet-plus-sps.png",
+    alt: "Nouveau gilet officiel SPS 2027 Gobik Plus 2.0",
+    buttonLabel: "Pré-commander sur HelloAsso",
+    metrics: [
+      { value: "100 g", label: "Poids (M)" },
+      { value: "10-18°C", label: "Température" },
+      { value: "COMPACT", label: "Pliable en poche" },
+      { value: "FIT ↗", label: "Perfect Fit", href: GOBIK_FITTING_GUIDE_URL },
+    ],
+    narrativeBadge: "Modèle Plus 2.0 · Protection Coupe-Vent Compacte",
+    narrativeP1:
+      "Coupe-vent, léger et aérodynamique, conçu pour offrir une protection sans compromettre les performances. Son panneau frontal texturé améliore la dispersion de l’air, tandis que le dos en maille favorise la respirabilité. Le col montant avec zone élastique et les élastiques aux épaules assurent un ajustement parfait.",
+    narrativeP2:
+      "Il intègre des fermetures à glissière doubles pour réguler la ventilation et de nouvelles ouvertures arrière pour accéder au maillot. Fonctionnalité et performance dans un format compact : il se replie facilement dans sa propre poche latérale.",
+    featureTitle: "Coupe Gobik : PERFECT FIT",
+    featureGuideText: "Guide Gobik",
+    featureGuideUrl: GOBIK_FITTING_GUIDE_URL,
+    featureDesc:
+      "La coupe PERFECT FIT de Gobik offre un profil ajusté et aérodynamique près du corps pour éliminer toute prise au vent à haute vitesse, tout en garantissant une excellente liberté de mouvement.",
+  },
 ];
 
 export function PreorderShowcase() {
@@ -184,7 +212,7 @@ export function PreorderShowcase() {
                 <button
                   key={item.id}
                   onClick={() => setActiveIndex(idx)}
-                  className={`relative flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[11.5px] sm:text-xs font-bold transition-all duration-300 ${
+                  className={`relative flex items-center gap-1 rounded-full px-2.5 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-bold transition-all duration-300 ${
                     isActive
                       ? "bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white shadow-[0_2px_12px_rgba(217,70,239,0.5)]"
                       : "text-purple-200/70 hover:text-white"
