@@ -22,11 +22,11 @@ export function JerseyPreorderBanner() {
           </div>
 
           <h2 className="mt-2 font-display text-[22px] tracking-wide leading-none text-white">
-            MAILLOTS, CUISSARD & GILET
+            COLLECTION SPS 2027
           </h2>
 
           <p className="mt-1 text-[12px] text-purple-200/80">
-            Collection officielle 2027 · Précommandes ouvertes
+            Cyclisme & Running · Précommandes ouvertes
           </p>
 
           <div className="mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-fuchsia-300 group-hover:text-fuchsia-200">

@@ -39,6 +39,7 @@ const PATHS: Record<string, string> = {
   feather: '<path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" stroke-linejoin="round"/><path d="M16 8 2 22"/><path d="M17.5 15H9"/>',
   thermometer: '<path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z" stroke-linejoin="round"/>',
   wind: '<path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2" stroke-linecap="round"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2" stroke-linecap="round"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2" stroke-linecap="round"/>',
+  flash: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke-linejoin="round"/>',
 };
 
 export function Icon({

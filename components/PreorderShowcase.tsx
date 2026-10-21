@@ -11,7 +11,7 @@ const GOBIK_FITTING_GUIDE_URL = "https://gobik.com/fr/pages/fitting-guide";
 interface ArticleItem {
   id: string;
   tabLabel: string;
-  icon: "shirt" | "sparkles" | "thermometer" | "wind";
+  icon: "shirt" | "sparkles" | "thermometer" | "wind" | "flash";
   badge: string;
   title: string;
   subtitle: string;
@@ -145,6 +145,34 @@ const ARTICLES: ArticleItem[] = [
     featureGuideUrl: GOBIK_FITTING_GUIDE_URL,
     featureDesc:
       "La coupe PERFECT FIT de Gobik offre un profil ajusté et aérodynamique près du corps pour éliminer toute prise au vent à haute vitesse, tout en garantissant une excellente liberté de mouvement.",
+  },
+  {
+    id: "flash",
+    tabLabel: "Running Flash",
+    icon: "flash",
+    badge: "Édition 2027 · Collection Officielle",
+    title: "T-SHIRT SPS · FLASH",
+    subtitle: "GOBIK · T-shirt Running Ultraléger (95 g)",
+    quote: "« Conçu pour courir avec un minimum de distractions et un contrôle thermique maximal. »",
+    image: "/images/running-flash-sps.png",
+    alt: "Nouveau maillot running officiel SPS 2027 Gobik Flash",
+    buttonLabel: "Pré-commander sur HelloAsso",
+    metrics: [
+      { value: "95 g", label: "Poids (M)" },
+      { value: "UPF 50", label: "Anti-UV" },
+      { value: "17-35°C", label: "Température" },
+      { value: "FIT ↗", label: "Perfect Fit", href: GOBIK_FITTING_GUIDE_URL },
+    ],
+    narrativeBadge: "Modèle Flash · Tissu Technique HEXAGON",
+    narrativeP1:
+      "T-shirt ultraléger à la coupe ajustée, conçu pour courir avec un minimum de distractions. Grâce à son tissu technique HEXAGON et à sa structure près du corps, il offre une excellente respirabilité, une évacuation efficace de la transpiration et un contrôle thermique lors des efforts prolongés.",
+    narrativeP2:
+      "Idéal pour les entraînements ou les compétitions par temps chaud, lorsque chaque gramme compte et que le confort fait la différence. Ajustement cintré qui maximise le contact avec la peau, tissu léger et structure idéale pour évacuer l’humidité.",
+    featureTitle: "Coupe Gobik : PERFECT FIT",
+    featureGuideText: "Guide Gobik",
+    featureGuideUrl: GOBIK_FITTING_GUIDE_URL,
+    featureDesc:
+      "La coupe PERFECT FIT de Gobik offre un ajustement athlétique cintré au plus près du corps pour maximiser le transfert d'humidité et supprimer les frottements lors de la foulée.",
   },
 ];
 
