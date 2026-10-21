@@ -7,6 +7,7 @@ import { AdminNotificationComposer } from "@/components/AdminNotificationCompose
 import { isNotificationAdmin } from "@/lib/notificationAdmins";
 import { LogoutButton } from "@/components/LogoutButton";
 import { Icon } from "@/components/Icons";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { getMyStravaConnection } from "@/lib/strava";
 import { StravaConnectPanel } from "@/components/StravaConnectPanel";
 
@@ -33,9 +34,12 @@ export default async function AdminPage() {
 
   return (
     <div className="relative">
-      <div className="px-5 pb-4 pt-5">
-        <h1 className="font-display text-[26px] tracking-wide">Administration</h1>
-        <p className="text-[12.5px] text-black/45 dark:text-white/45">Créer et gérer les sorties du club.</p>
+      <div className="flex items-center justify-between px-5 pb-4 pt-5">
+        <div>
+          <h1 className="font-display text-[26px] tracking-wide">Administration</h1>
+          <p className="text-[12.5px] text-black/45 dark:text-white/45">Créer et gérer les sorties du club.</p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="px-5 pb-5">

@@ -3,6 +3,7 @@ import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { Icon } from "@/components/Icons";
 import { MemberAssiduityRanking } from "@/components/MemberAssiduityRanking";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { buildAssiduityRankingFromParticipations } from "@/lib/assiduity";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
@@ -100,9 +101,12 @@ export default async function ClassementPage() {
 
   return (
     <div>
-      <div className="px-5 pb-1 pt-5">
-        <h1 className="font-display text-[26px] tracking-wide">Statistique SPS</h1>
-        <p className="text-[12.5px] text-black/45 dark:text-white/45">Les chiffres du club, tous membres confondus.</p>
+      <div className="flex items-center justify-between px-5 pb-1 pt-5">
+        <div>
+          <h1 className="font-display text-[26px] tracking-wide">Statistique SPS</h1>
+          <p className="text-[12.5px] text-black/45 dark:text-white/45">Les chiffres du club, tous membres confondus.</p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <div className="flex gap-2.5 px-5 pb-2 pt-4">

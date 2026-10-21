@@ -4,6 +4,7 @@ import { HomeRidesSection } from "@/components/HomeRidesSection";
 import { NotificationOptIn } from "@/components/NotificationOptIn";
 import { JerseyPreorderBanner } from "@/components/JerseyPreorderBanner";
 import { AdminOnly } from "@/components/AdminOnly";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { isPastDate } from "@/lib/format";
 
 // Page 100% publique (aucune donnee liee a une session, voir
@@ -33,8 +34,9 @@ export default async function HomePage() {
 
   return (
     <div>
-      <div className="px-5 pb-3 pt-5">
+      <div className="flex items-center justify-between px-5 pb-3 pt-5">
         <h1 className="font-display text-[26px] tracking-wide">Bonjour 👋</h1>
+        <ThemeToggle />
       </div>
       <AdminOnly>
         <JerseyPreorderBanner />

@@ -36,8 +36,15 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`${bebas.variable} ${manrope.variable}`}>
-      <body className="min-h-dvh antialiased">
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('sps-theme');var d=document.documentElement.classList;if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){d.add('dark')}else{d.remove('dark')}}catch(e){}})()`,
+          }}
+        />
+      </head>
+      <body className={`min-h-dvh antialiased ${bebas.variable} ${manrope.variable}`}>
         {children}
         <Analytics />
         <SpeedInsights />

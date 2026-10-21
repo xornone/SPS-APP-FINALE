@@ -6,6 +6,7 @@ import { RideMap } from "@/components/RideMap";
 import { ElevationChart } from "@/components/ElevationChart";
 import { GroupBadge } from "@/components/GroupBadge";
 import { Icon } from "@/components/Icons";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { RideComments } from "@/components/RideComments";
 import { RideParticipationSection } from "@/components/RideParticipationSection";
 import { WeatherWidget } from "@/components/WeatherWidget";
@@ -69,15 +70,18 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         >
           <Icon name="chevL" size={18} />
         </Link>
-        {gpxUrl && (
-          <a
-            href={gpxUrl}
-            download
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
-          >
-            <Icon name="download" size={17} />
-          </a>
-        )}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {gpxUrl && (
+            <a
+              href={gpxUrl}
+              download
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
+            >
+              <Icon name="download" size={17} />
+            </a>
+          )}
+        </div>
       </div>
 
       <div className="px-5 pb-4">
