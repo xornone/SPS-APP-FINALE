@@ -21,32 +21,13 @@ export interface PushPayload {
   url?: string;
 }
 
-/**
- * Envoie une notification push a tous les abonnes enregistres (nouvelle
- * sortie, sortie modifiee, ou message libre depuis l'admin). Best-effort et
- * silencieux par design : jamais appele avec un await qui ferait echouer
- * l'action principale (creation/modification de sortie) si l'envoi des
- * notifications a un probleme — chaque appelant doit l'entourer d'un
- * try/catch (voir app/api/admin/rides/route.ts). Un abonnement expire ou
- * revoque par le navigateur (404/410) est supprime silencieusement ; les
- * autres erreurs sont juste loguees.
- */
-export async function sendPushToAll(payload: PushPayload): Promise<void> {
-  try {
-    configureWebPush();
-  } catch (err) {
-    console.error("[push] configuration manquante :", err);
-    return;
-  }
-
-  const admin = createAdminClient();
-  const { data: subs, error } = await admin.from("push_subscriptions").select("id, endpoint, p256dh, auth");
-  if (error) {
-    console.error("[push] impossible de lire les abonnements :", error.message);
-    return;
-  }
+async function sendPushToSubscribers(
+  subs: Array<{ id: string; endpoint: string; p256dh: string; auth: string }>,
+  payload: PushPayload
+): Promise<void> {
   if (!subs || subs.length === 0) return;
 
+  const admin = createAdminClient();
   const json = JSON.stringify(payload);
 
   await Promise.all(
@@ -65,4 +46,54 @@ export async function sendPushToAll(payload: PushPayload): Promise<void> {
       }
     })
   );
+}
+
+/**
+ * Envoie une notification push a tous les abonnes enregistres (nouvelle
+ * sortie, sortie modifiee, ou message libre depuis l'admin). Best-effort et
+ * silencieux par design.
+ */
+export async function sendPushToAll(payload: PushPayload): Promise<void> {
+  try {
+    configureWebPush();
+  } catch (err) {
+    console.error("[push] configuration manquante :", err);
+    return;
+  }
+
+  const admin = createAdminClient();
+  const { data: subs, error } = await admin.from("push_subscriptions").select("id, endpoint, p256dh, auth");
+  if (error) {
+    console.error("[push] impossible de lire les abonnements :", error.message);
+    return;
+  }
+
+  await sendPushToSubscribers(subs || [], payload);
+}
+
+/**
+ * Envoie une notification push UNIQUEMENT aux appareils des administrateurs
+ * (ex: alerte lorsqu'une nouvelle idee est postee dans la boîte à idées).
+ */
+export async function sendPushToAdmins(payload: PushPayload): Promise<void> {
+  try {
+    configureWebPush();
+  } catch (err) {
+    console.error("[push] configuration manquante :", err);
+    return;
+  }
+
+  const admin = createAdminClient();
+  const { data: subs, error } = await admin
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth")
+    .eq("is_admin", true);
+
+  if (error) {
+    // Si la colonne is_admin n'a pas encore ete executee en migration, log sans crasher
+    console.error("[push] impossible de lire les abonnements admin :", error.message);
+    return;
+  }
+
+  await sendPushToSubscribers(subs || [], payload);
 }

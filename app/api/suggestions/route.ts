@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addSuggestion } from "@/lib/suggestionsStorage";
+import { sendPushToAdmins } from "@/lib/webpush";
 
 // Route publique de soumission d'une idée (sans e-mail, sans pièce jointe)
 export async function POST(request: NextRequest) {
@@ -44,6 +45,25 @@ export async function POST(request: NextRequest) {
       isAnonymous,
       email,
     });
+
+    // Envoi silencieux de la notification push aux seuls appareils des administrateurs
+    try {
+      const author = isAnonymous ? "Un membre (anonyme)" : (suggestion.author_name || "Un membre");
+      const preview =
+        suggestion.message.length > 70
+          ? `${suggestion.message.slice(0, 67)}...`
+          : suggestion.message;
+
+      sendPushToAdmins({
+        title: "💡 Nouvelle idée boîte à idées",
+        body: `${author} : « ${preview} »`,
+        url: "/boite-a-idees",
+      }).catch((pushErr) => {
+        console.error("[suggestions] Échec push admin :", pushErr);
+      });
+    } catch (pushErr) {
+      console.error("[suggestions] Échec déclenchement push admin :", pushErr);
+    }
 
     return NextResponse.json({
       success: true,
