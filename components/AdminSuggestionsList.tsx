@@ -92,12 +92,12 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
   return (
     <div className="mt-8 border-t border-black/10 px-5 pt-7 dark:border-white/10">
       {/* En-tête section Admin */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="flex h-7 w-7 flex-none items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
             👑
           </span>
-          <div>
+          <div className="min-w-0">
             <h2 className="font-display text-xl tracking-wide text-black dark:text-white">
               Idées reçues (Admin)
             </h2>
@@ -108,7 +108,7 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
         </div>
 
         <span
-          className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${
+          className={`flex-none shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-[11.5px] font-bold ${
             newCount > 0
               ? "bg-amber-500/15 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
               : "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
