@@ -12,6 +12,7 @@ import { useIsAdmin } from "@/lib/useIsAdmin";
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
   { href: "/precommandes", label: "Précommandes", icon: "shirt" as const, adminOnly: true },
+  { href: "/boite-a-idees", label: "Boîte à idées", icon: "lightbulb" as const },
   { href: "/classement", label: "Statistique SPS", icon: "trophy" as const },
   { href: "/admin", label: "Admin", icon: "gear" as const },
 ];
