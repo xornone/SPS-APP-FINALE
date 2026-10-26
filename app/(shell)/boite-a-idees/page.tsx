@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SuggestionForm } from "@/components/SuggestionForm";
+import { Icon } from "@/components/Icons";
 
 export const metadata = {
   title: "Boîte à idées — SPS",
@@ -11,13 +13,23 @@ export default function BoiteAIdeesPage() {
     <div>
       {/* En-tête */}
       <div className="flex items-center justify-between px-5 pb-2 pt-5">
-        <div>
-          <span className="text-[11.5px] font-extrabold uppercase tracking-wider text-sps-violet600 dark:text-sps-violet400">
-            Espace Membres
-          </span>
-          <h1 className="font-display text-[26px] tracking-wide text-black dark:text-white">
-            Boîte à idées 💡
-          </h1>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/home"
+            prefetch={true}
+            aria-label="Retour à l'accueil"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white shadow-cardSm transition hover:scale-105 active:scale-95 dark:border-white/10 dark:bg-[#1A1422]"
+          >
+            <Icon name="chevL" size={18} />
+          </Link>
+          <div>
+            <span className="text-[11.5px] font-extrabold uppercase tracking-wider text-sps-violet600 dark:text-sps-violet400">
+              Espace Membres
+            </span>
+            <h1 className="font-display text-[24px] tracking-wide text-black dark:text-white">
+              Boîte à idées 💡
+            </h1>
+          </div>
         </div>
         <ThemeToggle />
       </div>

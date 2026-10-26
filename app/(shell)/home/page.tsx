@@ -5,6 +5,7 @@ import { NotificationOptIn } from "@/components/NotificationOptIn";
 import { JerseyPreorderBanner } from "@/components/JerseyPreorderBanner";
 import { AdminOnly } from "@/components/AdminOnly";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SuggestionButton } from "@/components/SuggestionButton";
 import { isPastDate } from "@/lib/format";
 
 // Page 100% publique (aucune donnee liee a une session, voir
@@ -36,7 +37,10 @@ export default async function HomePage() {
     <div>
       <div className="flex items-center justify-between px-5 pb-3 pt-5">
         <h1 className="font-display text-[26px] tracking-wide">Bonjour 👋</h1>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <SuggestionButton />
+          <ThemeToggle />
+        </div>
       </div>
       <AdminOnly>
         <JerseyPreorderBanner />
