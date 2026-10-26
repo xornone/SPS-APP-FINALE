@@ -178,10 +178,12 @@ function Stat({ value, label }: { value: string; label: string }) {
 }
 
 function speedRangeLabel(groups: GroupLevel[]): string {
+  if (!groups || groups.length === 0) return "—";
   const lows: Record<GroupLevel, number> = { vert: 24, rouge: 26, violet: 28 };
   const highs: Record<GroupLevel, number | null> = { vert: 26, rouge: 28, violet: null };
   const low = Math.min(...groups.map((g) => lows[g]));
   const hasViolet = groups.includes("violet");
+  if (low === 28 && hasViolet) return "28+";
   const high = hasViolet ? "28+" : Math.max(...groups.map((g) => highs[g] || 0));
   return `${low}–${high}`;
 }
