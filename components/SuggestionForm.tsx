@@ -153,17 +153,15 @@ export function SuggestionForm({ onSubmitted }: { onSubmitted?: () => void }) {
 
       {/* 2. Message d'abord */}
       <div className="mb-4">
-        <label htmlFor="suggestion-message" className="mb-1.5 flex items-center justify-between text-xs font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
-          <span>Ton message ou suggestion *</span>
-          <span className="font-normal normal-case text-black/35 dark:text-white/35">Détaille ton idée</span>
+        <label htmlFor="suggestion-message" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-black/50 dark:text-white/50">
+          Ton message ou suggestion *
         </label>
         <textarea
           id="suggestion-message"
           rows={5}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder="Ex: J'aimerais qu'on organise une sortie vers le mont Aigoual le mois prochain... / J'ai une idée pour le départ des groupes..."
-          className="w-full rounded-2xl border border-black/10 bg-white p-4 text-[14.5px] leading-relaxed text-black placeholder-black/35 shadow-sm outline-none transition focus:border-sps-violet600 focus:ring-2 focus:ring-sps-violet600/20 dark:border-white/15 dark:bg-[#1A1422] dark:text-white dark:placeholder-white/35"
+          className="w-full rounded-2xl border border-black/10 bg-white p-4 text-[14.5px] leading-relaxed text-black shadow-sm outline-none transition focus:border-sps-violet600 focus:ring-2 focus:ring-sps-violet600/20 dark:border-white/15 dark:bg-[#1A1422] dark:text-white"
         />
       </div>
 
