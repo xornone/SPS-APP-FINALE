@@ -157,33 +157,43 @@ export function HomeRidesSection({
         </>
       )}
 
-      <div className="mb-2 px-5">
-        <h2 className="font-display text-xl tracking-wide">Les prochaines sorties</h2>
-      </div>
-      <div className="flex flex-col gap-3 px-5">
-        {list.length === 0 && (
+      {rest.length > 0 ? (
+        <>
+          <div className="mb-2 px-5">
+            <h2 className="font-display text-xl tracking-wide">Autres sorties à venir</h2>
+          </div>
+          <div className="flex flex-col gap-3 px-5">
+            {list.length === 0 && (
+              <p className="rounded-2xl border border-dashed border-black/10 p-8 text-center text-sm text-black/40 dark:border-white/10 dark:text-white/40">
+                Aucune sortie ne correspond à ce filtre.
+              </p>
+            )}
+            {list.map((r, i) => {
+              const parts = countsFor(r.id);
+              const wKey = weekKey(r.ride_date);
+              const isNewWeek = i === 0 || weekKey(list[i - 1].ride_date) !== wKey;
+              return (
+                <Fragment key={r.id}>
+                  {isNewWeek && <WeekDivider label={fmtWeekLabel(r.ride_date)} />}
+                  <RideCard
+                    ride={r}
+                    participantCount={parts.length}
+                    participantPreview={parts.map((p) => ({ id: p.id, name: p.participant_name }))}
+                    isJoined={myRideIds.has(r.id)}
+                    registeredAdmins={adminsFor(r.id)}
+                  />
+                </Fragment>
+              );
+            })}
+          </div>
+        </>
+      ) : featured.length === 0 ? (
+        <div className="flex flex-col gap-3 px-5">
           <p className="rounded-2xl border border-dashed border-black/10 p-8 text-center text-sm text-black/40 dark:border-white/10 dark:text-white/40">
-            Aucune sortie ne correspond à ce filtre.
+            Aucune sortie prévue pour le moment.
           </p>
-        )}
-        {list.map((r, i) => {
-          const parts = countsFor(r.id);
-          const wKey = weekKey(r.ride_date);
-          const isNewWeek = i === 0 || weekKey(list[i - 1].ride_date) !== wKey;
-          return (
-            <Fragment key={r.id}>
-              {isNewWeek && <WeekDivider label={fmtWeekLabel(r.ride_date)} />}
-              <RideCard
-                ride={r}
-                participantCount={parts.length}
-                participantPreview={parts.map((p) => ({ id: p.id, name: p.participant_name }))}
-                isJoined={myRideIds.has(r.id)}
-                registeredAdmins={adminsFor(r.id)}
-              />
-            </Fragment>
-          );
-        })}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 }
