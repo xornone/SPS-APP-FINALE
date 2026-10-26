@@ -6,7 +6,7 @@
     "author_name": "Membre anonyme",
     "is_anonymous": true,
     "email": null,
-    "status": "new",
+    "status": "done",
     "created_at": "2026-10-26T10:18:37.610Z"
   },
   {
@@ -16,7 +16,7 @@
     "author_name": "Marc Martin",
     "is_anonymous": false,
     "email": "marc@test.fr",
-    "status": "new",
+    "status": "done",
     "created_at": "2026-10-26T10:18:29.024Z"
   }
 ]

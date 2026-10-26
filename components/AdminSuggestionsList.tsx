@@ -8,7 +8,8 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<"all" | "new" | "done">("all");
+  // Par défaut, afficher uniquement les demandes actives non traitées ("new" = "À voir")
+  const [filter, setFilter] = useState<"new" | "done">("new");
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
   async function loadSuggestions() {
@@ -37,6 +38,7 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
       const res = await fetch(`/api/admin/suggestions/${id}`, { method: "PATCH" });
       if (!res.ok) throw new Error("Erreur.");
       const data = await res.json();
+      // Dès que le statut change, l'idée quitte l'onglet actif et passe dans l'autre
       setSuggestions((prev) => prev.map((s) => (s.id === id ? data.suggestion : s)));
     } catch {
       alert("Erreur lors de la mise à jour du statut.");
@@ -78,6 +80,9 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
     }
   }
 
+  const newCount = suggestions.filter((s) => s.status === "new").length;
+  const doneCount = suggestions.filter((s) => s.status === "done").length;
+
   const filtered = suggestions.filter((s) => {
     if (filter === "new") return s.status === "new";
     if (filter === "done") return s.status === "done";
@@ -101,30 +106,43 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
             </p>
           </div>
         </div>
-        <span className="rounded-full bg-sps-violet100 px-2.5 py-1 text-xs font-extrabold text-sps-violet700 dark:bg-sps-violet950 dark:text-sps-violet300">
-          {suggestions.length}
+
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${
+            newCount > 0
+              ? "bg-amber-500/15 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
+              : "bg-emerald-500/15 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+          }`}
+        >
+          {newCount > 0 ? `${newCount} à voir` : "Tout est traité ✓"}
         </span>
       </div>
 
-      {/* Filtres de statut */}
-      <div className="mb-4 flex gap-1.5">
-        {[
-          { id: "all", label: `Toutes (${suggestions.length})` },
-          { id: "new", label: `À voir (${suggestions.filter((s) => s.status === "new").length})` },
-          { id: "done", label: `Traitées (${suggestions.filter((s) => s.status === "done").length})` },
-        ].map((f) => (
-          <button
-            key={f.id}
-            onClick={() => setFilter(f.id as "all" | "new" | "done")}
-            className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
-              filter === f.id
-                ? "bg-sps-violet600 text-white"
-                : "border border-black/10 bg-white text-black/60 hover:bg-black/5 dark:border-white/10 dark:bg-[#1A1422] dark:text-white/60 dark:hover:bg-white/5"
-            }`}
-          >
-            {f.label}
-          </button>
-        ))}
+      {/* Deux onglets uniques : À voir (actif de base) et Traitées */}
+      <div className="mb-4 flex rounded-xl border border-black/10 bg-white p-1 dark:border-white/10 dark:bg-[#1A1422]">
+        <button
+          type="button"
+          onClick={() => setFilter("new")}
+          className={`flex-1 rounded-lg py-2 text-center text-xs font-bold transition ${
+            filter === "new"
+              ? "bg-sps-violet600 text-white shadow-sm"
+              : "text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
+          }`}
+        >
+          À voir ({newCount})
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setFilter("done")}
+          className={`flex-1 rounded-lg py-2 text-center text-xs font-bold transition ${
+            filter === "done"
+              ? "bg-sps-violet600 text-white shadow-sm"
+              : "text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
+          }`}
+        >
+          Traitées ({doneCount})
+        </button>
       </div>
 
       {/* Liste */}
@@ -139,10 +157,12 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-black/10 p-8 text-center text-xs text-black/40 dark:border-white/10 dark:text-white/40">
-          Aucune idée ne correspond à ce filtre.
+          {filter === "new"
+            ? "🎉 Aucune demande en attente ! Toutes les idées ont été traitées."
+            : "Aucune idée dans les demandes traitées pour le moment."}
         </div>
       ) : (
-        <div className="space-y-3.5 pb-10">
+        <div className="space-y-3 pb-10">
           {filtered.map((item) => {
             const isItemLoading = actionLoadingId === item.id;
             const isDone = item.status === "done";
@@ -150,11 +170,7 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
             return (
               <div
                 key={item.id}
-                className={`overflow-hidden rounded-2xl border transition-all ${
-                  isDone
-                    ? "border-black/5 bg-white/50 opacity-80 dark:border-white/5 dark:bg-[#1A1422]/50"
-                    : "border-black/10 bg-white shadow-cardSm dark:border-white/10 dark:bg-[#1A1422]"
-                }`}
+                className="overflow-hidden rounded-2xl border border-black/10 bg-white shadow-cardSm transition-all dark:border-white/10 dark:bg-[#1A1422]"
               >
                 {/* Ligne du haut : Catégorie + Date + Statut */}
                 <div className="flex items-center justify-between border-b border-black/[0.06] px-4 py-2.5 dark:border-white/[0.06]">
@@ -174,7 +190,7 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
                         : "bg-amber-500/10 text-amber-700 dark:text-amber-300"
                     }`}
                   >
-                    {isDone ? "Traité ✓" : "Nouveau"}
+                    {isDone ? "Traitée ✓" : "À traiter"}
                   </span>
                 </div>
 
@@ -200,15 +216,19 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
                 </div>
 
                 {/* Barre d'action admin */}
-                <div className="flex items-center justify-between border-t border-black/[0.06] bg-[#FAF8FB] px-4 py-2 dark:border-white/[0.06] dark:bg-[#150F1D]">
+                <div className="flex items-center justify-between border-t border-black/[0.06] bg-[#FAF8FB] px-4 py-2.5 dark:border-white/[0.06] dark:bg-[#150F1D]">
                   <button
                     type="button"
                     disabled={isItemLoading}
                     onClick={() => handleToggleStatus(item.id)}
-                    className="flex items-center gap-1.5 text-xs font-bold text-black/60 transition hover:text-sps-violet600 disabled:opacity-50 dark:text-white/60 dark:hover:text-sps-violet400"
+                    className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition disabled:opacity-50 ${
+                      isDone
+                        ? "bg-black/5 text-black/70 hover:bg-black/10 dark:bg-white/10 dark:text-white/70 dark:hover:bg-white/15"
+                        : "bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600"
+                    }`}
                   >
                     <Icon name={isDone ? "refresh" : "check"} size={13} />
-                    <span>{isDone ? "Marquer comme à traiter" : "Marquer comme traité"}</span>
+                    <span>{isDone ? "Remettre dans « À voir »" : "Marquer comme traité ✓"}</span>
                   </button>
 
                   <button
@@ -216,9 +236,10 @@ export function AdminSuggestionsList({ refreshKey }: { refreshKey?: number }) {
                     disabled={isItemLoading}
                     onClick={() => handleDelete(item.id)}
                     aria-label="Supprimer la suggestion"
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-black/40 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:text-white/40 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                    title="Supprimer la suggestion"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-black/40 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-50 dark:text-white/40 dark:hover:bg-red-950/40 dark:hover:text-red-400"
                   >
-                    <Icon name="trash" size={14} />
+                    <Icon name="trash" size={15} />
                   </button>
                 </div>
               </div>
