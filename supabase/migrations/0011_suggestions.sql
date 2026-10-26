@@ -1,5 +1,7 @@
 -- ============================================================================
--- SPS — Boîte à idées & suggestions interne (sans e-mail)
+-- SPS — Boîte à idées & suggestions interne (Avant-première Admin)
+-- A exécuter dans l'éditeur SQL de votre tableau de bord Supabase si vous
+-- souhaitez persister les idées dans Supabase pour tous les admins.
 -- ============================================================================
 
 create table if not exists public.suggestions (
@@ -15,5 +17,13 @@ create table if not exists public.suggestions (
 
 create index if not exists suggestions_created_at_idx on public.suggestions (created_at desc);
 
--- RLS activée : accès contrôlé par les API serveur
+-- RLS
 alter table public.suggestions enable row level security;
+
+-- Policies pour l'API
+create policy "Allow select for all" on public.suggestions for select using (true);
+create policy "Allow insert for all" on public.suggestions for insert with check (true);
+create policy "Allow update for all" on public.suggestions for update using (true);
+create policy "Allow delete for all" on public.suggestions for delete using (true);
+
+grant all on public.suggestions to anon, authenticated;

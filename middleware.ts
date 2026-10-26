@@ -1,8 +1,8 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// /admin et /precommandes (avant-première réservée aux admins) exigent une session.
-const PROTECTED_PREFIXES = ["/admin", "/precommandes"];
+// /admin, /precommandes et /boite-a-idees (avant-première réservée aux admins) exigent une session.
+const PROTECTED_PREFIXES = ["/admin", "/precommandes", "/boite-a-idees"];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;

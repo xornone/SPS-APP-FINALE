@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { createPublicClient } from "./supabase/publicClient";
 
 export interface Suggestion {
   id: string;
@@ -13,46 +14,59 @@ export interface Suggestion {
   created_at: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const DATA_FILE = path.join(DATA_DIR, "suggestions.json");
-
-function ensureFileExists(): void {
+function getFilePath(): string {
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    const dataDir = path.join(process.cwd(), "data");
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
     }
-    if (!fs.existsSync(DATA_FILE)) {
-      fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2), "utf8");
-    }
-  } catch (err) {
-    console.error("Erreur création dossier data/suggestions.json :", err);
+    return path.join(dataDir, "suggestions.json");
+  } catch {
+    return path.join("/tmp", "sps-suggestions.json");
   }
 }
 
-function readAll(): Suggestion[] {
-  ensureFileExists();
+function readAllFromFile(): Suggestion[] {
   try {
-    const raw = fs.readFileSync(DATA_FILE, "utf8");
+    const filePath = getFilePath();
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
+    const raw = fs.readFileSync(filePath, "utf8");
     const data = JSON.parse(raw);
     return Array.isArray(data) ? data : [];
-  } catch (err) {
-    console.error("Erreur lecture suggestions.json :", err);
+  } catch {
     return [];
   }
 }
 
-function writeAll(suggestions: Suggestion[]): void {
-  ensureFileExists();
+function writeAllToFile(suggestions: Suggestion[]): void {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(suggestions, null, 2), "utf8");
+    const filePath = getFilePath();
+    fs.writeFileSync(filePath, JSON.stringify(suggestions, null, 2), "utf8");
   } catch (err) {
-    console.error("Erreur écriture suggestions.json :", err);
+    console.error("Erreur écriture suggestions fichier :", err);
   }
 }
 
 export async function getAllSuggestions(): Promise<Suggestion[]> {
-  const list = readAll();
-  // Tri par date décroissante (les plus récentes en premier)
+  // 1. Essayer Supabase si la table est créée
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("suggestions")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && Array.isArray(data)) {
+      return data as Suggestion[];
+    }
+  } catch {
+    // Table non existante ou erreur réseau : fallback fichier
+  }
+
+  // 2. Fallback fichier local
+  const list = readAllFromFile();
   return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 }
 
@@ -63,8 +77,6 @@ export async function addSuggestion(params: {
   isAnonymous: boolean;
   email?: string;
 }): Promise<Suggestion> {
-  const list = readAll();
-
   const newSuggestion: Suggestion = {
     id: crypto.randomUUID(),
     category: params.category || "💡 Idée / Suggestion",
@@ -76,28 +88,83 @@ export async function addSuggestion(params: {
     created_at: new Date().toISOString(),
   };
 
+  // 1. Essayer d'insérer dans Supabase
+  try {
+    const supabase = createPublicClient();
+    const { data, error } = await supabase
+      .from("suggestions")
+      .insert(newSuggestion)
+      .select()
+      .single();
+
+    if (!error && data) {
+      return data as Suggestion;
+    }
+  } catch {
+    // Fallback fichier
+  }
+
+  // 2. Fallback fichier local
+  const list = readAllFromFile();
   list.unshift(newSuggestion);
-  writeAll(list);
+  writeAllToFile(list);
 
   return newSuggestion;
 }
 
 export async function toggleSuggestionStatus(id: string): Promise<Suggestion | null> {
-  const list = readAll();
+  // 1. Essayer Supabase
+  try {
+    const supabase = createPublicClient();
+    const { data: current, error: getErr } = await supabase
+      .from("suggestions")
+      .select("status")
+      .eq("id", id)
+      .single();
+
+    if (!getErr && current) {
+      const nextStatus = current.status === "done" ? "new" : "done";
+      const { data: updated, error: updateErr } = await supabase
+        .from("suggestions")
+        .update({ status: nextStatus })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (!updateErr && updated) {
+        return updated as Suggestion;
+      }
+    }
+  } catch {
+    // Fallback fichier
+  }
+
+  // 2. Fallback fichier local
+  const list = readAllFromFile();
   const index = list.findIndex((s) => s.id === id);
   if (index === -1) return null;
 
   list[index].status = list[index].status === "done" ? "new" : "done";
-  writeAll(list);
+  writeAllToFile(list);
 
   return list[index];
 }
 
 export async function removeSuggestion(id: string): Promise<boolean> {
-  const list = readAll();
+  // 1. Essayer Supabase
+  try {
+    const supabase = createPublicClient();
+    const { error } = await supabase.from("suggestions").delete().eq("id", id);
+    if (!error) return true;
+  } catch {
+    // Fallback fichier
+  }
+
+  // 2. Fallback fichier local
+  const list = readAllFromFile();
   const filtered = list.filter((s) => s.id !== id);
   if (filtered.length === list.length) return false;
 
-  writeAll(filtered);
+  writeAllToFile(filtered);
   return true;
 }

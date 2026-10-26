@@ -30,7 +30,7 @@ export function BoiteAIdeesView() {
           </Link>
           <div>
             <span className="text-[11.5px] font-extrabold uppercase tracking-wider text-sps-violet600 dark:text-sps-violet400">
-              Espace Membres
+              Avant-première Admin 👑
             </span>
             <h1 className="font-display text-[24px] tracking-wide text-black dark:text-white">
               Boîte à idées 💡
