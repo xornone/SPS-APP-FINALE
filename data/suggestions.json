@@ -1,0 +1,22 @@
+[
+  {
+    "id": "6829f176-6dfd-4027-af9b-3ecab94cebe4",
+    "category": "💬 Remarque",
+    "message": "Super ambiance dans le groupe vert, merci aux capitaines de route !",
+    "author_name": "Membre anonyme",
+    "is_anonymous": true,
+    "email": null,
+    "status": "new",
+    "created_at": "2026-10-26T10:18:37.610Z"
+  },
+  {
+    "id": "d95c17fa-1b6b-4997-93e4-6b0de197d0f2",
+    "category": "💡 Idée / Suggestion",
+    "message": "Est-ce qu'on pourrait prévoir un ravitaillement café au départ des sorties du dimanche ?",
+    "author_name": "Marc Martin",
+    "is_anonymous": false,
+    "email": "marc@test.fr",
+    "status": "new",
+    "created_at": "2026-10-26T10:18:29.024Z"
+  }
+]
