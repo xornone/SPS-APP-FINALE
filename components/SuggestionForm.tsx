@@ -196,8 +196,7 @@ export function SuggestionForm({ onSubmitted }: { onSubmitted?: () => void }) {
                 type="text"
                 value={authorName}
                 onChange={(e) => setAuthorName(e.target.value)}
-                placeholder="Ex: Thomas Dupont"
-                className="w-full rounded-xl border border-black/10 bg-[#FAF8FB] p-3 text-sm text-black placeholder-black/35 outline-none transition focus:border-sps-violet600 dark:border-white/10 dark:bg-[#130D1A] dark:text-white dark:placeholder-white/35"
+                className="w-full rounded-xl border border-black/10 bg-[#FAF8FB] p-3 text-sm text-black outline-none transition focus:border-sps-violet600 dark:border-white/10 dark:bg-[#130D1A] dark:text-white"
               />
             </div>
             <div>
@@ -209,8 +208,7 @@ export function SuggestionForm({ onSubmitted }: { onSubmitted?: () => void }) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="ex: thomas@exemple.fr (si tu attends une réponse)"
-                className="w-full rounded-xl border border-black/10 bg-[#FAF8FB] p-3 text-sm text-black placeholder-black/35 outline-none transition focus:border-sps-violet600 dark:border-white/10 dark:bg-[#130D1A] dark:text-white dark:placeholder-white/35"
+                className="w-full rounded-xl border border-black/10 bg-[#FAF8FB] p-3 text-sm text-black outline-none transition focus:border-sps-violet600 dark:border-white/10 dark:bg-[#130D1A] dark:text-white"
               />
             </div>
           </div>
