@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/Icons";
-import { PreorderCountdown } from "@/components/PreorderCountdown";
+import { PreorderCircularCountdown } from "@/components/PreorderCircularCountdown";
 
 const HELLO_ASSO_URL = "https://www.helloasso.com/associations/sps/boutiques/equipement-sps";
 const GOBIK_FITTING_GUIDE_URL = "https://gobik.com/fr/pages/fitting-guide";
@@ -234,16 +234,20 @@ export function PreorderShowcase() {
 
       {/* En-tête du reveal avec sélecteur d'article */}
       <div className="px-5 pt-6 pb-2 text-center">
-        {/* Badges d'information */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md">
+        {/* Badges d'information sur la même ligne */}
+        <div className="flex items-center justify-center gap-1.5 flex-nowrap overflow-x-auto text-[10px] sm:text-[11px]">
+          <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2.5 sm:px-3 py-1 font-semibold uppercase tracking-wider text-fuchsia-300 backdrop-blur-md">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-fuchsia-400" />
-            {article.badge}
+            Édition 2027
           </div>
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md">
+          <div className="inline-flex items-center whitespace-nowrap rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2.5 sm:px-3 py-1 font-semibold uppercase tracking-wider text-fuchsia-300 backdrop-blur-md">
             Limite pré-commande : 22/11/26
           </div>
-          <PreorderCountdown className="border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md" />
+        </div>
+
+        {/* Compte à rebours circulaire grandiose façon photo */}
+        <div className="mt-4 flex justify-center">
+          <PreorderCircularCountdown size={58} strokeWidth={4} />
         </div>
 
         {/* Sélecteur carrousel en onglets pill / segmented control */}
