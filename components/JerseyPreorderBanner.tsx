@@ -23,7 +23,7 @@ export function JerseyPreorderBanner() {
               Édition 2027
             </div>
             <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-fuchsia-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-300">
-              Limite pré-commande : 15/10/26
+              Limite pré-commande : 22/11/26
             </div>
           </div>
 
@@ -32,7 +32,7 @@ export function JerseyPreorderBanner() {
           </h2>
 
           <p className="mt-1 text-[12px] text-purple-200/80">
-            Cyclisme & Running · Précommandes ouvertes
+            Précommandes ouvertes
           </p>
 
           <div className="mt-3 inline-flex items-center gap-1 text-[12px] font-bold text-fuchsia-300 group-hover:text-fuchsia-200">

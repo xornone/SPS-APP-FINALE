@@ -233,10 +233,15 @@ export function PreorderShowcase() {
 
       {/* En-tête du reveal avec sélecteur d'article */}
       <div className="px-5 pt-6 pb-2 text-center">
-        {/* Badge officiel 2027 */}
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-fuchsia-400" />
-          {article.badge}
+        {/* Badges d'information */}
+        <div className="flex flex-wrap items-center justify-center gap-1.5">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-fuchsia-400" />
+            {article.badge}
+          </div>
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md">
+            Limite pré-commande : 22/11/26
+          </div>
         </div>
 
         {/* Sélecteur carrousel en onglets pill / segmented control */}
@@ -404,7 +409,7 @@ export function PreorderShowcase() {
           </div>
         </Link>
         <p className="mt-2 text-center text-[11.5px] text-white/50">
-          Paiement sécurisé et sélection des tailles sur notre boutique club HelloAsso
+          Limite pré-commande : 22/11/26 · Paiement sécurisé et choix des tailles sur HelloAsso
         </p>
       </div>
 

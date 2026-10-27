@@ -7,9 +7,9 @@ import { PreorderShowcase } from "@/components/PreorderShowcase";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Précommandes SPS 2027 — Collection Cyclisme & Running",
+  title: "Précommandes SPS 2027 — Collection Officielle",
   description:
-    "Découvrez et précommandez la collection officielle SPS 2027 : maillots CX SCA & Pulse, cuissard X, gilet Plus 2.0 et t-shirt running Flash.",
+    "Découvrez et précommandez la collection officielle SPS 2027 : maillots CX SCA & Pulse, cuissard X, gilet Plus 2.0 et t-shirt Flash.",
 };
 
 export default async function PrecommandesPage() {
