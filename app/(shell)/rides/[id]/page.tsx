@@ -113,6 +113,8 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         </div>
       </div>
 
+      <WeatherWidget weather={weather} />
+
       <div className="mx-5 mb-4 h-[220px] overflow-hidden rounded-[22px] border border-black/[0.06] dark:border-white/10">
         <RideMap points={ride.route_points} className="h-full w-full" />
       </div>
@@ -128,8 +130,6 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         <Stat value={fmtM(ride.elevation_gain_m)} label="D+" />
         <Stat value={speedRangeLabel(groups)} label="km/h" />
       </div>
-
-      <WeatherWidget weather={weather} />
 
       <div className="px-5 pb-1.5">
         <h2 className="font-display text-xl tracking-wide">Groupes</h2>
