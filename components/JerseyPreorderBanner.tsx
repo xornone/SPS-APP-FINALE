@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "./Icons";
+import { PreorderCountdown } from "./PreorderCountdown";
 
 export function JerseyPreorderBanner() {
   return (
@@ -23,8 +24,9 @@ export function JerseyPreorderBanner() {
               Édition 2027
             </div>
             <div className="inline-flex w-fit items-center gap-1.5 rounded-full bg-fuchsia-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-fuchsia-300">
-              Limite pré-commande : 22/11/26
+              Limite : 22/11/26
             </div>
+            <PreorderCountdown />
           </div>
 
           <h2 className="mt-2 font-display text-[22px] tracking-wide leading-none text-white">

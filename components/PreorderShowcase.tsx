@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/Icons";
+import { PreorderCountdown } from "@/components/PreorderCountdown";
 
 const HELLO_ASSO_URL = "https://www.helloasso.com/associations/sps/boutiques/equipement-sps";
 const GOBIK_FITTING_GUIDE_URL = "https://gobik.com/fr/pages/fitting-guide";
@@ -240,8 +241,9 @@ export function PreorderShowcase() {
             {article.badge}
           </div>
           <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md">
-            Limite pré-commande : 22/11/26
+            Limite : 22/11/26
           </div>
+          <PreorderCountdown className="border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md" />
         </div>
 
         {/* Sélecteur carrousel en onglets pill / segmented control */}
