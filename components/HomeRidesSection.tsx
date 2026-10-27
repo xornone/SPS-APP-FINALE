@@ -183,12 +183,12 @@ export function HomeRidesSection({
                       {adminsFor(ride.id).map((a) => (
                         <AdminBadge key={a.name} name={a.name} group={a.group} />
                       ))}
+                      {missingAdminGroupsFor(ride).length > 0 && (
+                        <span className="text-[11px] font-bold text-amber-300">
+                          ⚠️ Pas d&apos;admin en {missingAdminGroupsFor(ride).map((g) => GROUP_INFO[g].label).join(", ")}
+                        </span>
+                      )}
                     </div>
-                    {missingAdminGroupsFor(ride).length > 0 && (
-                      <p className="-mt-3 mb-4 text-[11px] font-bold text-amber-300">
-                        ⚠️ Pas d&apos;admin en {missingAdminGroupsFor(ride).map((g) => GROUP_INFO[g].label).join(", ")}
-                      </p>
-                    )}
                   </AdminOnly>
                   <div className="mb-4 flex flex-wrap gap-1.5">
                     {(ride.ride_groups || []).map((g) => (

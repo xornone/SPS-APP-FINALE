@@ -124,12 +124,12 @@ export function RideCard({
             {registeredAdmins.map((a) => (
               <AdminBadge key={a.name} name={a.name} group={a.group} />
             ))}
+            {missingAdminGroups.length > 0 && (
+              <span className="text-[10.5px] font-bold text-amber-600 dark:text-amber-400">
+                ⚠️ Pas d&apos;admin en {missingAdminGroups.map((g) => GROUP_INFO[g].label).join(", ")}
+              </span>
+            )}
           </div>
-          {missingAdminGroups.length > 0 && (
-            <p className="mt-1 text-[10.5px] font-bold text-amber-600 dark:text-amber-400">
-              ⚠️ Pas d&apos;admin en {missingAdminGroups.map((g) => GROUP_INFO[g].label).join(", ")}
-            </p>
-          )}
         </AdminOnly>
       )}
     </Link>
