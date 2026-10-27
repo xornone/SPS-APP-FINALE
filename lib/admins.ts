@@ -9,6 +9,7 @@ import type { GroupLevel } from "./types";
 export const ADMIN_NAMES = [
   "Thomas Trégaro",
   "Duc Nguyen",
+  "Huu Duc Nguyen",
   "Tanguy Delacôte",
   "Margaux Dirat",
   "Aymeric Closier",
