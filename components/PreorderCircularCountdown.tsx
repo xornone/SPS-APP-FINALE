@@ -179,9 +179,13 @@ export function PreorderCircularCountdown({
         };
 
   if (!mounted) {
-    // Calcul approximatif SSR pour éviter tout décalage d'hydratation
-    const approxDiff = Math.max(0, DEADLINE - 1730024700000);
+    // Calcul approximatif SSR pour un affichage cohérent avant hydratation client
+    const SSR_FALLBACK_NOW = new Date("2026-10-27T12:00:00+01:00").getTime();
+    const approxDiff = Math.max(0, DEADLINE - SSR_FALLBACK_NOW);
     const approxDays = Math.floor(approxDiff / (1000 * 60 * 60 * 24));
+    const approxHours = Math.floor((approxDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const approxMins = Math.floor((approxDiff % (1000 * 60 * 60)) / (1000 * 60));
+    const approxSecs = Math.floor((approxDiff % (1000 * 60)) / 1000);
     return (
       <div className={`flex items-center justify-center ${gapClass} ${className}`}>
         <CircularDial
@@ -193,7 +197,7 @@ export function PreorderCircularCountdown({
           gradientId={`${baseId}-days`}
         />
         <CircularDial
-          value={12}
+          value={approxHours}
           max={24}
           label={labelTexts.hours}
           size={size}
@@ -201,7 +205,7 @@ export function PreorderCircularCountdown({
           gradientId={`${baseId}-hours`}
         />
         <CircularDial
-          value={38}
+          value={approxMins}
           max={60}
           label={labelTexts.mins}
           size={size}
@@ -209,7 +213,7 @@ export function PreorderCircularCountdown({
           gradientId={`${baseId}-mins`}
         />
         <CircularDial
-          value={15}
+          value={approxSecs}
           max={60}
           label={labelTexts.secs}
           size={size}
