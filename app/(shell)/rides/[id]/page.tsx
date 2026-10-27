@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/publicClient";
-import { fetchCommentsForRide, fetchParticipationsForRide, fetchRide } from "@/lib/queries";
+import { fetchParticipationsForRide, fetchRide } from "@/lib/queries";
 import { RideMap } from "@/components/RideMap";
 import { ElevationChart } from "@/components/ElevationChart";
 import { GroupBadge } from "@/components/GroupBadge";
 import { Icon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { RideComments } from "@/components/RideComments";
 import { RideParticipationSection } from "@/components/RideParticipationSection";
 import { WeatherWidget } from "@/components/WeatherWidget";
 import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
@@ -33,7 +32,6 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   // (élimine 200 à 300ms de waterfall réseau)
   const ridePromise = fetchRide(supabase, params.id);
   const participationsPromise = fetchParticipationsForRide(supabase, params.id);
-  const commentsPromise = fetchCommentsForRide(supabase, params.id);
 
   const ride = await ridePromise;
   if (!ride) notFound();
@@ -44,9 +42,8 @@ export default async function RideDetailPage({ params }: { params: { id: string 
     coords ? fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time) : null
   );
 
-  const [participations, comments, weather] = await Promise.all([
+  const [participations, weather] = await Promise.all([
     participationsPromise,
-    commentsPromise,
     weatherPromise,
   ]);
 
@@ -152,8 +149,6 @@ export default async function RideDetailPage({ params }: { params: { id: string 
       </div>
 
       <RideDescription description={ride.description} showSafetyNotice={ride.show_safety_notice !== false} />
-
-      <RideComments rideId={ride.id} initialComments={comments} />
 
       <RideParticipationSection
         rideId={ride.id}
