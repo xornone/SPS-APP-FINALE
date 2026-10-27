@@ -34,6 +34,7 @@ export function QuickJoinModal({
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [conflict, setConflict] = useState<{ id: string; title: string } | null>(null);
   const [mine, setMine] = useState<MyParticipation | null>(null);
   const [name, setName] = useState("");
   const [selectedGroup, setSelectedGroup] = useState<GroupLevel>("vert");
@@ -44,6 +45,7 @@ export function QuickJoinModal({
     if (!ride || !isOpen) return;
 
     setError("");
+    setConflict(null);
     setPending(false);
 
     const stored = getMyParticipation(ride.id);
@@ -102,6 +104,7 @@ export function QuickJoinModal({
     }
 
     setError("");
+    setConflict(null);
     setPending(true);
 
     try {
@@ -120,6 +123,12 @@ export function QuickJoinModal({
 
       if (!res.ok) {
         setError(data.error || "Une erreur est survenue.");
+        if (data.conflicting_ride_id) {
+          setConflict({
+            id: data.conflicting_ride_id,
+            title: data.conflicting_ride_title || "l'autre sortie",
+          });
+        }
         return;
       }
 
@@ -145,6 +154,66 @@ export function QuickJoinModal({
     } catch {
       setPending(false);
       setError("Erreur de connexion. Réessaie dans un instant.");
+    }
+  }
+
+  async function handleTransfer() {
+    if (!ride || !conflict) return;
+    const storedConflict = getMyParticipation(conflict.id);
+    if (!storedConflict) return;
+
+    const trimmed = name.trim().replace(/\s+/g, " ");
+    setError("");
+    setPending(true);
+
+    try {
+      const res = await fetch("/api/participations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ride_id: ride.id,
+          participant_name: trimmed,
+          group_level: selectedGroup,
+          transfer_from: {
+            ride_id: conflict.id,
+            client_token: storedConflict.client_token,
+          },
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      setPending(false);
+
+      if (!res.ok) {
+        setError(data.error || "Impossible de basculer d'inscription.");
+        return;
+      }
+
+      clearMyParticipation(conflict.id);
+      onLeaveSuccess(storedConflict.id, conflict.id);
+
+      const record: MyParticipation = {
+        id: data.id,
+        client_token: data.client_token,
+        participant_name: trimmed,
+        group_level: selectedGroup,
+      };
+      setMyParticipation(ride.id, record);
+      setMine(record);
+
+      onJoinSuccess({
+        id: data.id,
+        ride_id: ride.id,
+        participant_name: trimmed,
+        group_level: selectedGroup,
+        created_at: new Date().toISOString(),
+      });
+
+      router.refresh();
+      onClose();
+    } catch {
+      setPending(false);
+      setError("Erreur réseau lors du basculement d'inscription.");
     }
   }
 
@@ -364,6 +433,18 @@ export function QuickJoinModal({
             </div>
 
             {error && <p className="text-xs font-bold text-red-500">{error}</p>}
+
+            {conflict && getMyParticipation(conflict.id) && (
+              <button
+                type="button"
+                disabled={pending}
+                onClick={handleTransfer}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/15 py-3 text-xs font-extrabold text-amber-600 transition hover:bg-amber-500/25 active:scale-98 disabled:opacity-50 dark:text-amber-400"
+              >
+                <Icon name="refresh" size={14} />
+                {pending ? "Basculement en cours…" : "Basculer mon inscription sur cette sortie"}
+              </button>
+            )}
 
             <button
               type="submit"

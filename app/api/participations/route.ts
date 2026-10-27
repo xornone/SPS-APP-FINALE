@@ -37,7 +37,7 @@ export async function POST(request: Request) {
 
     const { data: ride, error: rideError } = await admin
       .from("rides")
-      .select("id, ride_date, ride_groups(group_level)")
+      .select("id, title, ride_date, ride_time, ride_groups(group_level)")
       .eq("id", rideId)
       .maybeSingle();
     // On distingue une vraie erreur (cle service role invalide, etc.) d'une
@@ -54,23 +54,70 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Ce groupe n'est pas proposé sur cette sortie." }, { status: 400 });
     }
 
-    // Une seule inscription par personne (nom identique, insensible a la
-    // casse et aux espaces) sur une meme sortie. Verifie ici pour un message
-    // clair, et protege en base par un index unique (voir migration 0005)
-    // en filet de securite contre une double soumission simultanee.
+    // Un participant ne peut s'inscrire qu'a une seule sortie par creneau horaire
+    // (meme date et meme heure). On recherche toutes les sorties sur ce meme creneau.
+    const { data: slotRides, error: slotError } = await admin
+      .from("rides")
+      .select("id, title")
+      .eq("ride_date", ride.ride_date)
+      .eq("ride_time", ride.ride_time);
+    if (slotError) {
+      return NextResponse.json({ error: `Erreur serveur : ${slotError.message}` }, { status: 500 });
+    }
+
+    const slotRideIds = (slotRides || []).map((r) => r.id);
+
+    // Recuperer les inscriptions existantes sur l'ensemble des sorties de ce creneau
     const { data: existing, error: existingError } = await admin
       .from("participations")
-      .select("id, participant_name")
-      .eq("ride_id", rideId);
+      .select("id, ride_id, participant_name, client_token")
+      .in("ride_id", slotRideIds);
     if (existingError) {
       return NextResponse.json({ error: `Erreur serveur : ${existingError.message}` }, { status: 500 });
     }
-    const normalizedName = name.toLowerCase();
-    if ((existing || []).some((p) => p.participant_name.trim().toLowerCase() === normalizedName)) {
-      return NextResponse.json(
-        { error: "Tu es déjà inscrit(e) sous ce nom à cette sortie." },
-        { status: 409 }
-      );
+
+    function normalizeName(str: string): string {
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+    }
+
+    const normalizedName = normalizeName(name);
+    const conflicting = (existing || []).find(
+      (p) => normalizeName(p.participant_name) === normalizedName
+    );
+
+    if (conflicting) {
+      // Cas 1 : deja inscrit a la meme sortie
+      if (conflicting.ride_id === rideId) {
+        return NextResponse.json(
+          { error: "Tu es déjà inscrit(e) sous ce nom à cette sortie." },
+          { status: 409 }
+        );
+      }
+
+      // Cas 2 : deja inscrit a une autre sortie au meme moment (ex: autre groupe le dimanche matin)
+      const conflictRide = (slotRides || []).find((r) => r.id === conflicting.ride_id);
+      const conflictTitle = conflictRide?.title || "une autre sortie";
+
+      // Si le client demande de basculer et fournit le token de son ancienne inscription
+      const transferToken = body.transfer_from?.client_token;
+      if (body.transfer_from?.ride_id === conflicting.ride_id && transferToken === conflicting.client_token) {
+        await admin.from("participations").delete().eq("id", conflicting.id);
+        revalidatePath(`/rides/${conflicting.ride_id}`);
+      } else {
+        return NextResponse.json(
+          {
+            error: `Tu es déjà inscrit(e) à « ${conflictTitle} » sur ce même créneau horaire. Désinscris-toi d'abord pour pouvoir t'inscrire ici.`,
+            conflicting_ride_id: conflicting.ride_id,
+            conflicting_ride_title: conflictTitle,
+          },
+          { status: 409 }
+        );
+      }
     }
 
     const { data, error } = await admin

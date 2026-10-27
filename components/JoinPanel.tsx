@@ -32,6 +32,7 @@ export function JoinPanel({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [mine, setMine] = useState<ReturnType<typeof getMyParticipation>>(null);
+  const [conflict, setConflict] = useState<{ id: string; title: string } | null>(null);
   const [name, setName] = useState("");
   const [group, setGroup] = useState<GroupLevel>(availableGroups[0]);
 
@@ -58,10 +59,11 @@ export function JoinPanel({
     // Prenom + nom obligatoires (pas juste un prenom) pour eviter de
     // confondre deux personnes qui partagent le meme prenom.
     if (trimmed.split(" ").length < 2) {
-      setError("Indique ton prénom ET ton nom (ex. « Julie Martin »).");
+      setError("Indique ton prénom ET ton nom (ex. « Julie Martin »).");
       return;
     }
     setError("");
+    setConflict(null);
     setPending(true);
     const res = await fetch("/api/participations", {
       method: "POST",
@@ -72,15 +74,60 @@ export function JoinPanel({
     setPending(false);
     if (!res.ok) {
       setError(data.error || "Une erreur est survenue.");
+      if (data.conflicting_ride_id) {
+        setConflict({
+          id: data.conflicting_ride_id,
+          title: data.conflicting_ride_title || "l'autre sortie",
+        });
+      }
       return;
     }
     const record = { id: data.id, client_token: data.client_token, participant_name: trimmed, group_level: group };
     setMyParticipation(rideId, record);
     setMine(record);
-    // Ajoute immediatement "mon" inscription a la liste partagee : pas
-    // besoin d'attendre router.refresh() (qui peut renvoyer une page mise
-    // en cache quelques secondes, voir export const revalidate sur la
-    // fiche sortie) pour se voir apparaitre dans les participants.
+    onJoin?.({
+      id: data.id,
+      ride_id: rideId,
+      participant_name: trimmed,
+      group_level: group,
+      created_at: new Date().toISOString(),
+    });
+    router.refresh();
+  }
+
+  async function handleTransfer() {
+    if (!conflict) return;
+    const storedConflict = getMyParticipation(conflict.id);
+    if (!storedConflict) return;
+
+    const trimmed = name.trim().replace(/\s+/g, " ");
+    setError("");
+    setPending(true);
+
+    const res = await fetch("/api/participations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ride_id: rideId,
+        participant_name: trimmed,
+        group_level: group,
+        transfer_from: {
+          ride_id: conflict.id,
+          client_token: storedConflict.client_token,
+        },
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setPending(false);
+    if (!res.ok) {
+      setError(data.error || "Impossible de basculer d'inscription.");
+      return;
+    }
+
+    clearMyParticipation(conflict.id);
+    const record = { id: data.id, client_token: data.client_token, participant_name: trimmed, group_level: group };
+    setMyParticipation(rideId, record);
+    setMine(record);
     onJoin?.({
       id: data.id,
       ride_id: rideId,
@@ -225,6 +272,17 @@ export function JoinPanel({
         </div>
       </div>
       {error && <p className="text-xs text-red-500">{error}</p>}
+      {conflict && getMyParticipation(conflict.id) && (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={handleTransfer}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/15 py-3 text-xs font-extrabold text-amber-600 transition hover:bg-amber-500/25 active:scale-98 disabled:opacity-50 dark:text-amber-400"
+        >
+          <Icon name="refresh" size={14} />
+          {pending ? "Basculement en cours…" : "Basculer mon inscription sur cette sortie"}
+        </button>
+      )}
       <button
         type="submit"
         disabled={pending}
