@@ -241,7 +241,7 @@ export function PreorderShowcase() {
             {article.badge}
           </div>
           <div className="inline-flex items-center gap-1.5 rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md">
-            Limite : 22/11/26
+            Limite pré-commande : 22/11/26
           </div>
           <PreorderCountdown className="border border-fuchsia-400/30 bg-fuchsia-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-fuchsia-300 backdrop-blur-md" />
         </div>
