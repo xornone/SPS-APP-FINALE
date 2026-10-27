@@ -30,13 +30,14 @@ function CircularDial({
   const strokeDashoffset = circumference * (1 - progress);
 
   // Tailles adaptatives selon le diamètre
+  const isMini = size <= 36;
   const isCompact = size <= 54;
-  const valueFontSize = isCompact ? "text-[14px]" : "text-[18px]";
-  const labelFontSize = isCompact ? "text-[7.5px]" : "text-[9px]";
+  const valueFontSize = isMini ? "text-[10.5px]" : isCompact ? "text-[14px]" : "text-[18px]";
+  const labelFontSize = isMini ? "text-[6px]" : isCompact ? "text-[7.5px]" : "text-[9px]";
 
   return (
     <div
-      className="relative flex flex-col items-center justify-center select-none"
+      className="relative flex flex-col items-center justify-center select-none flex-shrink-0"
       style={{ width: size, height: size }}
     >
       <svg
@@ -76,7 +77,9 @@ function CircularDial({
           fill="transparent"
           className="transition-[stroke-dashoffset] duration-700 ease-out"
           style={{
-            filter: "drop-shadow(0 0 4px rgba(232, 121, 249, 0.65))",
+            filter: isMini
+              ? "drop-shadow(0 0 2.5px rgba(232, 121, 249, 0.65))"
+              : "drop-shadow(0 0 4px rgba(232, 121, 249, 0.65))",
           }}
         />
       </svg>
@@ -89,7 +92,7 @@ function CircularDial({
           {String(value).padStart(2, "0")}
         </span>
         <span
-          className={`mt-1 font-bold uppercase tracking-wider text-purple-200/80 leading-none ${labelFontSize}`}
+          className={`font-bold uppercase tracking-wider text-purple-200/80 leading-none ${labelFontSize} ${isMini ? "mt-0.5" : "mt-1"}`}
         >
           {label}
         </span>
@@ -153,19 +156,22 @@ export function PreorderCircularCountdown({
     return () => clearInterval(interval);
   }, []);
 
+  const isMini = size <= 36;
+  const gapClass = isMini ? "gap-1.5 sm:gap-2" : "gap-2.5 sm:gap-3.5";
+
   const labelTexts =
     labels === "en"
       ? {
-          days: "DAYS",
-          hours: "HOURS",
-          mins: size <= 54 ? "MINS" : "MINUTES",
-          secs: size <= 54 ? "SECS" : "SECONDS",
+          days: isMini ? "D" : "DAYS",
+          hours: isMini ? "H" : "HOURS",
+          mins: isMini ? "M" : size <= 54 ? "MINS" : "MINUTES",
+          secs: isMini ? "S" : size <= 54 ? "SECS" : "SECONDS",
         }
       : {
-          days: "JOURS",
-          hours: "HEURES",
-          mins: size <= 54 ? "MIN" : "MINUTES",
-          secs: size <= 54 ? "SEC" : "SECONDES",
+          days: isMini ? "J" : "JOURS",
+          hours: isMini ? "H" : "HEURES",
+          mins: isMini ? "M" : size <= 54 ? "MIN" : "MINUTES",
+          secs: isMini ? "S" : size <= 54 ? "SEC" : "SECONDES",
         };
 
   if (!mounted) {
@@ -173,7 +179,7 @@ export function PreorderCircularCountdown({
     const approxDiff = Math.max(0, DEADLINE - 1730024700000);
     const approxDays = Math.floor(approxDiff / (1000 * 60 * 60 * 24));
     return (
-      <div className={`flex items-center justify-center gap-2.5 sm:gap-3 ${className}`}>
+      <div className={`flex items-center justify-center ${gapClass} ${className}`}>
         <CircularDial
           value={approxDays}
           max={TOTAL_CAMPAIGN_DAYS}
@@ -219,7 +225,7 @@ export function PreorderCircularCountdown({
   }
 
   return (
-    <div className={`flex items-center justify-center gap-2.5 sm:gap-3.5 ${className}`}>
+    <div className={`flex items-center justify-center ${gapClass} ${className}`}>
       <CircularDial
         value={timeLeft.days}
         max={TOTAL_CAMPAIGN_DAYS}

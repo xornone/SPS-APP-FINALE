@@ -245,9 +245,12 @@ export function PreorderShowcase() {
           </div>
         </div>
 
-        {/* Compte à rebours circulaire grandiose façon photo */}
-        <div className="mt-4 flex justify-center">
+        {/* Compte à rebours circulaire avec mention explicite du temps restant */}
+        <div className="mt-4 flex flex-col items-center justify-center">
           <PreorderCircularCountdown size={58} strokeWidth={4} />
+          <p className="mt-2.5 text-[11px] font-semibold uppercase tracking-wider text-purple-200/75">
+            Temps restant avant clôture des précommandes
+          </p>
         </div>
 
         {/* Sélecteur carrousel en onglets pill / segmented control */}
