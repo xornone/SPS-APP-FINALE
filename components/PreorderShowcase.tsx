@@ -401,26 +401,6 @@ export function PreorderShowcase() {
         </div>
       </div>
 
-      {/* Bouton d'action principal (CTA Apple-like) */}
-      <div className="mt-5 px-5">
-        <Link
-          href={HELLO_ASSO_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-fuchsia-600 via-purple-600 to-indigo-600 p-[1px] shadow-[0_10px_30px_-10px_rgba(217,70,239,0.5)] transition-all duration-200 active:scale-[0.98]"
-        >
-          <div className="flex w-full items-center justify-center gap-2.5 rounded-[15px] bg-gradient-to-r from-[#8B1FA9] to-[#5B21B6] py-3.5 px-6 font-semibold text-white">
-            <Icon name="sparkles" size={18} className="text-yellow-300 animate-pulse" />
-            <span className="text-[15px] font-bold tracking-wide">
-              {article.buttonLabel}
-            </span>
-            <Icon name="external" size={16} />
-          </div>
-        </Link>
-        <p className="mt-2 text-center text-[11.5px] text-white/50">
-          Limite pré-commande : 22/11/26 · Paiement sécurisé et choix des tailles sur HelloAsso
-        </p>
-      </div>
 
       {/* Récit de conception officiel */}
       <div className="mt-8 px-5">
