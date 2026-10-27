@@ -195,34 +195,9 @@ export function HomeRidesSection({
                       <GroupBadge key={g.group_level} group={g.group_level} withRange={false} />
                     ))}
                   </div>
-                  <div className="flex gap-2">
-                    <span className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-white/15 px-3 py-3 text-[13px] font-extrabold text-white backdrop-blur-sm transition hover:bg-white/25">
-                      Voir la sortie <Icon name="chevR" size={14} />
-                    </span>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setSelectedRideForModal(ride);
-                      }}
-                      className={`flex flex-1 items-center justify-center gap-1.5 rounded-2xl px-3 py-3 text-[13px] font-extrabold shadow-md transition active:scale-95 ${
-                        isJoined
-                          ? "bg-emerald-500 text-white hover:bg-emerald-600"
-                          : "bg-white text-sps-violet700 hover:bg-violet-50"
-                      }`}
-                    >
-                      {isJoined ? (
-                        <>
-                          <Icon name="check" size={15} /> Inscrit ✓
-                        </>
-                      ) : (
-                        <>
-                          <Icon name="plus" size={15} /> Je participe
-                        </>
-                      )}
-                    </button>
-                  </div>
+                  <span className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-sps-violet500 to-sps-violet700 px-4 py-3 text-sm font-extrabold shadow-lg">
+                    Voir la sortie <Icon name="chevR" size={15} />
+                  </span>
                 </Link>
               );
             })}
