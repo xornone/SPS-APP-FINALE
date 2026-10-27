@@ -58,10 +58,6 @@ export default async function ClassementPage() {
   }, null);
   const mostAttendedCount = mostAttendedRide ? participantCountByRide.get(mostAttendedRide.id) || 0 : 0;
 
-  // Chiffre "fun" : le total de km parcourus par les membres, rapporte a un
-  // trajet local parlant (Montpellier -> Paris, environ 750 km par la route).
-  const MONTPELLIER_PARIS_KM = 750;
-  const funRatio = totalKm / MONTPELLIER_PARIS_KM;
 
   // Sorties proposees par le club, par annee (toutes les sorties creees,
   // passees comme a venir).
@@ -125,11 +121,6 @@ export default async function ClassementPage() {
         />
       </div>
 
-      {totalKm > 0 && (
-        <div className="mx-5 mb-5 rounded-2xl bg-gradient-to-br from-sps-violet700 to-sps-violet900 px-4 py-3.5 text-center text-[13px] text-[#F4EEFF]">
-          🚴 Ça représente <b>{funRatio.toFixed(1).replace(".", ",")}</b> fois Montpellier → Paris !
-        </div>
-      )}
 
       <div className="px-5 pb-3">
         <h2 className="font-display text-xl tracking-wide">Activité du club</h2>
