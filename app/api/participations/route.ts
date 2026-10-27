@@ -55,17 +55,31 @@ export async function POST(request: Request) {
     }
 
     // Un participant ne peut s'inscrire qu'a une seule sortie par creneau horaire
-    // (meme date et meme heure). On recherche toutes les sorties sur ce meme creneau.
-    const { data: slotRides, error: slotError } = await admin
+    // (a +/- 1h d'intervalle le meme jour, soit <= 60 minutes d'ecart).
+    const { data: sameDayRides, error: sameDayError } = await admin
       .from("rides")
-      .select("id, title")
-      .eq("ride_date", ride.ride_date)
-      .eq("ride_time", ride.ride_time);
-    if (slotError) {
-      return NextResponse.json({ error: `Erreur serveur : ${slotError.message}` }, { status: 500 });
+      .select("id, title, ride_time")
+      .eq("ride_date", ride.ride_date);
+    if (sameDayError) {
+      return NextResponse.json({ error: `Erreur serveur : ${sameDayError.message}` }, { status: 500 });
     }
 
-    const slotRideIds = (slotRides || []).map((r) => r.id);
+    function timeToMinutes(timeStr: string): number {
+      const parts = String(timeStr || "").split(":");
+      const h = parseInt(parts[0], 10) || 0;
+      const m = parseInt(parts[1], 10) || 0;
+      return h * 60 + m;
+    }
+
+    const currentRideMinutes = timeToMinutes(ride.ride_time);
+
+    // Retenir les sorties dont l'horaire de depart est a +/- 60 minutes inclus
+    const slotRides = (sameDayRides || []).filter((r) => {
+      const diff = Math.abs(timeToMinutes(r.ride_time) - currentRideMinutes);
+      return diff <= 60;
+    });
+
+    const slotRideIds = slotRides.map((r) => r.id);
 
     // Recuperer les inscriptions existantes sur l'ensemble des sorties de ce creneau
     const { data: existing, error: existingError } = await admin
@@ -111,7 +125,7 @@ export async function POST(request: Request) {
       } else {
         return NextResponse.json(
           {
-            error: `Tu es déjà inscrit(e) à « ${conflictTitle} » sur ce même créneau horaire. Désinscris-toi d'abord pour pouvoir t'inscrire ici.`,
+            error: `Tu es déjà inscrit(e) à « ${conflictTitle} » sur ce même créneau (+/- 1h d'intervalle). Désinscris-toi d'abord pour pouvoir t'inscrire ici.`,
             conflicting_ride_id: conflicting.ride_id,
             conflicting_ride_title: conflictTitle,
           },
