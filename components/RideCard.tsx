@@ -15,6 +15,7 @@ export function RideCard({
   participantPreview,
   isJoined,
   registeredAdmins,
+  onQuickAction,
 }: {
   ride: Ride;
   participantCount: number;
@@ -24,6 +25,8 @@ export function RideCard({
    * autres admins (voir lib/admins.ts). Omis sur l'onglet Sorties, fourni
    * sur l'Accueil. */
   registeredAdmins?: RegisteredAdmin[];
+  /** Action rapide pour s'inscrire ou se desinscrire directement depuis la carte. */
+  onQuickAction?: (ride: Ride) => void;
 }) {
   const missingAdminGroups = registeredAdmins
     ? getMissingAdminGroups((ride.ride_groups || []).map((g) => g.group_level), registeredAdmins)
@@ -39,7 +42,35 @@ export function RideCard({
         <span className="font-display text-[13px] tracking-wide text-sps-violet600 dark:text-sps-violet400">
           {fmtDateShort(ride.ride_date)} · {fmtTime(ride.ride_time)}
         </span>
-        {isJoined ? (
+        {onQuickAction ? (
+          isJoined ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onQuickAction(ride);
+              }}
+              title="Gérer mon inscription ou me désinscrire"
+              className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-extrabold text-emerald-600 transition hover:bg-emerald-500/25 active:scale-95 dark:text-emerald-400"
+            >
+              <Icon name="check" size={12} /> Inscrit ✓
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onQuickAction(ride);
+              }}
+              title="S'inscrire rapidement à cette sortie"
+              className="flex items-center gap-1 rounded-full bg-sps-violet600 px-2.5 py-1 text-[11px] font-extrabold text-white shadow-sm transition hover:bg-sps-violet700 active:scale-95"
+            >
+              <Icon name="plus" size={12} /> Participer
+            </button>
+          )
+        ) : isJoined ? (
           <span className="rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10.5px] font-extrabold text-emerald-600 dark:text-emerald-400">
             Inscrit ✓
           </span>
