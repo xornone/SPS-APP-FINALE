@@ -32,8 +32,12 @@ function CircularDial({
   // Tailles adaptatives selon le diamètre
   const isMini = size <= 36;
   const isCompact = size <= 54;
-  const valueFontSize = isMini ? "text-[10.5px]" : isCompact ? "text-[14px]" : "text-[18px]";
-  const labelFontSize = isMini ? "text-[6px]" : isCompact ? "text-[7.5px]" : "text-[9px]";
+  const valueFontSize = isMini ? "text-[10.5px]" : isCompact ? "text-[14px]" : "text-[19px]";
+  const labelFontSize = isMini
+    ? "text-[6px] tracking-wider"
+    : isCompact
+    ? "text-[7.5px] tracking-wide"
+    : "text-[8px] tracking-normal";
 
   return (
     <div
@@ -85,14 +89,14 @@ function CircularDial({
       </svg>
 
       {/* Contenu textuel centré */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center">
+      <div className="relative z-10 flex flex-col items-center justify-center text-center px-1">
         <span
           className={`font-display font-bold leading-none text-white tabular-nums ${valueFontSize} drop-shadow-sm`}
         >
           {String(value).padStart(2, "0")}
         </span>
         <span
-          className={`font-bold uppercase tracking-wider text-purple-200/80 leading-none ${labelFontSize} ${isMini ? "mt-0.5" : "mt-1"}`}
+          className={`font-bold uppercase text-purple-200/85 leading-none ${labelFontSize} ${isMini ? "mt-0.5" : "mt-1"}`}
         >
           {label}
         </span>
