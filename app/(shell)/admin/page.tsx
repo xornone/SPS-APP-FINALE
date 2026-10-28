@@ -55,6 +55,38 @@ export default async function AdminPage() {
         <ThemeToggle />
       </div>
 
+      {/* Contacts d'urgence — Document Google Sheets réservé aux administrateurs */}
+      <div className="px-5 pb-5">
+        <a
+          href="https://docs.google.com/spreadsheets/d/1ZKinNrAhNPi0czM71h459u6gjVg1jtcyNcrkKvcc1Kc/edit?usp=drive_link"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-rose-500/25 bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-transparent p-4 shadow-cardSm transition-all duration-200 hover:border-rose-500/40 hover:shadow active:scale-[0.99] dark:border-rose-400/20 dark:from-rose-500/15 dark:via-rose-500/10"
+        >
+          <div className="flex items-center gap-3.5">
+            <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-rose-600 dark:bg-rose-400/20 dark:text-rose-300">
+              <Icon name="phone" size={20} />
+            </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-display text-[15px] font-bold tracking-wide text-black dark:text-white">
+                  Contacts d&apos;urgence
+                </span>
+                <span className="rounded-full bg-rose-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-300">
+                  ICE
+                </span>
+              </div>
+              <p className="mt-0.5 text-[12px] text-black/55 dark:text-white/55">
+                Tableau des numéros et personnes à contacter en cas d&apos;urgence
+              </p>
+            </div>
+          </div>
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-black/[0.04] text-black/40 transition-colors group-hover:bg-rose-500 group-hover:text-white dark:bg-white/[0.06] dark:text-white/40 dark:group-hover:bg-rose-500 dark:group-hover:text-white">
+            <Icon name="external" size={15} />
+          </div>
+        </a>
+      </div>
+
       <div className="px-5 pb-5">
         <h2 className="mb-2 font-display text-lg tracking-wide">Ton compte Strava</h2>
         <p className="mb-2 text-[11.5px] text-black/40 dark:text-white/40">
