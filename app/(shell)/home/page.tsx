@@ -37,7 +37,7 @@ export default async function HomePage() {
     <div>
       <div className="flex items-center justify-between px-5 pb-3 pt-5">
         <h1 className="font-display text-[26px] tracking-wide">Bonjour 👋</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <SuggestionButton />
           <ThemeToggle />
         </div>

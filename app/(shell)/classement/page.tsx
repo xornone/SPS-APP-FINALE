@@ -99,11 +99,11 @@ export default async function ClassementPage() {
   return (
     <div>
       <div className="flex items-center justify-between px-5 pb-1 pt-5">
-        <div>
+        <div className="min-w-0 pr-2">
           <h1 className="font-display text-[26px] tracking-wide">Statistique SPS</h1>
           <p className="text-[12.5px] text-black/45 dark:text-white/45">Les chiffres du club, tous membres confondus.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <SuggestionButton />
           <ThemeToggle />
         </div>
