@@ -68,14 +68,9 @@ export default async function AdminPage() {
               <Icon name="phone" size={20} />
             </span>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display text-[15px] font-bold tracking-wide text-black dark:text-white">
-                  Contacts d&apos;urgence
-                </span>
-                <span className="rounded-full bg-rose-500/15 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-300">
-                  ICE
-                </span>
-              </div>
+              <span className="font-display text-[15px] font-bold tracking-wide text-black dark:text-white">
+                Contacts d&apos;urgence
+              </span>
               <p className="mt-0.5 text-[12px] text-black/55 dark:text-white/55">
                 Tableau des numéros et personnes à contacter en cas d&apos;urgence
               </p>
