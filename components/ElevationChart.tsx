@@ -21,6 +21,17 @@ export function ElevationChart({
   const containerRef = useRef<HTMLDivElement>(null);
   const isPointerDownRef = useRef(false);
 
+  const handlePointer = useCallback(
+    (clientX: number) => {
+      if (!containerRef.current || !onScrub) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const relX = clientX - rect.left;
+      const progress = Math.max(0, Math.min(1, relX / rect.width));
+      onScrub(progress);
+    },
+    [onScrub]
+  );
+
   if (!elevations || elevations.length < 2) return null;
 
   const w = 300;
@@ -48,17 +59,6 @@ export function ElevationChart({
     const ele = activeScrub.elevationM;
     cursorY = h - 4 - ((ele - min) / span) * (h - 8);
   }
-
-  const handlePointer = useCallback(
-    (clientX: number) => {
-      if (!containerRef.current || !onScrub) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const relX = clientX - rect.left;
-      const progress = Math.max(0, Math.min(1, relX / rect.width));
-      onScrub(progress);
-    },
-    [onScrub]
-  );
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     isPointerDownRef.current = true;
