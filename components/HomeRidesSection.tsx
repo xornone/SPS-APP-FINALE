@@ -10,6 +10,8 @@ import { AdminOnly } from "./AdminOnly";
 import { Icon } from "./Icons";
 import { PlaceLink } from "./PlaceLink";
 import { QuickJoinModal } from "./QuickJoinModal";
+import { RideWeatherBadge } from "./RideWeatherBadge";
+import { detectRideGroup } from "@/lib/rideGroup";
 import {
   daysUntil,
   fmtDateLong,
@@ -24,6 +26,7 @@ import {
 import { getMyRideIds } from "@/lib/myParticipations";
 import { getMissingAdminGroups, getRegisteredAdmins } from "@/lib/admins";
 import { GROUP_INFO, type GroupLevel, type Participation, type Ride } from "@/lib/types";
+import type { RideWeather } from "@/lib/weather";
 
 type Filter = "toutes" | "semaine" | "weekend" | "mine";
 
@@ -38,10 +41,12 @@ export function HomeRidesSection({
   featured,
   rest,
   participations,
+  weatherByRideId,
 }: {
   featured: Ride[];
   rest: Ride[];
   participations: Participation[];
+  weatherByRideId?: Record<string, RideWeather | null>;
 }) {
   const [filter, setFilter] = useState<Filter>("toutes");
   const [myRideIds, setMyRideIds] = useState<Set<string>>(new Set());
@@ -113,21 +118,37 @@ export function HomeRidesSection({
           <div className="mb-6 flex flex-col gap-3 px-5">
             {featured.map((ride) => {
               const isJoined = myRideIds.has(ride.id);
+              const detectedGroup = detectRideGroup(ride);
+
+              const groupSpeedline = detectedGroup === "rouge"
+                ? "bg-gradient-to-b from-transparent via-[#DC3D3D]/80 to-transparent shadow-[2px_0_10px_rgba(220,61,61,0.45)]"
+                : detectedGroup === "vert"
+                  ? "bg-gradient-to-b from-transparent via-[#1F9D63] to-transparent shadow-[2px_0_14px_rgba(31,157,99,0.75)]"
+                  : detectedGroup === "violet"
+                    ? "bg-gradient-to-b from-transparent via-[#AA26FF] to-transparent shadow-[2px_0_18px_rgba(170,38,255,0.9)]"
+                    : null;
+
               return (
                 <Link
                   key={ride.id}
                   href={`/rides/${ride.id}`}
                   prefetch={true}
-                  className="relative block overflow-hidden rounded-[26px] bg-gradient-to-br from-sps-violet700 to-sps-violet900 p-5 text-[#F4EEFF] shadow-card"
+                  className="relative block overflow-hidden rounded-[26px] bg-gradient-to-br from-sps-violet700 to-sps-violet900 p-5 text-[#F4EEFF] shadow-card transition"
                 >
+                  {groupSpeedline && (
+                    <span
+                      aria-hidden="true"
+                      className={`pointer-events-none absolute inset-y-0 left-0 w-[3px] ${groupSpeedline}`}
+                    />
+                  )}
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[11.5px] font-extrabold uppercase tracking-wide text-violet-200">
-                      {daysUntil(ride.ride_date) === 0
-                        ? "Aujourd'hui"
-                        : daysUntil(ride.ride_date) === 1
-                          ? "Demain"
-                          : fmtDateLong(ride.ride_date)}
-                    </span>
+                      <span className="text-[11.5px] font-extrabold uppercase tracking-wide text-white">
+                        {daysUntil(ride.ride_date) === 0
+                          ? "Aujourd'hui"
+                          : daysUntil(ride.ride_date) === 1
+                            ? "Demain"
+                            : fmtDateLong(ride.ride_date)}
+                      </span>
                     {isJoined ? (
                       <button
                         type="button"
@@ -156,7 +177,7 @@ export function HomeRidesSection({
                       </button>
                     )}
                   </div>
-                  <h3 className="mb-1 mt-1.5 font-display text-[27px] leading-tight">{ride.title}</h3>
+                  <h3 className="mb-1 mt-1.5 font-display text-[27px] leading-tight text-white">{ride.title}</h3>
                   <p className="mb-3.5 flex items-center gap-1.5 text-[13px] text-violet-200/90">
                     {fmtTime(ride.ride_time)} · <Icon name="flag" size={13} />{" "}
                     <PlaceLink place={ride.place} placeUrl={ride.place_url} />
@@ -190,10 +211,17 @@ export function HomeRidesSection({
                       )}
                     </div>
                   </AdminOnly>
-                  <div className="mb-4 flex flex-wrap gap-1.5">
-                    {(ride.ride_groups || []).map((g) => (
-                      <GroupBadge key={g.group_level} group={g.group_level} withRange={false} />
-                    ))}
+                  <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {(ride.ride_groups || []).map((g) => (
+                        <GroupBadge key={g.group_level} group={g.group_level} withRange={false} />
+                      ))}
+                    </div>
+                    {weatherByRideId?.[ride.id] && weatherByRideId[ride.id]?.suitabilityScore !== undefined && (
+                      <div className="ml-auto">
+                        <RideWeatherBadge weather={weatherByRideId[ride.id]} variant="featured" />
+                      </div>
+                    )}
                   </div>
                   <span className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-sps-violet500 to-sps-violet700 px-4 py-3 text-sm font-extrabold shadow-lg">
                     Voir la sortie <Icon name="chevR" size={15} />
@@ -230,6 +258,7 @@ export function HomeRidesSection({
                     isJoined={myRideIds.has(r.id)}
                     registeredAdmins={adminsFor(r.id)}
                     onQuickAction={(ride) => setSelectedRideForModal(ride)}
+                    weather={weatherByRideId?.[r.id]}
                   />
                 </Fragment>
               );

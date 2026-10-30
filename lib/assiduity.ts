@@ -14,8 +14,8 @@ export interface AssiduityEntry {
  * Normalise un nom pour regrouper les variantes d'orthographe (casse, accents, emojis, ordre des mots).
  */
 export function normalizeMemberName(name: string): string {
-  const cleaned = stripEmojiAndDiacritics(name.trim().replace(/\s+/g, " ")).toLowerCase();
-  return cleaned.split(" ").sort().join(" ");
+  const cleaned = stripEmojiAndDiacritics(name).trim().replace(/\s+/g, " ").toLowerCase();
+  return cleaned.split(" ").filter(Boolean).sort().join(" ");
 }
 
 /**

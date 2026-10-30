@@ -2,19 +2,23 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchParticipationsForRide, fetchRide } from "@/lib/queries";
-import { RideMap } from "@/components/RideMap";
-import { ElevationChart } from "@/components/ElevationChart";
+import { InteractiveRideTrack } from "@/components/InteractiveRideTrack";
 import { GroupBadge } from "@/components/GroupBadge";
 import { Icon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { RideParticipationSection } from "@/components/RideParticipationSection";
-import { WeatherWidget } from "@/components/WeatherWidget";
-import { fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
+import { fmtDateCompact, fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import { RideDescription } from "@/components/RideDescription";
 import { buildRideShareMessage } from "@/lib/shareMessage";
 import { shortRideCode } from "@/lib/shortLink";
 import { GROUP_INFO, type GroupLevel } from "@/lib/types";
-import { fetchRideWeather, getRideCoordinates } from "@/lib/weather";
+import {
+  addMinutesToTimeString,
+  estimateRideDurationMinutes,
+  fetchRideWeather,
+  formatDuration,
+  getRideCoordinates,
+} from "@/lib/weather";
 
 // Cette page ne depend plus de la session (voir AdminOnly / useIsAdmin pour
 // le bouton WhatsApp reserve a l'admin) : elle peut donc utiliser le client
@@ -39,7 +43,13 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   const groups = (ride.ride_groups || []).map((g) => g.group_level);
 
   const weatherPromise = getRideCoordinates(ride.route_points, ride.place).then((coords) =>
-    coords ? fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time) : null
+    coords
+      ? fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time, {
+          distanceKm: ride.distance_km,
+          elevationGainM: ride.elevation_gain_m,
+          groups,
+        })
+      : null
   );
 
   const [participations, weather] = await Promise.all([
@@ -61,6 +71,15 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   // laisser le message WhatsApp sans aucun lien.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://spsapp2.vercel.app";
   const shareMessage = buildRideShareMessage(ride, groups, weather, `${siteUrl}/s/${shortRideCode(ride.id)}`);
+
+  // Estimation de la durée et calcul de l'heure d'arrivée estimée
+  const durationMin =
+    weather?.durationMinutes ??
+    estimateRideDurationMinutes(ride.distance_km, ride.elevation_gain_m, groups);
+  const durationFormatted = weather?.durationFormatted ?? formatDuration(durationMin);
+  const departureTime = fmtTime(ride.ride_time);
+  const arrivalTime =
+    weather?.estimatedArrivalTime ?? addMinutesToTimeString(departureTime, durationMin);
 
   return (
     <div>
@@ -88,39 +107,47 @@ export default async function RideDetailPage({ params }: { params: { id: string 
 
       <div className="px-5 pb-4">
         <h1 className="mb-2 font-display text-[28px] leading-tight tracking-wide">{ride.title}</h1>
-        <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[12.5px] text-black/50 dark:text-white/50">
-          <span className="flex items-center gap-1.5"><Icon name="bell" size={14} className="text-sps-violet600 dark:text-sps-violet400" /> {fmtDateLong(ride.ride_date)}</span>
-          <span className="flex items-center gap-1.5"><Icon name="target" size={14} className="text-sps-violet600 dark:text-sps-violet400" /> {fmtTime(ride.ride_time)}</span>
-          <span className="flex items-center gap-1.5">
-            <Icon name="flag" size={14} className="text-sps-violet600 dark:text-sps-violet400" />
+        <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-[11.5px] text-black/55 no-scrollbar dark:text-white/55">
+          <span className="flex items-center gap-1 flex-shrink-0">
+            <Icon name="bell" size={13} className="text-sps-violet600 dark:text-sps-violet400" />
+            <span className="hidden sm:inline">{fmtDateLong(ride.ride_date)}</span>
+            <span className="sm:hidden">{fmtDateCompact(ride.ride_date)}</span>
+          </span>
+
+          <span className="text-black/25 dark:text-white/25 flex-shrink-0">·</span>
+
+          <span className="flex items-center gap-1 flex-shrink-0">
+            <Icon name="target" size={13} className="text-sps-violet600 dark:text-sps-violet400" />
+            <span>{departureTime} → ~{arrivalTime} ({durationFormatted})</span>
+          </span>
+
+          <span className="text-black/25 dark:text-white/25 flex-shrink-0">·</span>
+
+          <span className="flex items-center gap-1 flex-shrink-0 min-w-0">
+            <Icon name="flag" size={13} className="text-sps-violet600 dark:text-sps-violet400 flex-shrink-0" />
             {ride.place_url ? (
               <a
                 href={ride.place_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 underline decoration-dotted underline-offset-2"
+                className="inline-flex items-center gap-0.5 underline decoration-dotted underline-offset-2 hover:text-black dark:hover:text-white truncate"
               >
-                {ride.place}
-                <Icon name="external" size={11} />
+                <span>{ride.place}</span>
+                <Icon name="external" size={10} className="flex-shrink-0" />
               </a>
             ) : (
-              ride.place
+              <span className="truncate">{ride.place}</span>
             )}
           </span>
         </div>
       </div>
 
-      <WeatherWidget weather={weather} />
-
-      <div className="mx-5 mb-4 h-[220px] overflow-hidden rounded-[22px] border border-black/[0.06] dark:border-white/10">
-        <RideMap points={ride.route_points} className="h-full w-full" />
-      </div>
-
-      {ride.route_elevations && (
-        <div className="px-5 pb-1">
-          <ElevationChart elevations={ride.route_elevations} />
-        </div>
-      )}
+      <InteractiveRideTrack
+        points={ride.route_points}
+        elevations={ride.route_elevations}
+        distanceKm={ride.distance_km}
+        weather={weather}
+      />
 
       <div className="flex gap-2.5 px-5 py-4">
         <Stat value={fmtKm(ride.distance_km)} label="Distance" />

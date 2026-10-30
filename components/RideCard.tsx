@@ -5,9 +5,12 @@ import { Icon } from "./Icons";
 import { AdminOnly } from "./AdminOnly";
 import { AdminBadge } from "./AdminBadge";
 import { PlaceLink } from "./PlaceLink";
+import { RideWeatherBadge } from "./RideWeatherBadge";
+import { detectRideGroup } from "@/lib/rideGroup";
 import { fmtDateShort, fmtKm, fmtM, fmtTime } from "@/lib/format";
 import { GROUP_INFO, type Ride } from "@/lib/types";
 import { getMissingAdminGroups, type RegisteredAdmin } from "@/lib/admins";
+import type { RideWeather } from "@/lib/weather";
 
 export function RideCard({
   ride,
@@ -16,6 +19,7 @@ export function RideCard({
   isJoined,
   registeredAdmins,
   onQuickAction,
+  weather,
 }: {
   ride: Ride;
   participantCount: number;
@@ -27,17 +31,34 @@ export function RideCard({
   registeredAdmins?: RegisteredAdmin[];
   /** Action rapide pour s'inscrire ou se desinscrire directement depuis la carte. */
   onQuickAction?: (ride: Ride) => void;
+  weather?: RideWeather | null;
 }) {
   const missingAdminGroups = registeredAdmins
     ? getMissingAdminGroups((ride.ride_groups || []).map((g) => g.group_level), registeredAdmins)
     : [];
 
+  const detectedGroup = detectRideGroup(ride);
+
+  const groupSpeedline = detectedGroup === "rouge"
+    ? "bg-gradient-to-b from-transparent via-[#DC3D3D]/80 to-transparent shadow-[1px_0_6px_rgba(220,61,61,0.3)]"
+    : detectedGroup === "vert"
+      ? "bg-gradient-to-b from-transparent via-[#1F9D63] to-transparent shadow-[1px_0_8px_rgba(31,157,99,0.5)]"
+      : detectedGroup === "violet"
+        ? "bg-gradient-to-b from-transparent via-[#AA26FF] to-transparent shadow-[1px_0_10px_rgba(170,38,255,0.6)]"
+        : null;
+
   return (
     <Link
       href={`/rides/${ride.id}`}
       prefetch={true}
-      className="flex flex-col gap-2.5 rounded-[20px] border border-black/[0.06] bg-white p-4 shadow-cardSm dark:border-white/10 dark:bg-[#1A1422]"
+      className="relative flex flex-col gap-2.5 overflow-hidden rounded-[20px] border border-black/[0.06] bg-white p-4 shadow-cardSm transition dark:border-white/10 dark:bg-[#1A1422]"
     >
+      {groupSpeedline && (
+        <span
+          aria-hidden="true"
+          className={`pointer-events-none absolute inset-y-0 left-0 w-[2.5px] ${groupSpeedline}`}
+        />
+      )}
       <div className="flex items-center justify-between gap-2">
         <span className="font-display text-[13px] tracking-wide text-sps-violet600 dark:text-sps-violet400">
           {fmtDateShort(ride.ride_date)} · {fmtTime(ride.ride_time)}
@@ -94,10 +115,17 @@ export function RideCard({
           <span className="ml-1 text-[10px] uppercase text-black/35 dark:text-white/35">D+</span>
         </div>
       </div>
-      <div className="flex flex-wrap gap-1.5">
-        {(ride.ride_groups || []).map((g) => (
-          <GroupBadge key={g.group_level} group={g.group_level} />
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
+          {(ride.ride_groups || []).map((g) => (
+            <GroupBadge key={g.group_level} group={g.group_level} />
+          ))}
+        </div>
+        {weather && weather.suitabilityScore !== undefined && (
+          <div className="ml-auto">
+            <RideWeatherBadge weather={weather} />
+          </div>
+        )}
       </div>
       <div className="flex items-center justify-between border-t border-black/[0.06] pt-2.5 dark:border-white/10">
         <div className="flex">

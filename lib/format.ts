@@ -21,6 +21,13 @@ export function fmtDateShort(iso: string): string {
   return `${DAYS[d.getDay()].slice(0, 3).toUpperCase()} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()].toUpperCase()}`;
 }
 
+export function fmtDateCompact(iso: string): string {
+  const d = parseLocalDate(iso);
+  const day = DAYS[d.getDay()];
+  const capitalizedDay = day.charAt(0).toUpperCase() + day.slice(1, 3) + ".";
+  return `${capitalizedDay} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}.`;
+}
+
 export function fmtTime(hms: string): string {
   return hms.slice(0, 5);
 }

@@ -56,10 +56,22 @@ export function buildRideShareMessage(
   }
 
   if (weather) {
-    const sky = weatherCodeInfo(weather.weatherCode);
+    const sky = weatherCodeInfo(weather.dominantWeatherCode ?? weather.weatherCode);
+    const tempStr =
+      weather.tempMin !== undefined && weather.tempMax !== undefined && weather.tempMin !== weather.tempMax
+        ? `${weather.tempMin}° à ${weather.tempMax}°`
+        : `${weather.temperatureC}°`;
+    const timeWindow =
+      weather.departureTime && weather.estimatedArrivalTime
+        ? ` (${weather.departureTime} → ~${weather.estimatedArrivalTime})`
+        : "";
+    const scoreStr = weather.suitabilityScore
+      ? ` · ${weather.suitabilityLabel || "Conditions"} (${weather.suitabilityScore}/10)`
+      : "";
+
     lines.push("");
     lines.push(
-      `🌤️ Météo prévue : ${sky.label}, ${weather.temperatureC}°, ${weather.precipitationProbability}% de pluie, vent ${weather.windSpeedKmh} km/h ${windDirectionLabel(weather.windDirectionDeg)}`
+      `${sky.emoji} Météo prévue${timeWindow} : ${sky.label}, ${tempStr}, ${weather.maxPrecipitationProbability ?? weather.precipitationProbability}% de pluie, vent ${weather.windSpeedKmh} km/h ${windDirectionLabel(weather.windDirectionDeg)}${scoreStr}`
     );
   }
 

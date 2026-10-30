@@ -33,63 +33,69 @@ describe("normalizeMemberName", () => {
 
 describe("buildAssiduityRanking", () => {
   it("compte une personne comme une seule entree malgre une orthographe differente (accents)", () => {
-    const ranking = buildAssiduityRanking(["Thomas Trégaro", "Thomas Tregaro", "Thomas Trégaro"], 10);
-    expect(ranking).toEqual([{ display: "Thomas Trégaro", count: 3 }]);
+    const ranking = buildAssiduityRanking(["Thomas Trégaro", "Thomas Tregaro", "Thomas Trégaro"]);
+    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 3 });
+    expect(ranking.filter((r) => r.display === "Thomas Trégaro")).toHaveLength(1);
   });
 
-  it("affiche l'orthographe la plus frequente pour une meme personne", () => {
-    const ranking = buildAssiduityRanking(["thomas tregaro", "Thomas Trégaro", "Thomas Trégaro"], 10);
+  it("affiche le nom officiel pour une meme personne", () => {
+    const ranking = buildAssiduityRanking(["thomas tregaro", "Thomas Trégaro", "Thomas Trégaro"]);
     expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 3 });
   });
 
   it("compte une personne comme une seule entree malgre un ordre nom/prenom different", () => {
-    const ranking = buildAssiduityRanking(["Thomas Trégaro", "Trégaro Thomas", "Thomas Trégaro"], 10);
-    expect(ranking).toEqual([{ display: "Thomas Trégaro", count: 3 }]);
+    const ranking = buildAssiduityRanking(["Thomas Trégaro", "Trégaro Thomas", "Thomas Trégaro"]);
+    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 3 });
   });
 
-  it("a egalite, garde la premiere orthographe rencontree", () => {
-    const ranking = buildAssiduityRanking(["Thomas Tregaro", "Thomas Trégaro"], 10);
-    expect(ranking[0].display).toBe("Thomas Tregaro");
-  });
-
-  it("trie par nombre de participations decroissant", () => {
-    const ranking = buildAssiduityRanking(
-      ["Camille", "Thomas", "Camille", "Thomas", "Camille"],
-      10
-    );
-    expect(ranking).toEqual([
-      { display: "Camille", count: 3 },
-      { display: "Thomas", count: 2 },
+  it("trie par nombre de participations decroissant puis par nom alphabetique", () => {
+    const ranking = buildAssiduityRanking([
+      "Marina Trégaro",
+      "Thomas Trégaro",
+      "Marina Trégaro",
+      "Thomas Trégaro",
+      "Marina Trégaro",
+    ]);
+    expect(ranking.slice(0, 2)).toEqual([
+      { display: "Marina Trégaro", count: 3 },
+      { display: "Thomas Trégaro", count: 2 },
     ]);
   });
 
   it("respecte la limite demandee", () => {
-    const ranking = buildAssiduityRanking(["A", "B", "B", "C", "C", "C"], 2);
-    expect(ranking).toHaveLength(2);
-    expect(ranking.map((r) => r.display)).toEqual(["C", "B"]);
+    const ranking = buildAssiduityRanking(["Thomas Trégaro"], 5);
+    expect(ranking).toHaveLength(5);
+    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 1 });
   });
 
-  it("retourne tout le classement quand aucune limite n'est passee", () => {
-    const ranking = buildAssiduityRanking(["A", "B", "B", "C", "C", "C"]);
-    expect(ranking.map((r) => r.display)).toEqual(["C", "B", "A"]);
+  it("retourne tout le classement des 99 membres quand aucune limite n'est passee", () => {
+    const ranking = buildAssiduityRanking(["Thomas Trégaro"]);
+    expect(ranking).toHaveLength(99);
+    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 1 });
+    expect(ranking.find((r) => r.display === "Ben Horny")).toEqual({
+      display: "Ben Horny",
+      count: 0,
+    });
   });
 
   it("ignore les noms vides ou uniquement des espaces", () => {
-    const ranking = buildAssiduityRanking(["Thomas", "", "   ", "Thomas"], 10);
-    expect(ranking).toEqual([{ display: "Thomas", count: 2 }]);
+    const ranking = buildAssiduityRanking(["Thomas Trégaro", "", "   ", "Thomas Trégaro"]);
+    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 2 });
   });
 
-  it("retourne un tableau vide si aucune participation", () => {
-    expect(buildAssiduityRanking([], 10)).toEqual([]);
+  it("retourne les 99 membres avec 0 sortie si aucune participation", () => {
+    const ranking = buildAssiduityRanking([]);
+    expect(ranking).toHaveLength(99);
+    expect(ranking.every((r) => r.count === 0)).toBe(true);
   });
 
   it("compte une personne comme une seule entree malgre un emoji ajoute au nom", () => {
-    const ranking = buildAssiduityRanking(["Florian Maillou", "Florian Maillou 🚀"], 10);
-    expect(ranking).toEqual([{ display: "Florian Maillou", count: 2 }]);
+    const ranking = buildAssiduityRanking(["Florian Maillou", "Florian Maillou 🚀"]);
+    expect(ranking[0]).toEqual({ display: "Florian Maillou", count: 2 });
   });
 
-  it("n'affiche jamais d'emoji, meme si c'est la seule orthographe rencontree", () => {
-    const ranking = buildAssiduityRanking(["MIMOUNI redouane ✌", "MIMOUNI redouane ✌"], 10);
-    expect(ranking).toEqual([{ display: "MIMOUNI redouane", count: 2 }]);
+  it("n'affiche jamais d'emoji et fait correspondre au nom officiel du membre", () => {
+    const ranking = buildAssiduityRanking(["MIMOUNI redouane ✌", "MIMOUNI redouane ✌"]);
+    expect(ranking[0]).toEqual({ display: "Redouane Mimouni", count: 2 });
   });
 });

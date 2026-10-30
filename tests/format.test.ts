@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import {
   daysUntil,
+  fmtDateCompact,
   fmtDateLong,
   fmtDateShort,
   fmtKm,
@@ -45,11 +46,12 @@ describe("initials", () => {
   });
 });
 
-describe("fmtDateLong / fmtDateShort", () => {
+describe("fmtDateLong / fmtDateShort / fmtDateCompact", () => {
   it("formate une date ISO en francais", () => {
     // 2026-09-06 est un dimanche
     expect(fmtDateLong("2026-09-06")).toBe("dimanche 6 septembre");
     expect(fmtDateShort("2026-09-06")).toBe("DIM 6 SEPT");
+    expect(fmtDateCompact("2026-09-06")).toBe("Dim. 6 sept.");
   });
 });
 

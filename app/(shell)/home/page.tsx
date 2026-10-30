@@ -7,6 +7,7 @@ import { AdminOnly } from "@/components/AdminOnly";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SuggestionButton } from "@/components/SuggestionButton";
 import { isPastDate } from "@/lib/format";
+import { fetchRideWeather, getRideCoordinates, type RideWeather } from "@/lib/weather";
 
 // Page 100% publique (aucune donnee liee a une session, voir
 // lib/supabase/publicClient.ts), mais rendue a chaque requete plutot que
@@ -33,6 +34,37 @@ export default async function HomePage() {
   // HomeRidesSection).
   const rest = upcoming.filter((r) => r.ride_date !== nextDate);
 
+  // Récupère les points GPS réels des sorties à venir pour avoir exactement les mêmes coordonnées
+  // de départ que sur la fiche détaillée (évite les approximations de géocodage textuel).
+  const upcomingIds = upcoming.map((r) => r.id);
+  const { data: upcomingRoutes } = upcomingIds.length > 0
+    ? await supabase.from("rides").select("id, route_points").in("id", upcomingIds)
+    : { data: [] };
+  const routePointsMap = new Map<string, [number, number][]>(
+    (upcomingRoutes || []).map((r) => [r.id, r.route_points])
+  );
+
+  // Pré-charge la météo en parallèle pour toutes les sorties à venir (synchronisée à 100% avec la fiche sortie)
+  const weatherEntries = await Promise.all(
+    upcoming.map(async (ride) => {
+      try {
+        const routePoints = routePointsMap.get(ride.id) || ride.route_points;
+        const coords = await getRideCoordinates(routePoints, ride.place);
+        if (!coords) return [ride.id, null] as const;
+        const groups = (ride.ride_groups || []).map((g) => g.group_level);
+        const w = await fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time, {
+          distanceKm: ride.distance_km,
+          elevationGainM: ride.elevation_gain_m,
+          groups,
+        });
+        return [ride.id, w] as const;
+      } catch {
+        return [ride.id, null] as const;
+      }
+    })
+  );
+  const weatherByRideId: Record<string, RideWeather | null> = Object.fromEntries(weatherEntries);
+
   return (
     <div>
       <div className="flex items-center justify-between px-5 pb-3 pt-5">
@@ -46,7 +78,12 @@ export default async function HomePage() {
         <JerseyPreorderBanner />
       </AdminOnly>
       <NotificationOptIn />
-      <HomeRidesSection featured={featured} rest={rest} participations={participations} />
+      <HomeRidesSection
+        featured={featured}
+        rest={rest}
+        participations={participations}
+        weatherByRideId={weatherByRideId}
+      />
     </div>
   );
 }
