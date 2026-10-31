@@ -44,22 +44,18 @@ export function V2FeaturedHero({
         : null;
 
   return (
-    <div className="relative group block overflow-hidden rounded-[32px] border-2 border-violet-200/90 bg-white p-5 text-neutral-950 shadow-[0_16px_36px_-6px_rgba(109,40,217,0.12)] ring-1 ring-black/[0.04] transition-all duration-300 dark:border dark:border-white/20 dark:bg-gradient-to-br dark:from-[#1E0938] dark:via-[#120524] dark:to-[#080210] dark:text-white dark:shadow-[0_24px_50px_-12px_rgba(124,58,237,0.45)] dark:ring-white/10">
-      {/* Ambient background glows */}
+    <div className="relative isolate group block overflow-hidden rounded-[32px] border-2 border-violet-200/90 bg-white p-5 text-neutral-950 shadow-[0_16px_36px_-6px_rgba(109,40,217,0.12)] ring-1 ring-black/[0.04] transition-all duration-300 dark:border dark:border-white/20 dark:bg-gradient-to-br dark:from-[#1E0938] dark:via-[#120524] dark:to-[#080210] dark:text-white dark:shadow-[0_24px_50px_-12px_rgba(124,58,237,0.45)] dark:ring-white/10">
+      {/* Ambient background glows using clean radial gradients (avoids iOS WebKit GPU blur clipping bug) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-violet-100/60 blur-3xl dark:bg-[#AA26FF]/25"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -left-16 -bottom-16 h-56 w-56 rounded-full bg-purple-100/60 blur-3xl dark:bg-violet-600/35"
+        className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top_right,rgba(170,38,255,0.12),transparent_60%),radial-gradient(ellipse_at_bottom_left,rgba(124,58,237,0.12),transparent_60%)] dark:bg-[radial-gradient(ellipse_at_top_right,rgba(170,38,255,0.24),transparent_60%),radial-gradient(ellipse_at_bottom_left,rgba(124,58,237,0.26),transparent_60%)]"
       />
 
       {/* Speedline glowing on the left edge */}
       {groupSpeedline && (
         <span
           aria-hidden="true"
-          className={`pointer-events-none absolute inset-y-0 left-0 w-[4.5px] rounded-r-full ${groupSpeedline}`}
+          className={`pointer-events-none absolute inset-y-0 left-0 w-[4.5px] rounded-r-full z-10 ${groupSpeedline}`}
         />
       )}
 
@@ -96,7 +92,7 @@ export function V2FeaturedHero({
                 onQuickAction(ride);
               }}
               title="S'inscrire rapidement à cette sortie"
-              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-3.5 py-1 text-[11.5px] font-black text-white shadow-md shadow-violet-600/30 transition hover:brightness-110 active:scale-95 dark:border-white/35 dark:bg-white/20 dark:text-white dark:hover:bg-white/30"
+              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-3.5 py-1 text-[11.5px] font-black text-white shadow-md shadow-violet-600/30 transition hover:brightness-110 active:scale-95"
             >
               <Icon name="plus" size={13} /> Participer
             </button>

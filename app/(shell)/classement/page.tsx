@@ -305,12 +305,12 @@ function StatBento({
   accent?: string;
 }) {
   return (
-    <div className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-neutral-200/90 bg-white px-2.5 py-2.5 text-center shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
+    <div className="relative isolate flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-neutral-200/90 bg-white px-2.5 py-2.5 text-center shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
       {accent && (
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-3 -top-3 h-8 w-8 rounded-full opacity-15 blur-md dark:opacity-25"
-          style={{ backgroundColor: accent }}
+          className="pointer-events-none absolute inset-0 rounded-2xl opacity-15 dark:opacity-25"
+          style={{ background: `radial-gradient(circle at top right, ${accent}, transparent 65%)` }}
         />
       )}
       <span className="block font-display text-[17px] sm:text-[19px] font-black leading-tight text-neutral-950 dark:text-white">

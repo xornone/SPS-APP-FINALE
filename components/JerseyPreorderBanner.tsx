@@ -8,12 +8,12 @@ export function JerseyPreorderBanner() {
       <Link
         href="/precommandes"
         prefetch={true}
-        className="group relative flex items-center justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-[#2D1047] via-[#421568] to-[#1C0A30] p-4 text-white shadow-card transition-all duration-200 hover:shadow-lg active:scale-[0.99]"
+        className="group relative isolate flex items-center justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-[#2D1047] via-[#421568] to-[#1C0A30] p-4 text-white shadow-card transition-all duration-200 hover:shadow-lg active:scale-[0.99]"
       >
-        {/* Lueur d'ambiance */}
+        {/* Lueur d'ambiance propre en radial-gradient sans filtre blur */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-6 -top-6 h-36 w-36 rounded-full bg-fuchsia-500/30 blur-2xl transition-transform duration-300 group-hover:scale-110"
+          className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.30),transparent_65%)]"
         />
 
         <div className="relative z-10 flex flex-1 flex-col pr-2">
