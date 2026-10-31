@@ -402,10 +402,24 @@ export function computeSuitabilityScore(
   return { score, label, summary, badgeColor };
 }
 
+const KNOWN_PLACE_COORDS: Record<string, [number, number]> = {
+  corum: [43.6139, 3.8824],
+  "le corum": [43.6139, 3.8824],
+  "esplanade charles-de-gaulle": [43.6111, 3.8812],
+  "marché du lez": [43.5985, 3.9015],
+  "marche du lez": [43.5985, 3.9015],
+  montpellier: [43.6108, 3.8767],
+  "saint-gély-du-fesc": [43.6933, 3.8058],
+  "saint gely du fesc": [43.6933, 3.8058],
+  "castelnau-le-lez": [43.6333, 3.8997],
+  "castelnau le lez": [43.6333, 3.8997],
+};
+
 async function geocodePlace(place: string): Promise<[number, number] | null> {
   try {
+    const query = place.toLowerCase().includes("france") ? place : `${place}, France`;
     const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-      place
+      query
     )}&count=1&language=fr&format=json`;
     const res = await fetch(url, { next: { revalidate: 86400 } });
     if (!res.ok) return null;
@@ -423,7 +437,11 @@ export async function getRideCoordinates(
   place: string
 ): Promise<[number, number] | null> {
   if (routePoints && routePoints.length > 0) return routePoints[0];
-  if (place) return geocodePlace(place);
+  if (place) {
+    const normalized = place.trim().toLowerCase();
+    if (KNOWN_PLACE_COORDS[normalized]) return KNOWN_PLACE_COORDS[normalized];
+    return geocodePlace(place);
+  }
   return null;
 }
 
