@@ -397,22 +397,6 @@ export function computeSuitabilityScore(
     parts.push(`vent soutenu (${maxWind} km/h)`);
   }
 
-  if (maxPrecip === 0) {
-    parts.push("zéro pluie");
-  } else if (maxPrecip <= 25) {
-    parts.push(`faible risque pluie (${maxPrecip}%)`);
-  } else {
-    parts.push(`risque de pluie (${maxPrecip}%)`);
-  }
-
-  if (maxWind <= 12) {
-    parts.push("vent très calme");
-  } else if (maxWind <= 25) {
-    parts.push(`vent modéré (${maxWind} km/h)`);
-  } else {
-    parts.push(`vent soutenu (${maxWind} km/h)`);
-  }
-
   const summary = parts.join(" · ");
 
   return { score, label, summary, badgeColor };

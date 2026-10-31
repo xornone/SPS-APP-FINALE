@@ -59,6 +59,18 @@ describe("computeSuitabilityScore", () => {
     expect(result.label).toMatch(/idéales|Excellentes/);
   });
 
+  it("génère un résumé sans doublon pour la pluie et le vent", () => {
+    const slots: RideWeatherHour[] = [
+      { hour: 9, time: "09:00", temperatureC: 15, precipitationProbability: 0, windSpeedKmh: 8, windDirectionDeg: 0, weatherCode: 0 },
+      { hour: 10, time: "10:00", temperatureC: 18, precipitationProbability: 0, windSpeedKmh: 10, windDirectionDeg: 0, weatherCode: 0 },
+    ];
+    const result = computeSuitabilityScore(slots);
+    const rainOccurrences = (result.summary.match(/zéro pluie/g) || []).length;
+    const windOccurrences = (result.summary.match(/vent très calme/g) || []).length;
+    expect(rainOccurrences).toBe(1);
+    expect(windOccurrences).toBe(1);
+  });
+
   it("pénalise la note en cas de pluie ou vent fort", () => {
     const slots: RideWeatherHour[] = [
       { hour: 9, time: "09:00", temperatureC: 8, precipitationProbability: 70, windSpeedKmh: 35, windDirectionDeg: 0, weatherCode: 63 },
