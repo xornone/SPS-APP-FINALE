@@ -53,7 +53,7 @@ export function InteractiveRideTrack({
       />
 
       {/* Carte Leaflet avec curseur animé à la position exacte du D+ */}
-      <div className="mx-5 mb-4 h-[220px] overflow-hidden rounded-[22px] border border-black/[0.06] dark:border-white/10">
+      <div className="mx-5 mb-4 h-[220px] overflow-hidden rounded-[22px] border border-neutral-200/90 shadow-xs dark:border-white/10">
         <RideMap
           points={points}
           className="h-full w-full"

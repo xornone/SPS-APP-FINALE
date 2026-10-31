@@ -7,11 +7,12 @@ import { GroupBadge } from "@/components/GroupBadge";
 import { Icon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { RideParticipationSection } from "@/components/RideParticipationSection";
-import { fmtDateCompact, fmtDateLong, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import { RideDescription } from "@/components/RideDescription";
 import { buildRideShareMessage } from "@/lib/shareMessage";
 import { shortRideCode } from "@/lib/shortLink";
 import { GROUP_INFO, type GroupLevel } from "@/lib/types";
+import { cleanRideTitle, getRideEffectiveGroups } from "@/lib/rideGroup";
+import { fmtDateDimNov, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import {
   addMinutesToTimeString,
   estimateRideDurationMinutes,
@@ -20,13 +21,6 @@ import {
   getRideCoordinates,
 } from "@/lib/weather";
 
-// Cette page ne depend plus de la session (voir AdminOnly / useIsAdmin pour
-// le bouton WhatsApp reserve a l'admin) : elle peut donc utiliser le client
-// public (pas de cookies()). Rendue a chaque requete plutot que mise en
-// cache : voir la meme note sur app/(shell)/home/page.tsx — le club prefere
-// voir les inscriptions/retraits a jour immediatement en ouvrant une sortie
-// plutot que gagner en vitesse avec un cache qui peut rester perime le
-// temps de sa fenetre de revalidation.
 export const dynamic = "force-dynamic";
 
 export default async function RideDetailPage({ params }: { params: { id: string } }) {
@@ -41,6 +35,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   if (!ride) notFound();
 
   const groups = (ride.ride_groups || []).map((g) => g.group_level);
+  const effectiveGroups = getRideEffectiveGroups(ride);
 
   const weatherPromise = getRideCoordinates(ride.route_points, ride.place).then((coords) =>
     coords
@@ -66,8 +61,8 @@ export default async function RideDetailPage({ params }: { params: { id: string 
     ? supabase.storage.from("gpx").getPublicUrl(ride.gpx_path).data.publicUrl
     : null;
 
-  // Filet de securite : si NEXT_PUBLIC_SITE_URL n'est pas configuree sur
-  // l'hebergeur, on retombe sur le domaine de production plutot que de
+  // Filet de sécurité : si NEXT_PUBLIC_SITE_URL n'est pas configurée sur
+  // l'hébergeur, on retombe sur le domaine de production plutôt que de
   // laisser le message WhatsApp sans aucun lien.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://spsapp2.vercel.app";
   const shareMessage = buildRideShareMessage(ride, groups, weather, `${siteUrl}/s/${shortRideCode(ride.id)}`);
@@ -82,49 +77,59 @@ export default async function RideDetailPage({ params }: { params: { id: string 
     weather?.estimatedArrivalTime ?? addMinutesToTimeString(departureTime, durationMin);
 
   return (
-    <div>
-      <div className="flex items-center justify-between px-5 pb-2 pt-5">
+    <div className="flex flex-col gap-4">
+      {/* Top Header Bar */}
+      <div className="flex items-center justify-between px-5 pb-1 pt-5">
         <Link
           href="/home"
           prefetch={true}
-          className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
+          title="Retour aux sorties"
+          className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white text-neutral-900 shadow-xs transition hover:bg-neutral-100 active:scale-95 dark:border-white/10 dark:bg-[#130B22] dark:text-white"
         >
           <Icon name="chevL" size={18} />
         </Link>
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           {gpxUrl && (
             <a
               href={gpxUrl}
               download
-              className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white dark:border-white/10 dark:bg-[#1A1422]"
+              title="Télécharger la trace GPX"
+              className="flex h-9 w-9 items-center justify-center rounded-xl border border-black/[0.08] bg-white text-neutral-900 shadow-xs transition hover:bg-neutral-100 active:scale-95 dark:border-white/10 dark:bg-[#130B22] dark:text-white"
             >
               <Icon name="download" size={17} />
             </a>
           )}
+          <ThemeToggle />
         </div>
       </div>
 
-      <div className="px-5 pb-4">
-        <h1 className="mb-2 font-display text-[28px] leading-tight tracking-wide">{ride.title}</h1>
-        <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-[11.5px] text-black/55 no-scrollbar dark:text-white/55">
+      {/* Title & Metadata */}
+      <div className="px-5 pb-1">
+        <h1 className="mb-2 font-display text-[24px] sm:text-[27px] font-black leading-tight tracking-wide text-neutral-950 dark:text-white">
+          {effectiveGroups.map((g) => (
+            <span key={g} className="mr-2 inline-flex align-middle -translate-y-[1px]">
+              <GroupBadge group={g} withRange={false} size="sm" pulse={true} />
+            </span>
+          ))}
+          <span className="align-middle">{cleanRideTitle(ride.title)}</span>
+        </h1>
+        <div className="flex items-center gap-1.5 overflow-x-auto whitespace-nowrap text-[12px] font-bold text-neutral-700 no-scrollbar dark:text-white/60">
           <span className="flex items-center gap-1 flex-shrink-0">
-            <Icon name="bell" size={13} className="text-sps-violet600 dark:text-sps-violet400" />
-            <span className="hidden sm:inline">{fmtDateLong(ride.ride_date)}</span>
-            <span className="sm:hidden">{fmtDateCompact(ride.ride_date)}</span>
+            <Icon name="bell" size={13} className="text-sps-violet600 dark:text-[#AA26FF]" />
+            <span>{fmtDateDimNov(ride.ride_date)}</span>
           </span>
 
           <span className="text-black/25 dark:text-white/25 flex-shrink-0">·</span>
 
           <span className="flex items-center gap-1 flex-shrink-0">
-            <Icon name="target" size={13} className="text-sps-violet600 dark:text-sps-violet400" />
+            <Icon name="target" size={13} className="text-sps-violet600 dark:text-[#AA26FF]" />
             <span>{departureTime} → ~{arrivalTime} ({durationFormatted})</span>
           </span>
 
           <span className="text-black/25 dark:text-white/25 flex-shrink-0">·</span>
 
           <span className="flex items-center gap-1 flex-shrink-0 min-w-0">
-            <Icon name="flag" size={13} className="text-sps-violet600 dark:text-sps-violet400 flex-shrink-0" />
+            <Icon name="flag" size={13} className="text-sps-violet600 dark:text-[#AA26FF] flex-shrink-0" />
             {ride.place_url ? (
               <a
                 href={ride.place_url}
@@ -142,6 +147,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         </div>
       </div>
 
+      {/* Interactive Track */}
       <InteractiveRideTrack
         points={ride.route_points}
         elevations={ride.route_elevations}
@@ -149,34 +155,38 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         weather={weather}
       />
 
-      <div className="flex gap-2.5 px-5 py-4">
+      {/* Telemetry Bento - Same 3 stats as V1, styled with V2 card style */}
+      <div className="grid grid-cols-3 gap-2 px-5 py-2">
         <Stat value={fmtKm(ride.distance_km)} label="Distance" />
         <Stat value={fmtM(ride.elevation_gain_m)} label="D+" />
         <Stat value={speedRangeLabel(groups)} label="km/h" />
       </div>
 
-      <div className="px-5 pb-1.5">
-        <h2 className="font-display text-xl tracking-wide">Groupes</h2>
+      {/* Groupes */}
+      <div className="px-5 pb-1">
+        <h2 className="font-display text-xl tracking-wide text-neutral-900 dark:text-white uppercase">Groupes</h2>
       </div>
       <div className="flex flex-col gap-2 px-5 pb-1">
         {groups.map((g) => (
           <div
             key={g}
-            className="flex items-center justify-between rounded-2xl border border-black/[0.06] bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-[#1A1422]"
+            className="flex items-center justify-between rounded-2xl border border-neutral-200/90 bg-white p-3.5 shadow-xs transition hover:border-violet-300 dark:border-white/10 dark:bg-[#130B22]/80 dark:hover:border-white/20"
           >
             <div className="flex flex-col gap-1">
               <GroupBadge group={g} />
-              <span className="pl-0.5 text-[10.5px] text-black/40 dark:text-white/40">{GROUP_INFO[g].flat}</span>
+              <span className="pl-0.5 text-[11px] font-semibold text-neutral-500 dark:text-white/45">{GROUP_INFO[g].flat}</span>
             </div>
-            <span className="text-xs text-black/45 dark:text-white/45">
+            <span className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-black text-neutral-700 dark:bg-white/[0.08] dark:text-white">
               {groupCounts[g]} participant{groupCounts[g] > 1 ? "s" : ""}
             </span>
           </div>
         ))}
       </div>
 
+      {/* Description */}
       <RideDescription description={ride.description} showSafetyNotice={ride.show_safety_notice !== false} />
 
+      {/* Participation & Inscriptions */}
       <RideParticipationSection
         rideId={ride.id}
         availableGroups={groups}
@@ -192,9 +202,13 @@ export default async function RideDetailPage({ params }: { params: { id: string 
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex-1 rounded-2xl border border-black/[0.06] bg-white py-3 text-center dark:border-white/10 dark:bg-[#1A1422]">
-      <span className="block font-display text-[21px] leading-none">{value}</span>
-      <span className="mt-1 block text-[10px] uppercase tracking-wide text-black/35 dark:text-white/35">{label}</span>
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-neutral-200/90 bg-white py-3 px-2 text-center shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
+      <span className="block text-[9px] font-black uppercase tracking-wider text-neutral-500 dark:text-violet-300/70">
+        {label}
+      </span>
+      <span className="mt-0.5 block font-display text-lg sm:text-xl font-black leading-tight text-neutral-950 dark:text-white">
+        {value}
+      </span>
     </div>
   );
 }

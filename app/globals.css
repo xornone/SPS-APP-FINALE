@@ -58,6 +58,21 @@ body {
   animation: fadeUp 0.25s ease both;
 }
 
+@keyframes subtleBadgeBlink {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+}
+
+.animate-subtle-blink {
+  animation: subtleBadgeBlink 2s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation: none !important;

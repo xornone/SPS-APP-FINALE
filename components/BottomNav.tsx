@@ -5,14 +5,10 @@ import { usePathname } from "next/navigation";
 import { Icon } from "./Icons";
 import { useIsAdmin } from "@/lib/useIsAdmin";
 
-// L'app est publique pour tout le monde : pas de distinction de role a
-// l'affichage. L'onglet Admin mene vers une page protegee par le
-// middleware (redirection /login si pas de session).
-// L'onglet Précommandes est pour le moment en avant-première réservé aux admins.
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
-  { href: "/precommandes", label: "Précommandes", icon: "shirt" as const, adminOnly: true },
-  { href: "/classement", label: "Statistique SPS", icon: "trophy" as const },
+  { href: "/precommandes", label: "Pré-commandes", icon: "shirt" as const, adminOnly: true },
+  { href: "/classement", label: "Stats SPS", icon: "trophy" as const },
   { href: "/admin", label: "Admin", icon: "gear" as const },
 ];
 
@@ -23,23 +19,45 @@ export function BottomNav() {
   const visibleTabs = TABS.filter((t) => !t.adminOnly || isAdmin);
 
   return (
-    <nav className="sticky bottom-0 z-40 flex gap-0.5 border-t border-black/5 bg-white/90 px-2 pb-[calc(10px+env(safe-area-inset-bottom))] pt-2 backdrop-blur dark:border-white/10 dark:bg-[#1A1422]/90">
-      {visibleTabs.map((t) => {
-        const active = pathname === t.href || pathname.startsWith(t.href + "/");
-        return (
-          <Link
-            key={t.href}
-            href={t.href}
-            prefetch={true}
-            className={`flex flex-1 flex-col items-center gap-1 rounded-2xl py-1.5 text-[10.5px] font-bold ${
-              active ? "text-sps-violet600 dark:text-sps-violet400" : "text-black/35 dark:text-white/35"
-            }`}
-          >
-            <Icon name={t.icon} size={22} />
-            {t.label}
-          </Link>
-        );
-      })}
-    </nav>
+    <div className="fixed bottom-4 inset-x-4 z-50 mx-auto max-w-sm pointer-events-none">
+      <nav className="pointer-events-auto flex items-center justify-around gap-1 rounded-full border border-black/[0.08] bg-white/85 p-1.5 backdrop-blur-2xl shadow-[0_12px_32px_-4px_rgba(0,0,0,0.10)] ring-1 ring-black/[0.04] transition-colors dark:border-white/15 dark:bg-[#0F0A1A]/85 dark:shadow-[0_16px_40px_-6px_rgba(0,0,0,0.7)] dark:ring-white/10">
+        {visibleTabs.map((t) => {
+          const active =
+            pathname === t.href ||
+            (t.href !== "/home" && pathname.startsWith(t.href + "/")) ||
+            (t.href === "/home" && (pathname === "/" || pathname.startsWith("/rides")));
+
+          return (
+            <Link
+              key={t.href}
+              href={t.href}
+              prefetch={true}
+              className={`group relative flex flex-1 flex-col items-center gap-1 rounded-full py-2 transition-all duration-200 active:scale-95 ${
+                active
+                  ? "text-violet-700 dark:text-white"
+                  : "text-neutral-400 hover:text-neutral-800 dark:text-white/40 dark:hover:text-white/80"
+              }`}
+            >
+              <span
+                className={`flex h-8 w-12 items-center justify-center rounded-full transition-all duration-300 ${
+                  active
+                    ? "bg-gradient-to-r from-sps-violet600 to-[#AA26FF] text-white shadow-lg shadow-violet-600/40 ring-1 ring-white/30"
+                    : "bg-transparent group-hover:bg-black/[0.04] dark:group-hover:bg-white/[0.04]"
+                }`}
+              >
+                <Icon name={t.icon} size={18} />
+              </span>
+              <span
+                className={`text-[10px] tracking-tight whitespace-nowrap ${
+                  active ? "font-extrabold text-violet-700 dark:text-white" : "font-semibold"
+                }`}
+              >
+                {t.label}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
   );
 }

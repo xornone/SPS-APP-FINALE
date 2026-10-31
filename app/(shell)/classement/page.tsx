@@ -2,8 +2,8 @@ import Link from "next/link";
 import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { Icon } from "@/components/Icons";
-import { MemberAssiduityRanking } from "@/components/MemberAssiduityRanking";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { MemberAssiduityRanking } from "@/components/MemberAssiduityRanking";
 import { buildAssiduityRankingFromParticipations } from "@/lib/assiduity";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
@@ -57,7 +57,6 @@ export default async function ClassementPage() {
   }, null);
   const mostAttendedCount = mostAttendedRide ? participantCountByRide.get(mostAttendedRide.id) || 0 : 0;
 
-
   // Sorties proposees par le club, par annee (toutes les sorties creees,
   // passees comme a venir).
   const perYear = new Map<number, number>();
@@ -96,7 +95,8 @@ export default async function ClassementPage() {
   const assiduityRanking = buildAssiduityRankingFromParticipations(past);
 
   return (
-    <div>
+    <div className="flex flex-col gap-6">
+      {/* En-tete V1 */}
       <div className="flex items-center justify-between px-5 pb-1 pt-5">
         <div className="min-w-0 pr-2">
           <h1 className="font-display text-[26px] tracking-wide">Statistique SPS</h1>
@@ -107,129 +107,216 @@ export default async function ClassementPage() {
         </div>
       </div>
 
-      <div className="flex gap-2.5 px-5 pb-2 pt-4">
-        <ClubStat value={`${Math.round(totalKm).toLocaleString("fr-FR")} km`} label="Parcourus par les membres" />
-        <ClubStat value={`${Math.round(totalElevation).toLocaleString("fr-FR")} m`} label="D+ cumulé" />
-      </div>
-      <div className="flex gap-2.5 px-5 pb-3">
-        <ClubStat value={String(totalRidesOrganized)} label="Sorties organisées" />
-        <ClubStat
-          value={avgParticipants.toFixed(1).replace(".", ",")}
-          label="Participants en moyenne / sortie"
-        />
-      </div>
-
-
-      <div className="px-5 pb-3">
-        <h2 className="font-display text-xl tracking-wide">Activité du club</h2>
-      </div>
-      <div className="mx-5 mb-5 rounded-2xl border border-black/[0.06] bg-white px-2.5 pb-2.5 pt-3.5 dark:border-white/10 dark:bg-[#1A1422]">
-        <div className="flex h-[90px] items-end gap-2.5">
-          {buckets.map((b, i) => (
-            <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
-              <div
-                className="w-full max-w-[26px] rounded-t-md rounded-b-[3px] bg-gradient-to-b from-sps-violet400 to-sps-violet600"
-                style={{ height: `${Math.max(6, (b.km / maxKm) * 100)}%` }}
-                title={`${Math.round(b.km)} km`}
-              />
-              <span className="text-[10px] font-bold text-black/35 dark:text-white/35">{b.label}</span>
-            </div>
-          ))}
+      {/* Hero Bento Grid */}
+      <section className="px-5">
+        <div className="grid grid-cols-2 gap-2">
+          <StatBento
+            label="Parcourus par les membres"
+            value={`${Math.round(totalKm).toLocaleString("fr-FR")} km`}
+            accent="#AA26FF"
+          />
+          <StatBento
+            label="D+ cumulé"
+            value={`${Math.round(totalElevation).toLocaleString("fr-FR")} m`}
+            accent="#8B5CF6"
+          />
+          <StatBento
+            label="Sorties organisées"
+            value={String(totalRidesOrganized)}
+            accent="#34D399"
+          />
+          <StatBento
+            label="Participants en moyenne / sortie"
+            value={avgParticipants.toFixed(1).replace(".", ",")}
+            accent="#F59E0B"
+          />
         </div>
-      </div>
+      </section>
 
-      <div className="px-5 pb-1.5">
-        <h2 className="font-display text-xl tracking-wide">Répartition par niveau</h2>
-      </div>
-      <div className="mx-5 mb-5 overflow-hidden rounded-2xl border border-black/[0.06] bg-white px-4 py-3.5 dark:border-white/10 dark:bg-[#1A1422]">
-        {totalGroupCounts === 0 ? (
-          <p className="py-2 text-center text-sm text-black/40 dark:text-white/40">Pas encore d&apos;inscriptions.</p>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {(["vert", "rouge", "violet"] as GroupLevel[]).map((g) => {
-              const count = groupCounts[g];
-              const pct = Math.round((count / totalGroupCounts) * 100);
+      {/* 6-Month Illuminated Activity Chart */}
+      <section className="px-5">
+        <div className="rounded-[28px] border border-neutral-200/90 bg-white p-5 shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-xl uppercase tracking-wide text-neutral-950 dark:text-white font-black">
+                Activité du club
+              </h2>
+              <span className="text-[11px] font-semibold text-neutral-500 dark:text-white/50">
+                Km cumulés par mois
+              </span>
+            </div>
+            <span className="text-[11px] font-black uppercase tracking-wider text-neutral-500 dark:text-violet-300/60">
+              6 derniers mois
+            </span>
+          </div>
+
+          <div className="flex h-[130px] items-end gap-3 pt-4">
+            {buckets.map((b, i) => {
+              const heightPct = Math.max(8, (b.km / maxKm) * 100);
               return (
-                <div key={g}>
-                  <div className="mb-1 flex items-center justify-between text-[12.5px]">
-                    <span className="flex items-center gap-1.5 font-bold">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: GROUP_INFO[g].hex }} />
-                      {GROUP_INFO[g].label}
-                    </span>
-                    <span className="text-black/45 dark:text-white/45">
-                      {pct}% · {count}
-                    </span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-black/[0.05] dark:bg-white/10">
+                <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-2 group">
+                  <span className="text-[10px] font-black text-violet-700 dark:text-violet-300 transition-opacity duration-200">
+                    {Math.round(b.km)} km
+                  </span>
+                  <div className="relative flex h-full w-full max-w-[32px] items-end justify-center rounded-xl bg-neutral-100 p-1 dark:bg-white/[0.04]">
                     <div
-                      className="h-full rounded-full"
-                      style={{ width: `${count > 0 ? Math.max(3, pct) : 0}%`, backgroundColor: GROUP_INFO[g].hex }}
+                      className="w-full rounded-lg bg-gradient-to-t from-sps-violet600 via-[#8B5CF6] to-[#AA26FF] shadow-sm shadow-violet-600/30 transition-all duration-500"
+                      style={{ height: `${heightPct}%` }}
                     />
                   </div>
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-neutral-600 dark:text-white/50">
+                    {b.label}
+                  </span>
                 </div>
               );
             })}
           </div>
-        )}
-      </div>
+        </div>
+      </section>
 
-      <div className="px-5 pb-1.5">
-        <h2 className="font-display text-xl tracking-wide">Records du club</h2>
-      </div>
-      <div className="mx-5 mb-6 overflow-hidden rounded-2xl border border-black/[0.06] bg-white dark:border-white/10 dark:bg-[#1A1422]">
-        {!longestRide || !hilliestRide || !mostAttendedRide ? (
-          <p className="p-6 text-center text-sm text-black/40 dark:text-white/40">Aucune sortie proposée pour le moment.</p>
-        ) : (
-          <>
-            <RecordRow icon="route" label="Sortie la plus longue" ride={longestRide} value={fmtKm(longestRide.distance_km)} />
-            <RecordRow icon="mountain" label="Plus gros dénivelé" ride={hilliestRide} value={fmtM(hilliestRide.elevation_gain_m)} />
-            <RecordRow
-              icon="members"
-              label="Sortie la plus suivie"
-              ride={mostAttendedRide}
-              value={`${mostAttendedCount} participant${mostAttendedCount > 1 ? "s" : ""}`}
-            />
-          </>
-        )}
-      </div>
+      {/* Pelotons Distribution */}
+      <section className="px-5">
+        <div className="rounded-[28px] border border-neutral-200/90 bg-white p-5 shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
+          <h2 className="mb-4 font-display text-xl uppercase tracking-wide text-neutral-950 dark:text-white font-black">
+            Répartition par groupe
+          </h2>
 
-      <div className="px-5 pb-1.5">
-        <h2 className="font-display text-xl tracking-wide">Sorties par année</h2>
-      </div>
-      <div className="mx-5 mb-6 overflow-hidden rounded-2xl border border-black/[0.06] bg-white dark:border-white/10 dark:bg-[#1A1422]">
-        {yearRows.length === 0 ? (
-          <p className="p-6 text-center text-sm text-black/40 dark:text-white/40">Aucune sortie proposée pour le moment.</p>
-        ) : (
-          yearRows.map(([year, count]) => (
-            <div
-              key={year}
-              className="flex items-center gap-3 border-b border-black/[0.05] px-4 py-3 last:border-0 dark:border-white/[0.06]"
-            >
-              <span className="w-12 flex-none font-display text-base">{year}</span>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-black/[0.05] dark:bg-white/10">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-sps-violet400 to-sps-violet600"
-                  style={{ width: `${Math.max(6, (count / maxYearCount) * 100)}%` }}
-                />
-              </div>
-              <span className="w-20 flex-none text-right text-[12.5px] text-black/45 dark:text-white/45">
-                {count} sortie{count > 1 ? "s" : ""}
-              </span>
+          {totalGroupCounts === 0 ? (
+            <p className="py-2 text-center text-sm text-neutral-400 dark:text-white/40">Pas encore d&apos;inscriptions.</p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {(["vert", "rouge", "violet"] as GroupLevel[]).map((g) => {
+                const count = groupCounts[g];
+                const pct = Math.round((count / totalGroupCounts) * 100);
+                return (
+                  <div key={g} className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="flex items-center gap-2 font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full shadow-xs"
+                          style={{ color: GROUP_INFO[g].hex, backgroundColor: GROUP_INFO[g].hex }}
+                        />
+                        {GROUP_INFO[g].label}
+                      </span>
+                      <span className="font-extrabold text-neutral-600 dark:text-white/70">
+                        {pct}% · {count} participation{count > 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="h-2.5 overflow-hidden rounded-full bg-neutral-100 p-0.5 dark:bg-white/[0.06]">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${count > 0 ? Math.max(3, pct) : 0}%`,
+                          backgroundColor: GROUP_INFO[g].hex,
+                          boxShadow: `0 0 10px ${GROUP_INFO[g].hex}80`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))
-        )}
-      </div>
+          )}
+        </div>
+      </section>
 
-      <MemberAssiduityRanking ranking={assiduityRanking} />
+      {/* Club Records */}
+      <section className="px-5">
+        <div className="rounded-[28px] border border-neutral-200/90 bg-white p-5 shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
+          <h2 className="mb-3 font-display text-xl uppercase tracking-wide text-neutral-950 dark:text-white font-black">
+            Records du club
+          </h2>
+
+          {!longestRide || !hilliestRide || !mostAttendedRide ? (
+            <p className="p-4 text-center text-sm text-neutral-400 dark:text-white/40">Aucune sortie proposée pour le moment.</p>
+          ) : (
+            <div className="flex flex-col divide-y divide-neutral-200/80 dark:divide-white/[0.06]">
+              <RecordRow
+                icon="route"
+                label="Sortie la plus longue"
+                ride={longestRide}
+                value={fmtKm(longestRide.distance_km)}
+                color="#AA26FF"
+              />
+              <RecordRow
+                icon="mountain"
+                label="Plus gros dénivelé"
+                ride={hilliestRide}
+                value={fmtM(hilliestRide.elevation_gain_m)}
+                color="#8B5CF6"
+              />
+              <RecordRow
+                icon="members"
+                label="Sortie la plus suivie"
+                ride={mostAttendedRide}
+                value={`${mostAttendedCount} participants`}
+                color="#34D399"
+              />
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Rides by year */}
+      <section className="px-5">
+        <div className="rounded-[28px] border border-neutral-200/90 bg-white p-5 shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
+          <h2 className="mb-3 font-display text-xl uppercase tracking-wide text-neutral-950 dark:text-white font-black">
+            Sorties par année
+          </h2>
+
+          {yearRows.length === 0 ? (
+            <p className="p-4 text-center text-sm text-neutral-400 dark:text-white/40">Aucune sortie proposée pour le moment.</p>
+          ) : (
+            <div className="flex flex-col divide-y divide-neutral-200/80 dark:divide-white/[0.06]">
+              {yearRows.map(([year, count]) => (
+                <div key={year} className="flex items-center gap-3 py-3 first:pt-1 last:pb-1">
+                  <span className="w-12 font-display text-base font-black text-neutral-950 dark:text-white">{year}</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100 dark:bg-white/[0.06]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF]"
+                      style={{ width: `${Math.max(6, (count / maxYearCount) * 100)}%` }}
+                    />
+                  </div>
+                  <span className="w-24 text-right text-xs font-bold text-neutral-600 dark:text-white/60">
+                    {count} sortie{count > 1 ? "s" : ""}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Assiduity Ranking (Admin only section inside) */}
+      <section>
+        <MemberAssiduityRanking ranking={assiduityRanking} />
+      </section>
     </div>
   );
 }
 
-function ClubStat({ value, label }: { value: string; label: string }) {
+function StatBento({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: string;
+}) {
   return (
-    <div className="flex-1 rounded-2xl border border-black/[0.06] bg-white py-3.5 text-center dark:border-white/10 dark:bg-[#1A1422]">
-      <span className="block font-display text-[20px] leading-none">{value}</span>
-      <span className="mt-1.5 block px-1 text-[10px] uppercase leading-tight tracking-wide text-black/35 dark:text-white/35">
+    <div className="relative flex flex-col items-center justify-center overflow-hidden rounded-2xl border border-neutral-200/90 bg-white px-2.5 py-2.5 text-center shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
+      {accent && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-3 -top-3 h-8 w-8 rounded-full opacity-15 blur-md dark:opacity-25"
+          style={{ backgroundColor: accent }}
+        />
+      )}
+      <span className="block font-display text-[17px] sm:text-[19px] font-black leading-tight text-neutral-950 dark:text-white">
+        {value}
+      </span>
+      <span className="mt-0.5 block text-[9.5px] font-bold uppercase leading-tight tracking-wider text-neutral-500 dark:text-violet-300/70">
         {label}
       </span>
     </div>
@@ -241,26 +328,35 @@ function RecordRow({
   label,
   ride,
   value,
+  color,
 }: {
   icon: Parameters<typeof Icon>[0]["name"];
   label: string;
   ride: Ride;
   value: string;
+  color: string;
 }) {
   return (
     <Link
       href={`/rides/${ride.id}`}
       prefetch={true}
-      className="flex items-center gap-3 border-b border-black/[0.05] px-4 py-3 last:border-0 dark:border-white/[0.06]"
+      className="group flex items-center gap-3 py-3.5 transition hover:opacity-90"
     >
-      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-xl bg-sps-violet600/10 text-sps-violet600 dark:text-sps-violet400">
-        <Icon name={icon} size={17} />
+      <span
+        className="flex h-10 w-10 flex-none items-center justify-center rounded-2xl bg-neutral-100 text-neutral-900 shadow-xs transition group-hover:scale-105 dark:bg-white/[0.06] dark:text-white"
+        style={{ color }}
+      >
+        <Icon name={icon} size={18} />
       </span>
       <div className="min-w-0 flex-1">
-        <span className="block text-[10.5px] uppercase tracking-wide text-black/40 dark:text-white/40">{label}</span>
-        <span className="block truncate text-[13px] font-bold">{ride.title}</span>
+        <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-500 dark:text-violet-300/60">
+          {label}
+        </span>
+        <span className="block truncate text-sm font-black text-neutral-950 transition-colors group-hover:text-violet-700 dark:text-white dark:group-hover:text-violet-200">
+          {ride.title}
+        </span>
       </div>
-      <span className="flex-none text-right text-[12.5px] font-bold text-sps-violet600 dark:text-sps-violet400">
+      <span className="flex-none text-right font-display text-lg font-black text-neutral-950 dark:text-white">
         {value}
       </span>
     </Link>

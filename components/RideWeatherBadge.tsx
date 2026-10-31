@@ -25,72 +25,72 @@ export function RideWeatherBadge({
   const color = weather.suitabilityBadgeColor || "green";
   const scoreColor = SCORE_COLORS[color];
   const tempRange = fmtWeatherTempRange(weather);
-  const hasTwoTiers = Boolean(tempRange);
-  const capsuleShape = hasTwoTiers ? "rounded-2xl" : "rounded-full";
 
   if (variant === "featured") {
     return (
       <div
-        className={`inline-flex flex-col gap-1 ${capsuleShape} border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm text-white ${className}`}
+        className={`inline-flex flex-wrap items-center justify-center gap-2 rounded-full border border-black/[0.08] bg-black/[0.04] px-3 py-1 text-neutral-900 backdrop-blur-sm shadow-xs dark:border-white/20 dark:bg-white/10 dark:text-white ${className}`}
       >
-        {/* Étage 1 : Température et Jauge thermique */}
-        {tempRange && (
-          <div className="flex items-center justify-between gap-2.5">
-            <span className="text-[11.5px] font-extrabold text-violet-100 tracking-tight">
-              {tempRange}
-            </span>
-            <TemperatureGauge weather={weather} barWidth="w-12" />
-          </div>
-        )}
-
-        {/* Étage 2 : Conditions météo & Note sur 10 */}
-        <div className="flex items-center justify-between gap-2.5 text-[11px] font-bold">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[13px] leading-none select-none" aria-hidden="true">
-              {emoji}
-            </span>
-            <span>{weather.suitabilityLabel}</span>
-          </div>
-          <div className="flex items-baseline gap-0.5">
-            <span className="font-display font-black text-[13.5px] leading-none text-emerald-300">
-              {weather.suitabilityScore}
-            </span>
-            <span className="text-[9.5px] font-semibold text-violet-200/70">/10</span>
-          </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-[13px] leading-none select-none" aria-hidden="true">
+            {emoji}
+          </span>
+          <span className="text-[11px] font-bold text-neutral-900 dark:text-white whitespace-nowrap">
+            {weather.suitabilityLabel}
+          </span>
         </div>
+        {tempRange && (
+          <>
+            <span className="text-black/30 dark:text-white/30 text-[10px]">·</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-extrabold text-neutral-900 dark:text-violet-100 whitespace-nowrap">
+                {tempRange}
+              </span>
+              <TemperatureGauge weather={weather} barWidth="w-9" />
+            </div>
+          </>
+        )}
+        <span className="text-black/30 dark:text-white/30 text-[10px]">·</span>
+        <span className="flex items-baseline gap-0.5 text-[11px] font-bold whitespace-nowrap">
+          <span className="font-display font-black text-xs text-emerald-700 dark:text-emerald-300">
+            {weather.suitabilityScore}
+          </span>
+          <span className="text-[9px] text-neutral-500 dark:text-violet-200/60">/10</span>
+        </span>
       </div>
     );
   }
 
   return (
     <div
-      className={`inline-flex flex-col gap-1 ${capsuleShape} border border-black/[0.07] bg-black/[0.03] px-3 py-1.5 dark:border-white/10 dark:bg-white/[0.05] ${className}`}
+      className={`inline-flex flex-wrap items-center justify-center gap-1.5 rounded-full border border-black/[0.08] bg-black/[0.03] px-2.5 py-1 text-black/80 dark:border-white/10 dark:bg-white/[0.05] dark:text-white/80 ${className}`}
     >
-      {/* Étage 1 : Température et Jauge thermique */}
-      {tempRange && (
-        <div className="flex items-center justify-between gap-2.5">
-          <span className="text-[11.5px] font-extrabold text-black/85 dark:text-white/90 tracking-tight">
-            {tempRange}
-          </span>
-          <TemperatureGauge weather={weather} barWidth="w-12" />
-        </div>
-      )}
-
-      {/* Étage 2 : Conditions météo & Note sur 10 */}
-      <div className="flex items-center justify-between gap-2.5 text-[11px] font-bold text-black/75 dark:text-white/80">
-        <div className="flex items-center gap-1.5">
-          <span className="text-[13px] leading-none select-none" aria-hidden="true">
-            {emoji}
-          </span>
-          <span>{weather.suitabilityLabel}</span>
-        </div>
-        <div className="flex items-baseline gap-0.5">
-          <span className={`font-display font-black text-[13.5px] leading-none ${scoreColor}`}>
-            {weather.suitabilityScore}
-          </span>
-          <span className="text-[9.5px] font-medium opacity-50">/10</span>
-        </div>
+      <div className="flex items-center gap-1">
+        <span className="text-[12px] leading-none select-none" aria-hidden="true">
+          {emoji}
+        </span>
+        <span className="text-[10.5px] font-bold whitespace-nowrap">
+          {weather.suitabilityLabel}
+        </span>
       </div>
+      {tempRange && (
+        <>
+          <span className="opacity-30 text-[9px]">·</span>
+          <div className="flex items-center gap-1">
+            <span className="text-[10.5px] font-extrabold whitespace-nowrap">
+              {tempRange}
+            </span>
+            <TemperatureGauge weather={weather} barWidth="w-8" />
+          </div>
+        </>
+      )}
+      <span className="opacity-30 text-[9px]">·</span>
+      <span className="flex items-baseline gap-0.5 text-[10.5px] font-bold whitespace-nowrap">
+        <span className={`font-display font-black text-xs ${scoreColor}`}>
+          {weather.suitabilityScore}
+        </span>
+        <span className="text-[8.5px] opacity-50">/10</span>
+      </span>
     </div>
   );
 }

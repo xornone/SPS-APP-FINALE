@@ -6,7 +6,7 @@ import { AdminOnly } from "./AdminOnly";
 import { AdminBadge } from "./AdminBadge";
 import { PlaceLink } from "./PlaceLink";
 import { RideWeatherBadge } from "./RideWeatherBadge";
-import { detectRideGroup } from "@/lib/rideGroup";
+import { cleanRideTitle, detectRideGroup, formatRideDisplayTitle, getRideEffectiveGroups } from "@/lib/rideGroup";
 import { fmtDateShort, fmtKm, fmtM, fmtTime } from "@/lib/format";
 import { GROUP_INFO, type Ride } from "@/lib/types";
 import { getMissingAdminGroups, type RegisteredAdmin } from "@/lib/admins";
@@ -38,6 +38,8 @@ export function RideCard({
     : [];
 
   const detectedGroup = detectRideGroup(ride);
+  const effectiveGroups = getRideEffectiveGroups(ride);
+  const displayTitle = formatRideDisplayTitle(ride);
 
   const groupSpeedline = detectedGroup === "rouge"
     ? "bg-gradient-to-b from-transparent via-[#DC3D3D]/80 to-transparent shadow-[1px_0_6px_rgba(220,61,61,0.3)]"
@@ -101,32 +103,32 @@ export function RideCard({
           </span>
         )}
       </div>
-      <h3 className="text-[16.5px] font-extrabold leading-tight">{ride.title}</h3>
-      <div className="flex items-center gap-1.5 text-[12.5px] text-black/50 dark:text-white/50">
+      <h3 className="text-[16.5px] font-extrabold leading-tight text-neutral-900 dark:text-white">
+        {effectiveGroups.map((g) => (
+          <span key={g} className="mr-2 inline-flex align-middle -translate-y-[1px]">
+            <GroupBadge group={g} withRange={false} size="xs" pulse={true} />
+          </span>
+        ))}
+        <span className="align-middle">{cleanRideTitle(ride.title)}</span>
+      </h3>
+      <div className="flex flex-wrap items-center gap-1.5 text-[12.5px] text-black/50 dark:text-white/50">
         <Icon name="flag" size={13} /> <PlaceLink place={ride.place} placeUrl={ride.place_url} />
       </div>
-      <div className="flex gap-4">
-        <div>
+      <div className="flex items-center justify-center gap-6 py-1 text-center">
+        <div className="text-center">
           <b className="text-sm">{fmtKm(ride.distance_km)}</b>
           <span className="ml-1 text-[10px] uppercase text-black/35 dark:text-white/35">distance</span>
         </div>
-        <div>
+        <div className="text-center">
           <b className="text-sm">{fmtM(ride.elevation_gain_m)}</b>
           <span className="ml-1 text-[10px] uppercase text-black/35 dark:text-white/35">D+</span>
         </div>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-1.5">
-        <div className="flex flex-wrap gap-1.5">
-          {(ride.ride_groups || []).map((g) => (
-            <GroupBadge key={g.group_level} group={g.group_level} />
-          ))}
+      {weather && weather.suitabilityScore !== undefined && (
+        <div className="flex items-center justify-center py-0.5">
+          <RideWeatherBadge weather={weather} />
         </div>
-        {weather && weather.suitabilityScore !== undefined && (
-          <div className="ml-auto">
-            <RideWeatherBadge weather={weather} />
-          </div>
-        )}
-      </div>
+      )}
       <div className="flex items-center justify-between border-t border-black/[0.06] pt-2.5 dark:border-white/10">
         <div className="flex">
           {participantPreview.slice(0, 4).map((p, i) => (
@@ -153,8 +155,11 @@ export function RideCard({
               <AdminBadge key={a.name} name={a.name} group={a.group} />
             ))}
             {missingAdminGroups.length > 0 && (
-              <span className="text-[10.5px] font-bold text-amber-600 dark:text-amber-400">
-                ⚠️ Pas d&apos;admin en {missingAdminGroups.map((g) => GROUP_INFO[g].label).join(", ")}
+              <span
+                className="text-amber-600 dark:text-amber-400 cursor-help"
+                title={`Pas d'admin en ${missingAdminGroups.map((g) => GROUP_INFO[g].label).join(", ")}`}
+              >
+                ⚠️
               </span>
             )}
           </div>

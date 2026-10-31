@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectRideGroup } from "@/lib/rideGroup";
+import { cleanRideTitle, detectRideGroup, formatRideDisplayTitle } from "@/lib/rideGroup";
 
 describe("detectRideGroup", () => {
   it("detects rouge from title with text and emoji", () => {
@@ -68,5 +68,87 @@ describe("detectRideGroup", () => {
         ],
       })
     ).toBeNull();
+  });
+});
+
+describe("cleanRideTitle", () => {
+  it("cleans uppercase or emoji group prefixes", () => {
+    expect(cleanRideTitle("🔴 GROUPE ROUGE - SAINT MARTIN DE LONDRES")).toBe("SAINT MARTIN DE LONDRES");
+    expect(cleanRideTitle("Groupe rouge - Saint Martin de Londres")).toBe("Saint Martin de Londres");
+    expect(cleanRideTitle("🟣 GROUPE VIOLET - CAUSSE DE LA SELLE")).toBe("CAUSSE DE LA SELLE");
+    expect(cleanRideTitle("GROUPE VIOLET - CAUSSE DE LA SELLE")).toBe("CAUSSE DE LA SELLE");
+    expect(cleanRideTitle("🟢 GROUPE VERT : Pic Saint Loup")).toBe("Pic Saint Loup");
+    expect(cleanRideTitle("🔴 Saint Martin de Londres")).toBe("Saint Martin de Londres");
+  });
+
+  it("preserves title when no group prefix is present", () => {
+    expect(cleanRideTitle("Saint Martin de Londres")).toBe("Saint Martin de Londres");
+    expect(cleanRideTitle("Tour du Pic Saint Loup")).toBe("Tour du Pic Saint Loup");
+  });
+});
+
+describe("formatRideDisplayTitle", () => {
+  it("standardizes title to 🔴 Rouge - [Nom]", () => {
+    expect(
+      formatRideDisplayTitle({
+        title: "🔴 GROUPE ROUGE - SAINT MARTIN DE LONDRES",
+        ride_groups: [{ group_level: "rouge" }],
+      })
+    ).toBe("🔴 Rouge - SAINT MARTIN DE LONDRES");
+
+    expect(
+      formatRideDisplayTitle({
+        title: "Groupe rouge - Saint Martin de Londres",
+        ride_groups: [{ group_level: "rouge" }],
+      })
+    ).toBe("🔴 Rouge - Saint Martin de Londres");
+  });
+
+  it("standardizes title to 🟣 Violet - [Nom]", () => {
+    expect(
+      formatRideDisplayTitle({
+        title: "GROUPE VIOLET - CAUSSE DE LA SELLE",
+        ride_groups: [{ group_level: "violet" }],
+      })
+    ).toBe("🟣 Violet - CAUSSE DE LA SELLE");
+
+    expect(
+      formatRideDisplayTitle({
+        title: "🟣 Groupe Violet - Causse de la Selle",
+        ride_groups: [{ group_level: "violet" }],
+      })
+    ).toBe("🟣 Violet - Causse de la Selle");
+  });
+
+  it("automatically prepends group prefix if admin omitted it from title", () => {
+    expect(
+      formatRideDisplayTitle({
+        title: "Saint Martin de Londres",
+        ride_groups: [{ group_level: "rouge" }],
+      })
+    ).toBe("🔴 Rouge - Saint Martin de Londres");
+
+    expect(
+      formatRideDisplayTitle({
+        title: "Causse de la Selle",
+        ride_groups: [{ group_level: "violet" }],
+      })
+    ).toBe("🟣 Violet - Causse de la Selle");
+
+    expect(
+      formatRideDisplayTitle({
+        title: "Pic Saint Loup",
+        ride_groups: [{ group_level: "vert" }],
+      })
+    ).toBe("🟢 Vert - Pic Saint Loup");
+  });
+
+  it("does not prepend single group prefix if multi-group ride", () => {
+    expect(
+      formatRideDisplayTitle({
+        title: "Sortie Club Dimanche",
+        ride_groups: [{ group_level: "vert" }, { group_level: "rouge" }],
+      })
+    ).toBe("Sortie Club Dimanche");
   });
 });

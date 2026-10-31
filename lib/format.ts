@@ -1,10 +1,15 @@
 const DAYS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+const DAYS_ABBR = ["Dim.", "Lun.", "Mar.", "Mer.", "Jeu.", "Ven.", "Sam."];
 const MONTHS = [
   "janvier", "février", "mars", "avril", "mai", "juin",
   "juillet", "août", "septembre", "octobre", "novembre", "décembre",
 ];
 // Abrégés conventionnels français (pas une simple troncature à 3 lettres : "sept", "juil", "juin"…)
 const MONTHS_SHORT = ["janv", "févr", "mars", "avr", "mai", "juin", "juil", "août", "sept", "oct", "nov", "déc"];
+const MONTHS_CAP = [
+  "Janv", "Févr", "Mars", "Avr", "Mai", "Juin",
+  "Juil", "Août", "Sept", "Oct", "Nov", "Déc",
+];
 
 function parseLocalDate(iso: string): Date {
   const [y, m, d] = iso.split("-").map(Number);
@@ -26,6 +31,11 @@ export function fmtDateCompact(iso: string): string {
   const day = DAYS[d.getDay()];
   const capitalizedDay = day.charAt(0).toUpperCase() + day.slice(1, 3) + ".";
   return `${capitalizedDay} ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}.`;
+}
+
+export function fmtDateDimNov(iso: string): string {
+  const d = parseLocalDate(iso);
+  return `${DAYS_ABBR[d.getDay()]} ${d.getDate()} ${MONTHS_CAP[d.getMonth()]}`;
 }
 
 export function fmtTime(hms: string): string {
