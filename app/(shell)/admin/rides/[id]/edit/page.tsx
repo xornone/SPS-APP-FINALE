@@ -12,14 +12,16 @@ export const dynamic = "force-dynamic";
 export default async function EditRidePage({ params }: { params: { id: string } }) {
   const reqHeaders = headers();
   const headerUserId = reqHeaders.get("x-user-id");
+  const headerUserEmail = reqHeaders.get("x-user-email");
 
   const supabase = createClient();
   const userPromise = headerUserId
-    ? Promise.resolve({ id: headerUserId })
-    : supabase.auth.getUser().then(({ data }) => (data.user ? { id: data.user.id } : null));
+    ? Promise.resolve({ id: headerUserId, email: headerUserEmail })
+    : supabase.auth.getUser().then(({ data }) => (data.user ? { id: data.user.id, email: data.user.email } : null));
 
-  const [ride, stravaConnection] = await Promise.all([
+  const [ride, user, stravaConnection] = await Promise.all([
     fetchRide(supabase, params.id),
+    userPromise,
     headerUserId
       ? getMyStravaConnection(headerUserId)
       : userPromise.then((u) => (u ? getMyStravaConnection(u.id) : null)),
@@ -39,7 +41,7 @@ export default async function EditRidePage({ params }: { params: { id: string } 
         <h1 className="truncate font-display text-xl tracking-wide">Modifier la sortie</h1>
       </div>
       <div className="pt-3">
-        <RideForm ride={ride} stravaConnection={stravaConnection} />
+        <RideForm ride={ride} stravaConnection={stravaConnection} currentUserEmail={user?.email} />
       </div>
     </div>
   );

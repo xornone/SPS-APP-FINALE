@@ -1,5 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { getMissingAdminGroups, getRegisteredAdmins, isAdminName } from "@/lib/admins";
+import { isSuperAdmin } from "@/lib/notificationAdmins";
+
+describe("isSuperAdmin", () => {
+  it("autorise uniquement l'email de Thomas Trégaro pour les actions super admin", () => {
+    expect(isSuperAdmin("th.tregaro@gmail.com")).toBe(true);
+    expect(isSuperAdmin("TH.TREGARO@GMAIL.COM")).toBe(true);
+    expect(isSuperAdmin("  th.tregaro@gmail.com  ")).toBe(true);
+    expect(isSuperAdmin("autre@gmail.com")).toBe(false);
+    expect(isSuperAdmin(null)).toBe(false);
+    expect(isSuperAdmin(undefined)).toBe(false);
+  });
+});
 
 describe("isAdminName", () => {
   it("reconnaît un nom d'admin quels que soient la casse et les accents", () => {

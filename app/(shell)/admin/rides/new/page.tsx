@@ -10,14 +10,19 @@ export const dynamic = "force-dynamic";
 export default async function NewRidePage() {
   const reqHeaders = headers();
   const headerUserId = reqHeaders.get("x-user-id");
+  const headerUserEmail = reqHeaders.get("x-user-email");
 
-  const userId =
-    headerUserId ||
-    (await createClient()
-      .auth.getUser()
-      .then(({ data }) => data.user?.id || null));
+  const supabase = createClient();
+  const userPromise = headerUserId
+    ? Promise.resolve({ id: headerUserId, email: headerUserEmail })
+    : supabase.auth.getUser().then(({ data }) => (data.user ? { id: data.user.id, email: data.user.email } : null));
 
-  const stravaConnection = userId ? await getMyStravaConnection(userId) : null;
+  const [user, stravaConnection] = await Promise.all([
+    userPromise,
+    headerUserId
+      ? getMyStravaConnection(headerUserId)
+      : userPromise.then((u) => (u ? getMyStravaConnection(u.id) : null)),
+  ]);
 
   return (
     <div>
@@ -32,7 +37,7 @@ export default async function NewRidePage() {
         <h1 className="font-display text-xl tracking-wide">Nouvelle sortie</h1>
       </div>
       <div className="pt-3">
-        <RideForm stravaConnection={stravaConnection} />
+        <RideForm stravaConnection={stravaConnection} currentUserEmail={user?.email} />
       </div>
     </div>
   );

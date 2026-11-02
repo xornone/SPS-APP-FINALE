@@ -8,7 +8,14 @@
 // section Notifications.
 const NOTIFICATION_ADMIN_EMAILS = ["th.tregaro@gmail.com", "nguyen.huuduc34200@gmail.com"];
 
+export const SUPER_ADMIN_EMAIL = "th.tregaro@gmail.com";
+
 export function isNotificationAdmin(email: string | null | undefined): boolean {
   if (!email) return false;
   return NOTIFICATION_ADMIN_EMAILS.includes(email.trim().toLowerCase());
+}
+
+export function isSuperAdmin(email: string | null | undefined): boolean {
+  if (!email) return false;
+  return email.trim().toLowerCase() === SUPER_ADMIN_EMAIL;
 }

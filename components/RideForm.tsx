@@ -9,6 +9,8 @@ import { describeRideProfile } from "@/lib/rideProfile";
 import type { StravaConnection, StravaRouteSummary } from "@/lib/strava";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import { addMinutesToTimeString, estimateRideDurationMinutes, formatDuration } from "@/lib/weather";
+import { isSuperAdmin } from "@/lib/notificationAdmins";
+import { createClient } from "@/lib/supabase/client";
 import { RideMap } from "./RideMap";
 import { Icon } from "./Icons";
 
@@ -24,12 +26,28 @@ function prependGenerated(current: string, generated: string): string {
 export function RideForm({
   ride,
   stravaConnection = null,
+  currentUserEmail = null,
 }: {
   ride?: Ride;
   stravaConnection?: StravaConnection | null;
+  currentUserEmail?: string | null;
 }) {
   const router = useRouter();
   const fileInput = useRef<HTMLInputElement>(null);
+
+  const [userEmail, setUserEmail] = useState<string>(currentUserEmail || "");
+
+  useEffect(() => {
+    if (!userEmail) {
+      createClient()
+        .auth.getUser()
+        .then(({ data }) => {
+          if (data.user?.email) setUserEmail(data.user.email);
+        });
+    }
+  }, [userEmail]);
+
+  const canSkipNotification = isSuperAdmin(userEmail);
 
   const [title, setTitle] = useState(ride?.title || "");
   const [description, setDescription] = useState(ride?.description || "");
@@ -250,8 +268,8 @@ export function RideForm({
     if (preview) setDescription((prev) => prependGenerated(prev, describeRideProfile(preview)));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(e?: React.FormEvent, options?: { skipNotification?: boolean }) {
+    if (e) e.preventDefault();
     if (!groups.length) {
       setError("Sélectionne au moins un groupe.");
       return;
@@ -262,7 +280,22 @@ export function RideForm({
     setSaving(true);
     setError("");
 
-    const payload = { title, description, ride_date: date, ride_time: time, place, place_url: placeUrl.trim(), distance_km: distance, elevation_gain_m: elevation, strava_url: stravaUrl.trim(), show_safety_notice: showSafetyNotice, groups };
+    const skipNotification = options?.skipNotification === true;
+
+    const payload = {
+      title,
+      description,
+      ride_date: date,
+      ride_time: time,
+      place,
+      place_url: placeUrl.trim(),
+      distance_km: distance,
+      elevation_gain_m: elevation,
+      strava_url: stravaUrl.trim(),
+      show_safety_notice: showSafetyNotice,
+      groups,
+      skip_notification: skipNotification,
+    };
 
     try {
       let rideId = ride?.id;
@@ -698,14 +731,32 @@ export function RideForm({
 
       {error && <p className="px-5 pb-3 text-xs text-red-500">{error}</p>}
 
-      <div className="px-5">
+      <div className="flex flex-col gap-2.5 px-5">
         <button
           type="submit"
           disabled={saving}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-sps-violet500 to-sps-violet700 px-4 py-3.5 text-sm font-extrabold text-white shadow-lg disabled:opacity-60"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-sps-violet500 to-sps-violet700 px-4 py-3.5 text-sm font-extrabold text-white shadow-lg transition hover:brightness-105 active:scale-[0.99] disabled:opacity-60"
         >
           <Icon name="check" size={16} /> {saving ? "Enregistrement…" : ride ? "Enregistrer les modifications" : "Créer la sortie"}
         </button>
+
+        {canSkipNotification && (
+          <button
+            type="button"
+            disabled={saving}
+            onClick={() => handleSubmit(undefined, { skipNotification: true })}
+            className="group flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent px-4 py-3 text-[11.5px] font-black uppercase tracking-wider text-amber-700 shadow-xs transition hover:border-amber-500/60 hover:bg-amber-500/15 active:scale-[0.99] disabled:opacity-50 dark:border-amber-400/30 dark:from-amber-400/15 dark:via-amber-400/5 dark:text-amber-300 dark:hover:border-amber-400/50 dark:hover:bg-amber-400/20 text-center"
+          >
+            <Icon name="bellOff" size={15} className="flex-none text-amber-600 dark:text-amber-400" />
+            <span>
+              {saving
+                ? "Enregistrement sans notification…"
+                : ride
+                ? "Enregistrer les modifications SANS ENVOYER DE NOTIFICATIONS"
+                : "Créer la sortie SANS ENVOYER DE NOTIFICATIONS"}
+            </span>
+          </button>
+        )}
       </div>
 
       <style jsx global>{`

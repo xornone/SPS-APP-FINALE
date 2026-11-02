@@ -16,7 +16,20 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const { supabase } = guard;
 
     const body = await request.json();
-    const { title, description, ride_date, ride_time, place, place_url, distance_km, elevation_gain_m, strava_url, show_safety_notice, groups } = body;
+    const {
+      title,
+      description,
+      ride_date,
+      ride_time,
+      place,
+      place_url,
+      distance_km,
+      elevation_gain_m,
+      strava_url,
+      show_safety_notice,
+      groups,
+      skip_notification,
+    } = body;
 
     const { error } = await supabase
       .from("rides")
@@ -56,15 +69,17 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     revalidatePath(`/rides/${params.id}`);
 
     // Best-effort, comme a la creation : ne doit jamais faire echouer la
-    // modification de la sortie.
-    try {
-      await sendPushToAll({
-        title: "Sortie modifiée",
-        body: title ? `${title} a été mise à jour.` : "Une sortie a été mise à jour.",
-        url: `/rides/${params.id}`,
-      });
-    } catch (pushErr) {
-      console.error("[push] echec de notification (sortie modifiee) :", pushErr);
+    // modification de la sortie. Sauf si le bouton discret (sans notification) a été choisi.
+    if (!skip_notification) {
+      try {
+        await sendPushToAll({
+          title: "Sortie modifiée",
+          body: title ? `${title} a été mise à jour.` : "Une sortie a été mise à jour.",
+          url: `/rides/${params.id}`,
+        });
+      } catch (pushErr) {
+        console.error("[push] echec de notification (sortie modifiee) :", pushErr);
+      }
     }
 
     return NextResponse.json({ ok: true });

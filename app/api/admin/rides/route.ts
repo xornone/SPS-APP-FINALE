@@ -17,7 +17,20 @@ export async function POST(request: Request) {
     const { supabase, user } = guard;
 
     const body = await request.json();
-    const { title, description, ride_date, ride_time, place, place_url, distance_km, elevation_gain_m, strava_url, show_safety_notice, groups } = body;
+    const {
+      title,
+      description,
+      ride_date,
+      ride_time,
+      place,
+      place_url,
+      distance_km,
+      elevation_gain_m,
+      strava_url,
+      show_safety_notice,
+      groups,
+      skip_notification,
+    } = body;
 
     if (!title || !ride_date || !ride_time || !place || !groups?.length) {
       return NextResponse.json({ error: "Champs obligatoires manquants." }, { status: 400 });
@@ -58,15 +71,17 @@ export async function POST(request: Request) {
     revalidatePath("/home");
 
     // Best-effort : une erreur d'envoi (cles VAPID absentes, abonnes
-    // perimes...) ne doit jamais faire echouer la creation de la sortie.
-    try {
-      await sendPushToAll({
-        title: "Nouvelle sortie",
-        body: `${ride.title} — ${fmtDateShort(ride.ride_date)} à ${fmtTime(ride.ride_time)}`,
-        url: `/rides/${ride.id}`,
-      });
-    } catch (pushErr) {
-      console.error("[push] echec de notification (nouvelle sortie) :", pushErr);
+    // perimes...) ne doit jamais faire echouer la creation de la sortie. Sauf si skip_notification est demandé.
+    if (!skip_notification) {
+      try {
+        await sendPushToAll({
+          title: "Nouvelle sortie",
+          body: `${ride.title} — ${fmtDateShort(ride.ride_date)} à ${fmtTime(ride.ride_time)}`,
+          url: `/rides/${ride.id}`,
+        });
+      } catch (pushErr) {
+        console.error("[push] echec de notification (nouvelle sortie) :", pushErr);
+      }
     }
 
     return NextResponse.json({ ride });

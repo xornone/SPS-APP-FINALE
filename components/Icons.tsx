@@ -5,6 +5,7 @@ const PATHS: Record<string, string> = {
   user: '<circle cx="12" cy="8.2" r="3.6"/><path d="M4.5 20c1.4-4.1 4.2-6.1 7.5-6.1s6.1 2 7.5 6.1"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M12 3.2v2.3M12 18.5v2.3M20.8 12h-2.3M5.5 12H3.2M18.1 5.9l-1.6 1.6M7.5 16.5l-1.6 1.6M18.1 18.1l-1.6-1.6M7.5 7.5 5.9 5.9" stroke-linecap="round"/>',
   bell: '<path d="M6.2 9.2a5.8 5.8 0 1 1 11.6 0c0 4.2 1.4 5.6 1.4 5.6H4.8s1.4-1.4 1.4-5.6Z" stroke-linejoin="round"/><path d="M9.6 17.4a2.4 2.4 0 0 0 4.8 0"/>',
+  bellOff: '<path d="M8.7 3A6 6 0 0 1 18 8a21.3 21.3 0 0 0 .6 5M17 17H3s1.4-1.4 1.4-5.6c0-.8.1-1.6.4-2.4M1 1l22 22M10.3 21a2 2 0 0 0 3.4 0" stroke-linecap="round" stroke-linejoin="round"/>',
   chevL: '<path d="M15 5 8 12l7 7" stroke-linecap="round" stroke-linejoin="round"/>',
   chevR: '<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>',
   download: '<path d="M12 4v11" stroke-linecap="round"/><path d="M8 11.5 12 15.5 16 11.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 18.5h13" stroke-linecap="round"/>',
