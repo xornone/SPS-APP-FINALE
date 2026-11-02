@@ -7,16 +7,31 @@ const GROUP_PREFIX: Record<GroupLevel, string> = {
 };
 
 /**
- * Détecte si une sortie est explicitement identifiée à un groupe d'après son titre.
- * Règle : le texte du titre prévaut strictement sur toute autre information ou émoji.
- * Si le texte ne mentionne aucun groupe, aucune teinte n'est appliquée.
+ * Détecte si une sortie est explicitement identifiée à un groupe d'après ses groupes configurés ou son titre.
+ * Règle :
+ * 1. Priorité au groupe configuré sur la sortie (ride_groups) lorsqu'un seul groupe est sélectionné (rouge, vert ou violet).
+ * 2. Si non renseigné ou plusieurs groupes sélectionnés, détection via le texte écrit dans le titre (ex : "Groupe Rouge").
+ * 3. Enfin, détection via l'émoji dans le titre (ex : "🔴").
  */
 export function detectRideGroup(
-  ride: Pick<Ride, "title"> & { ride_groups?: { group_level: GroupLevel }[] }
+  ride: Pick<Ride, "title"> & {
+    ride_groups?: { group_level: GroupLevel }[];
+    groups?: GroupLevel[];
+  }
 ): GroupLevel | null {
+  // 1. Groupe configuré directement sur la sortie (ride_groups ou groups)
+  const groupsList: GroupLevel[] = (ride.ride_groups || [])
+    .map((g) => g.group_level)
+    .concat(ride.groups || []);
+
+  const uniqueGroups = Array.from(new Set(groupsList));
+  if (uniqueGroups.length === 1) {
+    return uniqueGroups[0];
+  }
+
   const title = (ride.title || "").toLowerCase();
 
-  // 1. Priorité absolue : le texte écrit dans le titre
+  // 2. Texte écrit dans le titre
   const textRouge = /\b(groupe\s+)?rouge(?:s)?\b/i.test(title);
   const textVert = /\b(groupe\s+)?vert(?:e)?s?\b/i.test(title);
   const textViolet = /\b(groupe\s+)?violet(?:te)?s?\b/i.test(title);
@@ -33,7 +48,7 @@ export function detectRideGroup(
     return null;
   }
 
-  // 2. Secondaire : émoji dans le titre uniquement si aucun texte contradictoire
+  // 3. Secondaire : émoji dans le titre uniquement si aucun texte contradictoire
   const emojiRouge = ride.title.includes("🔴");
   const emojiVert = ride.title.includes("🟢");
   const emojiViolet = ride.title.includes("🟣");
@@ -45,7 +60,6 @@ export function detectRideGroup(
     if (emojiViolet) return "violet";
   }
 
-  // Le texte n'identifie aucun groupe -> pas de teinte
   return null;
 }
 

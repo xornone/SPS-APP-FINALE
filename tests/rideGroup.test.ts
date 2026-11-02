@@ -39,13 +39,25 @@ describe("detectRideGroup", () => {
     expect(detectRideGroup({ title: "Sortie Rouge & Vert" })).toBeNull();
   });
 
-  it("does not tint generic titles even if a single ride_group is in DB (text must prevail)", () => {
+  it("detects group directly from ride_groups when a single group is chosen (no need to write in title)", () => {
     expect(
       detectRideGroup({
         title: "Reconnaissance parcours",
         ride_groups: [{ group_level: "vert" }],
       })
-    ).toBeNull();
+    ).toBe("vert");
+    expect(
+      detectRideGroup({
+        title: "Pic Saint-Loup dimanche",
+        ride_groups: [{ group_level: "rouge" }],
+      })
+    ).toBe("rouge");
+    expect(
+      detectRideGroup({
+        title: "Causse de la Selle",
+        ride_groups: [{ group_level: "violet" }],
+      })
+    ).toBe("violet");
     expect(
       detectRideGroup({
         title: "Sortie Club Dimanche",
