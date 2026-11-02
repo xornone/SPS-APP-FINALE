@@ -4,7 +4,7 @@ import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { Icon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MemberAssiduityRanking } from "@/components/MemberAssiduityRanking";
-import { buildAssiduityRankingFromParticipations } from "@/lib/assiduity";
+import { buildAssiduityRankingFromParticipations, normalizeMemberName } from "@/lib/assiduity";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 
@@ -40,6 +40,30 @@ export default async function ClassementPage() {
   const groupCounts: Record<GroupLevel, number> = { vert: 0, rouge: 0, violet: 0 };
   participations.forEach((p) => groupCounts[p.group_level]++);
   const totalGroupCounts = participations.length;
+
+  // Statistiques de participants uniques par groupe de niveau
+  const uniqueParticipantsByGroup: Record<GroupLevel, number> = {
+    vert: new Set(participations.filter((p) => p.group_level === "vert").map((p) => normalizeMemberName(p.participant_name))).size,
+    rouge: new Set(participations.filter((p) => p.group_level === "rouge").map((p) => normalizeMemberName(p.participant_name))).size,
+    violet: new Set(participations.filter((p) => p.group_level === "violet").map((p) => normalizeMemberName(p.participant_name))).size,
+  };
+  const totalUniqueParticipants = new Set(
+    participations.map((p) => normalizeMemberName(p.participant_name))
+  ).size;
+
+  // Nombre de sorties ayant proposé chaque groupe
+  const ridesOfferingGroup: Record<GroupLevel, number> = { vert: 0, rouge: 0, violet: 0 };
+  rides.forEach((r) => {
+    const list = (r.ride_groups || []).map((g) => g.group_level);
+    (["vert", "rouge", "violet"] as GroupLevel[]).forEach((g) => {
+      if (list.includes(g)) ridesOfferingGroup[g]++;
+    });
+  });
+  const avgParticipantsByGroup: Record<GroupLevel, number> = {
+    vert: ridesOfferingGroup.vert > 0 ? groupCounts.vert / ridesOfferingGroup.vert : 0,
+    rouge: ridesOfferingGroup.rouge > 0 ? groupCounts.rouge / ridesOfferingGroup.rouge : 0,
+    violet: ridesOfferingGroup.violet > 0 ? groupCounts.violet / ridesOfferingGroup.violet : 0,
+  };
 
   // Records du club : sortie la plus longue, plus gros denivele, la plus
   // suivie — des records de sorties, jamais de membres.
@@ -174,49 +198,105 @@ export default async function ClassementPage() {
         </div>
       </section>
 
-      {/* Pelotons Distribution */}
+      {/* Pelotons Distribution & Participants par groupe */}
       <section className="px-5">
         <div className="rounded-[28px] border border-neutral-200/90 bg-white p-5 shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
-          <h2 className="mb-4 font-display text-xl uppercase tracking-wide text-neutral-950 dark:text-white font-black">
-            Répartition par groupe
-          </h2>
-
-          {totalGroupCounts === 0 ? (
-            <p className="py-2 text-center text-sm text-neutral-400 dark:text-white/40">Pas encore d&apos;inscriptions.</p>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {(["vert", "rouge", "violet"] as GroupLevel[]).map((g) => {
-                const count = groupCounts[g];
-                const pct = Math.round((count / totalGroupCounts) * 100);
-                return (
-                  <div key={g} className="flex flex-col gap-1.5">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="flex items-center gap-2 font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-                        <span
-                          className="h-2.5 w-2.5 rounded-full shadow-xs"
-                          style={{ color: GROUP_INFO[g].hex, backgroundColor: GROUP_INFO[g].hex }}
-                        />
-                        {GROUP_INFO[g].label}
-                      </span>
-                      <span className="font-extrabold text-neutral-600 dark:text-white/70">
-                        {pct}% · {count} participation{count > 1 ? "s" : ""}
-                      </span>
-                    </div>
-                    <div className="h-2.5 overflow-hidden rounded-full bg-neutral-100 p-0.5 dark:bg-white/[0.06]">
-                      <div
-                        className="h-full rounded-full transition-all duration-500"
-                        style={{
-                          width: `${count > 0 ? Math.max(3, pct) : 0}%`,
-                          backgroundColor: GROUP_INFO[g].hex,
-                          boxShadow: `0 0 10px ${GROUP_INFO[g].hex}80`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-xl uppercase tracking-wide text-neutral-950 dark:text-white font-black">
+                Participants par groupe
+              </h2>
+              <span className="text-[11px] font-semibold text-neutral-500 dark:text-white/50">
+                Membres uniques et moyennes par allure
+              </span>
             </div>
-          )}
+            <span className="text-[11px] font-black uppercase tracking-wider text-neutral-500 dark:text-violet-300/60">
+              {totalUniqueParticipants} membres uniques
+            </span>
+          </div>
+
+          {/* 3 Cartes Bento pour les participants uniques par groupe */}
+          <div className="grid grid-cols-3 gap-2.5 mb-5">
+            {(["vert", "rouge", "violet"] as GroupLevel[]).map((g) => {
+              const info = GROUP_INFO[g];
+              const uniqueCount = uniqueParticipantsByGroup[g];
+              const avg = avgParticipantsByGroup[g];
+              return (
+                <div
+                  key={g}
+                  className="relative flex flex-col items-center justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-3 text-center dark:border-white/10 dark:bg-white/[0.03]"
+                >
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 opacity-10 dark:opacity-20"
+                    style={{ background: `radial-gradient(circle at top, ${info.hex}, transparent 70%)` }}
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: info.hex }} />
+                    <span className="text-[11.5px] font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                      {info.label}
+                    </span>
+                  </div>
+
+                  <div className="my-1.5">
+                    <span className="font-display text-2xl font-black text-neutral-950 dark:text-white">
+                      {uniqueCount}
+                    </span>
+                    <span className="block text-[9.5px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                      participants
+                    </span>
+                  </div>
+
+                  <div className="border-t border-black/[0.06] pt-1.5 w-full dark:border-white/[0.08] text-[10.5px] font-extrabold text-neutral-500 dark:text-white/60">
+                    <span>~{avg > 0 ? avg.toFixed(1).replace(".", ",") : "0"} / sortie</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Volume total des participations */}
+          <div className="border-t border-neutral-100 pt-4 dark:border-white/[0.06]">
+            <h3 className="mb-3 text-[11px] font-black uppercase tracking-wider text-neutral-500 dark:text-violet-300/70">
+              Volume total des participations ({totalGroupCounts})
+            </h3>
+            {totalGroupCounts === 0 ? (
+              <p className="py-2 text-center text-sm text-neutral-400 dark:text-white/40">Pas encore d&apos;inscriptions.</p>
+            ) : (
+              <div className="flex flex-col gap-3.5">
+                {(["vert", "rouge", "violet"] as GroupLevel[]).map((g) => {
+                  const count = groupCounts[g];
+                  const pct = Math.round((count / totalGroupCounts) * 100);
+                  return (
+                    <div key={g} className="flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-2 font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full shadow-xs"
+                            style={{ color: GROUP_INFO[g].hex, backgroundColor: GROUP_INFO[g].hex }}
+                          />
+                          {GROUP_INFO[g].label}
+                        </span>
+                        <span className="font-extrabold text-neutral-600 dark:text-white/70">
+                          {pct}% · {count} participation{count > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-neutral-100 p-0.5 dark:bg-white/[0.06]">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${count > 0 ? Math.max(3, pct) : 0}%`,
+                            backgroundColor: GROUP_INFO[g].hex,
+                            boxShadow: `0 0 10px ${GROUP_INFO[g].hex}80`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
