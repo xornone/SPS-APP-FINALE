@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { BAKERIES_STORAGE_KEY, extractBakeryFromDescription, updateBakeryInDescription } from "@/lib/bakery";
 import { googleMapsLinkForPoint, isGpxGeneratedMapsLink, parseGpx, type ParsedGpx } from "@/lib/gpx";
 import { isKnownPlaceUrl, lookupPlaceUrl } from "@/lib/knownPlaces";
 import { describeRideProfile } from "@/lib/rideProfile";
@@ -50,6 +51,75 @@ export function RideForm({
   );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const [savedBakeries, setSavedBakeries] = useState<string[]>([]);
+  const [selectedBakery, setSelectedBakery] = useState<string>(() => {
+    return extractBakeryFromDescription(ride?.description || "") || "";
+  });
+  const [isAddingBakery, setIsAddingBakery] = useState(false);
+  const [newBakeryInput, setNewBakeryInput] = useState("");
+
+  // Charge et mémorise la liste des boulangeries depuis le localStorage
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(BAKERIES_STORAGE_KEY);
+      let list: string[] = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(list)) list = [];
+
+      const fromDesc = extractBakeryFromDescription(ride?.description || "");
+      if (fromDesc) {
+        setSelectedBakery(fromDesc);
+        if (!list.includes(fromDesc)) {
+          list = [...list, fromDesc].sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+          try {
+            localStorage.setItem(BAKERIES_STORAGE_KEY, JSON.stringify(list));
+          } catch {}
+        }
+      }
+      setSavedBakeries(list);
+    } catch {}
+  }, [ride?.description]);
+
+  function saveBakeryToList(name: string) {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setSavedBakeries((prev) => {
+      if (prev.includes(trimmed)) return prev;
+      const next = [...prev, trimmed].sort((a, b) => a.localeCompare(b, "fr", { sensitivity: "base" }));
+      try {
+        localStorage.setItem(BAKERIES_STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }
+
+  function removeBakeryFromList(name: string) {
+    if (!confirm(`Supprimer « ${name} » de la liste des boulangeries mémorisées ?`)) return;
+    setSavedBakeries((prev) => {
+      const next = prev.filter((b) => b !== name);
+      try {
+        localStorage.setItem(BAKERIES_STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+    if (selectedBakery === name) {
+      handleBakeryChange("");
+    }
+  }
+
+  function handleBakeryChange(value: string) {
+    setSelectedBakery(value);
+    setDescription((prev) => updateBakeryInDescription(prev, value));
+  }
+
+  function handleAddNewBakery() {
+    const trimmed = newBakeryInput.trim();
+    if (!trimmed) return;
+    saveBakeryToList(trimmed);
+    handleBakeryChange(trimmed);
+    setIsAddingBakery(false);
+    setNewBakeryInput("");
+  }
 
   const [stravaImporting, setStravaImporting] = useState(false);
   const [stravaImportError, setStravaImportError] = useState("");
@@ -186,6 +256,9 @@ export function RideForm({
       setError("Sélectionne au moins un groupe.");
       return;
     }
+    if (selectedBakery.trim()) {
+      saveBakeryToList(selectedBakery);
+    }
     setSaving(true);
     setError("");
 
@@ -262,7 +335,18 @@ export function RideForm({
         </div>
         <textarea
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(e) => {
+            const nextDesc = e.target.value;
+            setDescription(nextDesc);
+            const found = extractBakeryFromDescription(nextDesc);
+            if (found !== null) {
+              if (found !== selectedBakery) {
+                setSelectedBakery(found);
+              }
+            } else if (selectedBakery) {
+              setSelectedBakery("");
+            }
+          }}
           placeholder="Présentez la sortie, les difficultés, le point de rendez-vous…"
           rows={4}
           className="input resize-y"
@@ -392,6 +476,137 @@ export function RideForm({
         <Field label="D+ (m)" bare>
           <input required type="number" value={elevation} onChange={(e) => setElevation(e.target.value)} className="input" />
         </Field>
+      </div>
+
+      <div className="px-5 pb-3.5">
+        <div className="mb-1.5 flex items-center justify-between">
+          <label className="block text-[12px] font-extrabold uppercase tracking-wide text-black/45 dark:text-white/45">
+            Arrêt boulangerie (optionnel)
+          </label>
+          {savedBakeries.length > 0 && !isAddingBakery && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsAddingBakery(true);
+                setNewBakeryInput("");
+              }}
+              className="text-[11px] font-bold text-sps-violet600 dark:text-sps-violet400"
+            >
+              + Nouvelle boulangerie
+            </button>
+          )}
+        </div>
+
+        {savedBakeries.length === 0 ? (
+          <div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={selectedBakery}
+                onChange={(e) => handleBakeryChange(e.target.value)}
+                onBlur={() => {
+                  if (selectedBakery.trim()) saveBakeryToList(selectedBakery);
+                }}
+                placeholder="Ex : Boulangerie des Matelles, Le Fournil du Pic…"
+                className="input"
+              />
+              {selectedBakery.trim() && (
+                <button
+                  type="button"
+                  onClick={() => saveBakeryToList(selectedBakery)}
+                  className="flex-none rounded-xl bg-sps-violet600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-sps-violet700 dark:bg-sps-violet500"
+                >
+                  Enregistrer
+                </button>
+              )}
+            </div>
+            <p className="mt-1.5 text-[11px] text-black/40 dark:text-white/40">
+              Saisis le nom d’une boulangerie : elle sera automatiquement enregistrée dans la liste déroulante pour les prochaines sorties.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <select
+                value={isAddingBakery ? "__NEW__" : selectedBakery}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "__NEW__") {
+                    setIsAddingBakery(true);
+                    setNewBakeryInput("");
+                  } else {
+                    setIsAddingBakery(false);
+                    handleBakeryChange(val);
+                  }
+                }}
+                className="input flex-1 py-3 text-[13.5px]"
+              >
+                <option value="">-- Aucun arrêt boulangerie --</option>
+                {savedBakeries.map((b) => (
+                  <option key={b} value={b}>
+                    🥐 {b}
+                  </option>
+                ))}
+                <option value="__NEW__">➕ Ajouter une nouvelle boulangerie…</option>
+              </select>
+              {selectedBakery && !isAddingBakery && (
+                <button
+                  type="button"
+                  onClick={() => removeBakeryFromList(selectedBakery)}
+                  title="Supprimer cette boulangerie de la liste mémorisée"
+                  className="flex h-[45px] w-[45px] flex-none items-center justify-center rounded-xl border border-black/10 text-black/40 transition hover:border-red-300 hover:text-red-500 dark:border-white/10 dark:text-white/40 dark:hover:border-red-500/50 dark:hover:text-red-400"
+                >
+                  <Icon name="trash" size={16} />
+                </button>
+              )}
+            </div>
+
+            {isAddingBakery && (
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  autoFocus
+                  value={newBakeryInput}
+                  onChange={(e) => setNewBakeryInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddNewBakery();
+                    } else if (e.key === "Escape") {
+                      setIsAddingBakery(false);
+                    }
+                  }}
+                  placeholder="Nom de la boulangerie (ex : Fournil de Castries)"
+                  className="input flex-1"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddNewBakery}
+                  disabled={!newBakeryInput.trim()}
+                  className="flex-none rounded-xl bg-sps-violet600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-sps-violet700 disabled:opacity-50 dark:bg-sps-violet500"
+                >
+                  Ajouter
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsAddingBakery(false)}
+                  className="flex-none rounded-xl border border-black/15 px-3 py-2 text-xs font-bold text-black/60 hover:bg-black/5 dark:border-white/15 dark:text-white/60 dark:hover:bg-white/5"
+                >
+                  Annuler
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {selectedBakery && (
+          <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+            <Icon name="check" size={12} />
+            <span>
+              Ajouté à la description : <strong>🥐 Arrêt ravito : {selectedBakery}</strong>
+            </span>
+          </p>
+        )}
       </div>
 
       <div className="px-5 pb-3.5">
