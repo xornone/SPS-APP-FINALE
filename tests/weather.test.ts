@@ -23,8 +23,10 @@ describe("estimateRideDurationMinutes", () => {
 
   it("estime une durée plus courte pour le groupe violet à distance égale", () => {
     const durationVert = estimateRideDurationMinutes(80, 500, ["vert"]);
+    const durationRouge = estimateRideDurationMinutes(80, 500, ["rouge"]);
     const durationViolet = estimateRideDurationMinutes(80, 500, ["violet"]);
-    expect(durationViolet).toBeLessThan(durationVert);
+    expect(durationViolet).toBeLessThan(durationRouge);
+    expect(durationRouge).toBeLessThan(durationVert);
   });
 
   it("utilise une valeur de repli si la distance est nulle ou absente", () => {

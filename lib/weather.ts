@@ -65,13 +65,25 @@ export function estimateRideDurationMinutes(
 ): number {
   if (!distanceKm || distanceKm <= 0) return 120; // 2h par défaut
 
-  // Vitesses moyennes indicatives par groupe SPS
-  const groupSpeeds: Record<GroupLevel, number> = { vert: 25, rouge: 27, violet: 29.5 };
-  let speed = 26;
+  // Vitesses moyennes constatées par groupe SPS (affinées selon les retours terrain : Violet ~30 km/h, Rouge ~28.5 km/h, Vert ~26 km/h)
+  const groupSpeeds: Record<GroupLevel, number> = { vert: 26, rouge: 28.5, violet: 30 };
+  let speed = 28;
   if (groups && groups.length > 0) {
     const validSpeeds = groups.map((g) => groupSpeeds[g]).filter(Boolean);
     if (validSpeeds.length > 0) {
       speed = validSpeeds.reduce((a, b) => a + b, 0) / validSpeeds.length;
+    }
+  }
+
+  // Léger ajustement selon le relief si renseigné (base normale club ~10 m de D+ par km)
+  if (elevationGainM && elevationGainM > 0 && distanceKm > 0) {
+    const mPerKm = elevationGainM / distanceKm;
+    if (mPerKm > 12) {
+      const drop = Math.min(2.5, (mPerKm - 12) * 0.25);
+      speed = Math.max(18, speed - drop);
+    } else if (mPerKm < 6) {
+      const boost = Math.min(1.5, (6 - mPerKm) * 0.2);
+      speed = speed + boost;
     }
   }
 
