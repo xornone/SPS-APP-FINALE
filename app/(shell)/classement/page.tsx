@@ -7,6 +7,7 @@ import { MemberAssiduityRanking } from "@/components/MemberAssiduityRanking";
 import { buildAssiduityRankingFromParticipations, normalizeMemberName } from "@/lib/assiduity";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
+import { detectRideGroup } from "@/lib/rideGroup";
 
 // Page volontairement collective : aucun classement nominatif des membres,
 // uniquement des chiffres qui mettent en avant le club dans son ensemble.
@@ -81,15 +82,34 @@ export default async function ClassementPage() {
   }, null);
   const mostAttendedCount = mostAttendedRide ? participantCountByRide.get(mostAttendedRide.id) || 0 : 0;
 
-  // Sorties proposees par le club, par annee (toutes les sorties creees,
-  // passees comme a venir).
-  const perYear = new Map<number, number>();
+  // Sorties proposees par le club, par annee et par groupe de niveau
+  interface YearStats {
+    total: number;
+    vert: number;
+    rouge: number;
+    violet: number;
+  }
+  const perYear = new Map<number, YearStats>();
   rides.forEach((r) => {
     const year = Number(r.ride_date.slice(0, 4));
-    if (!Number.isNaN(year)) perYear.set(year, (perYear.get(year) || 0) + 1);
+    if (!Number.isNaN(year)) {
+      if (!perYear.has(year)) {
+        perYear.set(year, { total: 0, vert: 0, rouge: 0, violet: 0 });
+      }
+      const entry = perYear.get(year)!;
+      entry.total++;
+      let effective = (r.ride_groups || []).map((g) => g.group_level);
+      if (effective.length === 0) {
+        const detected = detectRideGroup(r);
+        if (detected) effective = [detected];
+      }
+      if (effective.includes("vert")) entry.vert++;
+      if (effective.includes("rouge")) entry.rouge++;
+      if (effective.includes("violet")) entry.violet++;
+    }
   });
   const yearRows = Array.from(perYear.entries()).sort((a, b) => b[0] - a[0]);
-  const maxYearCount = Math.max(...yearRows.map(([, c]) => c), 1);
+  const maxYearTotal = Math.max(...yearRows.map(([, s]) => s.total), 1);
 
   // Activite club (km cumules, tous participants, 6 derniers mois)
   const now = new Date();
@@ -340,28 +360,98 @@ export default async function ClassementPage() {
       {/* Rides by year */}
       <section className="px-5">
         <div className="rounded-[28px] border border-neutral-200/90 bg-white p-5 shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/80">
-          <h2 className="mb-3 font-display text-xl uppercase tracking-wide text-neutral-950 dark:text-white font-black">
-            Sorties par année
-          </h2>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="font-display text-xl uppercase tracking-wide text-neutral-950 dark:text-white font-black">
+                Sorties par année
+              </h2>
+              <span className="text-[11px] font-semibold text-neutral-500 dark:text-white/50">
+                Historique des sorties proposées par groupe de niveau
+              </span>
+            </div>
+          </div>
 
           {yearRows.length === 0 ? (
             <p className="p-4 text-center text-sm text-neutral-400 dark:text-white/40">Aucune sortie proposée pour le moment.</p>
           ) : (
             <div className="flex flex-col divide-y divide-neutral-200/80 dark:divide-white/[0.06]">
-              {yearRows.map(([year, count]) => (
-                <div key={year} className="flex items-center gap-3 py-3 first:pt-1 last:pb-1">
-                  <span className="w-12 font-display text-base font-black text-neutral-950 dark:text-white">{year}</span>
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100 dark:bg-white/[0.06]">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF]"
-                      style={{ width: `${Math.max(6, (count / maxYearCount) * 100)}%` }}
-                    />
+              {yearRows.map(([year, stats]) => {
+                const sumGroups = stats.vert + stats.rouge + stats.violet;
+                return (
+                  <div key={year} className="flex flex-col gap-2.5 py-4 first:pt-1 last:pb-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-display text-lg font-black text-neutral-950 dark:text-white">{year}</span>
+                      <span className="text-xs font-black text-neutral-700 dark:text-white/80">
+                        {stats.total} sortie{stats.total > 1 ? "s" : ""} au total
+                      </span>
+                    </div>
+
+                    {/* Barre segmentée aux couleurs des groupes */}
+                    <div className="flex h-2.5 w-full overflow-hidden rounded-full bg-neutral-100 p-0.5 dark:bg-white/[0.06]">
+                      <div
+                        className="flex h-full overflow-hidden rounded-full transition-all duration-500"
+                        style={{ width: `${Math.max(8, (stats.total / maxYearTotal) * 100)}%` }}
+                      >
+                        {sumGroups > 0 ? (
+                          <>
+                            {stats.vert > 0 && (
+                              <div
+                                style={{
+                                  width: `${(stats.vert / sumGroups) * 100}%`,
+                                  backgroundColor: GROUP_INFO.vert.hex,
+                                }}
+                                title={`Vert : ${stats.vert} sorties`}
+                              />
+                            )}
+                            {stats.rouge > 0 && (
+                              <div
+                                style={{
+                                  width: `${(stats.rouge / sumGroups) * 100}%`,
+                                  backgroundColor: GROUP_INFO.rouge.hex,
+                                }}
+                                title={`Rouge : ${stats.rouge} sorties`}
+                              />
+                            )}
+                            {stats.violet > 0 && (
+                              <div
+                                style={{
+                                  width: `${(stats.violet / sumGroups) * 100}%`,
+                                  backgroundColor: GROUP_INFO.violet.hex,
+                                }}
+                                title={`Violet : ${stats.violet} sorties`}
+                              />
+                            )}
+                          </>
+                        ) : (
+                          <div className="w-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF]" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Détail par groupe de niveau pour l'année */}
+                    <div className="flex flex-wrap items-center gap-3 pt-0.5 text-xs font-bold text-neutral-600 dark:text-white/70">
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: GROUP_INFO.vert.hex }} />
+                        <span>
+                          {stats.vert} <strong className="font-extrabold text-neutral-900 dark:text-white">Vert</strong>
+                        </span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: GROUP_INFO.rouge.hex }} />
+                        <span>
+                          {stats.rouge} <strong className="font-extrabold text-neutral-900 dark:text-white">Rouge</strong>
+                        </span>
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: GROUP_INFO.violet.hex }} />
+                        <span>
+                          {stats.violet} <strong className="font-extrabold text-neutral-900 dark:text-white">Violet</strong>
+                        </span>
+                      </span>
+                    </div>
                   </div>
-                  <span className="w-24 text-right text-xs font-bold text-neutral-600 dark:text-white/60">
-                    {count} sortie{count > 1 ? "s" : ""}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
