@@ -7,6 +7,7 @@ import { isKnownPlaceUrl, lookupPlaceUrl } from "@/lib/knownPlaces";
 import { describeRideProfile } from "@/lib/rideProfile";
 import type { StravaConnection, StravaRouteSummary } from "@/lib/strava";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
+import { addMinutesToTimeString, estimateRideDurationMinutes, formatDuration } from "@/lib/weather";
 import { RideMap } from "./RideMap";
 import { Icon } from "./Icons";
 
@@ -225,6 +226,14 @@ export function RideForm({
     }
   }
 
+  // Estimation dynamique de la durée et de l'heure d'arrivée selon le GPX, la distance et les groupes
+  const distNum = parseFloat(distance) || (preview?.distanceKm ?? 0);
+  const eleNum = parseFloat(elevation) || (preview?.elevationGainM ?? 0);
+  const durationMin = distNum > 0 ? estimateRideDurationMinutes(distNum, eleNum, groups) : 0;
+  const durationFormatted = durationMin > 0 ? formatDuration(durationMin) : null;
+  const departureTime = time ? time.slice(0, 5) : null;
+  const arrivalTime = departureTime && durationMin > 0 ? addMinutesToTimeString(departureTime, durationMin) : null;
+
   return (
     <form onSubmit={handleSubmit} className="pb-8">
       <Field label="Titre de la sortie">
@@ -286,6 +295,22 @@ export function RideForm({
           <input required type="time" value={time} onChange={(e) => setTime(e.target.value)} className="input" />
         </Field>
       </div>
+      {durationFormatted && (
+        <div className="mx-5 -mt-1.5 mb-3.5 flex items-center gap-2 rounded-xl border border-violet-200/90 bg-violet-50/70 px-3 py-2 text-xs text-neutral-800 dark:border-white/10 dark:bg-white/[0.04] dark:text-violet-200">
+          <Icon name="target" size={14} className="text-sps-violet600 dark:text-[#AA26FF] flex-shrink-0" />
+          <span>
+            {departureTime && arrivalTime ? (
+              <>
+                Temps estimé : <strong className="font-extrabold text-neutral-950 dark:text-white">{departureTime} → ~{arrivalTime}</strong> ({durationFormatted})
+              </>
+            ) : (
+              <>
+                Durée estimée : <strong className="font-extrabold text-neutral-950 dark:text-white">~{durationFormatted}</strong> (renseigne l&apos;heure de départ pour voir l&apos;arrivée)
+              </>
+            )}
+          </span>
+        </div>
+      )}
       <Field label="Lieu de départ">
         <input
           required
@@ -416,8 +441,57 @@ export function RideForm({
       </div>
 
       {preview && (
-        <div className="mx-5 mb-4 h-[150px] overflow-hidden rounded-2xl border border-black/[0.06] dark:border-white/10">
-          <RideMap points={preview.points} className="h-full w-full" />
+        <div className="mx-5 mb-4 overflow-hidden rounded-2xl border border-black/[0.08] bg-white shadow-xs dark:border-white/10 dark:bg-[#130B22]/80">
+          <div className="h-[150px] w-full">
+            <RideMap points={preview.points} className="h-full w-full" />
+          </div>
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-black/[0.06] bg-neutral-50/80 px-3.5 py-2.5 text-xs dark:border-white/[0.08] dark:bg-white/[0.02]">
+            <div className="flex items-center gap-1.5 font-bold text-neutral-800 dark:text-white">
+              <Icon name="target" size={14} className="text-sps-violet600 dark:text-[#AA26FF] flex-shrink-0" />
+              {departureTime && arrivalTime ? (
+                <span>
+                  {departureTime} → ~{arrivalTime} ({durationFormatted})
+                </span>
+              ) : durationFormatted ? (
+                <span>Durée estimée : ~{durationFormatted}</span>
+              ) : (
+                <span>Parcours importé</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-[11px] font-extrabold text-neutral-500 dark:text-white/60">
+              <span>{Math.round(distNum)} km</span>
+              <span>·</span>
+              <span>{Math.round(eleNum)} m D+</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {distNum > 0 && (
+        <div className="mx-5 mb-3.5 flex items-center justify-between rounded-2xl border border-violet-200/90 bg-violet-50/70 p-3 text-xs dark:border-white/10 dark:bg-white/[0.04]">
+          <div className="flex items-center gap-2">
+            <Icon name="target" size={15} className="text-sps-violet600 dark:text-[#AA26FF] flex-shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 dark:text-violet-300/70">
+                Temps estimé sur la sortie
+              </span>
+              <span className="font-extrabold text-neutral-950 dark:text-white">
+                {departureTime && arrivalTime
+                  ? `${departureTime} → ~${arrivalTime} (${durationFormatted})`
+                  : durationFormatted
+                    ? `~${durationFormatted}`
+                    : "—"}
+              </span>
+            </div>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-neutral-500 dark:text-violet-300/70">
+              Distance & D+
+            </span>
+            <span className="block font-extrabold text-neutral-950 dark:text-white">
+              {Math.round(distNum)} km · {Math.round(eleNum)} m
+            </span>
+          </div>
         </div>
       )}
 
