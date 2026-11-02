@@ -34,18 +34,18 @@ describe("normalizeMemberName", () => {
 describe("buildAssiduityRanking", () => {
   it("compte une personne comme une seule entree malgre une orthographe differente (accents)", () => {
     const ranking = buildAssiduityRanking(["Thomas Trégaro", "Thomas Tregaro", "Thomas Trégaro"]);
-    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 3 });
+    expect(ranking[0]).toMatchObject({ display: "Thomas Trégaro", count: 3 });
     expect(ranking.filter((r) => r.display === "Thomas Trégaro")).toHaveLength(1);
   });
 
   it("affiche le nom officiel pour une meme personne", () => {
     const ranking = buildAssiduityRanking(["thomas tregaro", "Thomas Trégaro", "Thomas Trégaro"]);
-    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 3 });
+    expect(ranking[0]).toMatchObject({ display: "Thomas Trégaro", count: 3 });
   });
 
   it("compte une personne comme une seule entree malgre un ordre nom/prenom different", () => {
     const ranking = buildAssiduityRanking(["Thomas Trégaro", "Trégaro Thomas", "Thomas Trégaro"]);
-    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 3 });
+    expect(ranking[0]).toMatchObject({ display: "Thomas Trégaro", count: 3 });
   });
 
   it("trie par nombre de participations decroissant puis par nom alphabetique", () => {
@@ -56,7 +56,7 @@ describe("buildAssiduityRanking", () => {
       "Thomas Trégaro",
       "Marina Trégaro",
     ]);
-    expect(ranking.slice(0, 2)).toEqual([
+    expect(ranking.slice(0, 2)).toMatchObject([
       { display: "Marina Trégaro", count: 3 },
       { display: "Thomas Trégaro", count: 2 },
     ]);
@@ -65,17 +65,17 @@ describe("buildAssiduityRanking", () => {
   it("respecte la limite demandee", () => {
     const ranking = buildAssiduityRanking(["Thomas Trégaro"], 5);
     expect(ranking).toHaveLength(5);
-    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 1 });
+    expect(ranking[0]).toMatchObject({ display: "Thomas Trégaro", count: 1 });
   });
 
   it("retourne tout le classement des 100 membres quand aucune limite n'est passee", () => {
     const ranking = buildAssiduityRanking(["Thomas Trégaro", "Lou Serrig", "lou serrig"]);
     expect(ranking).toHaveLength(100);
-    expect(ranking.find((r) => r.display === "Lou Serrig")).toEqual({
+    expect(ranking.find((r) => r.display === "Lou Serrig")).toMatchObject({
       display: "Lou Serrig",
       count: 2,
     });
-    expect(ranking.find((r) => r.display === "Ben Horny")).toEqual({
+    expect(ranking.find((r) => r.display === "Ben Horny")).toMatchObject({
       display: "Ben Horny",
       count: 0,
     });
@@ -83,22 +83,61 @@ describe("buildAssiduityRanking", () => {
 
   it("ignore les noms vides ou uniquement des espaces", () => {
     const ranking = buildAssiduityRanking(["Thomas Trégaro", "", "   ", "Thomas Trégaro"]);
-    expect(ranking[0]).toEqual({ display: "Thomas Trégaro", count: 2 });
+    expect(ranking[0]).toMatchObject({ display: "Thomas Trégaro", count: 2 });
   });
 
   it("retourne les 100 membres avec 0 sortie si aucune participation", () => {
     const ranking = buildAssiduityRanking([]);
     expect(ranking).toHaveLength(100);
-    expect(ranking.every((r) => r.count === 0)).toBe(true);
+    expect(ranking.every((r) => r.count === 0 && r.groups.vert === 0 && r.groups.rouge === 0 && r.groups.violet === 0)).toBe(true);
   });
 
   it("compte une personne comme une seule entree malgre un emoji ajoute au nom", () => {
     const ranking = buildAssiduityRanking(["Florian Maillou", "Florian Maillou 🚀"]);
-    expect(ranking[0]).toEqual({ display: "Florian Maillou", count: 2 });
+    expect(ranking[0]).toMatchObject({ display: "Florian Maillou", count: 2 });
   });
 
   it("n'affiche jamais d'emoji et fait correspondre au nom officiel du membre", () => {
     const ranking = buildAssiduityRanking(["MIMOUNI redouane ✌", "MIMOUNI redouane ✌"]);
-    expect(ranking[0]).toEqual({ display: "Redouane Mimouni", count: 2 });
+    expect(ranking[0]).toMatchObject({ display: "Redouane Mimouni", count: 2 });
+  });
+
+  it("compte fidèlement les participations par groupe de niveau pour chaque membre", () => {
+    const ranking = buildAssiduityRanking([
+      { participant_name: "Ben Horny", group_level: "vert" },
+      { participant_name: "Ben Horny", group_level: "vert" },
+      { participant_name: "Ben Horny", group_level: "vert" },
+      { participant_name: "Ben Horny", group_level: "vert" },
+      { participant_name: "Ben Horny", group_level: "vert" },
+      { participant_name: "Ben Horny", group_level: "rouge" },
+      { participant_name: "Ben Horny", group_level: "rouge" },
+      { participant_name: "Ben Horny", group_level: "rouge" },
+      { participant_name: "Ben Horny", group_level: "rouge" },
+      { participant_name: "Ben Horny", group_level: "rouge" },
+      { participant_name: "Lou Serrig", group_level: "vert" },
+      { participant_name: "Lou Serrig", group_level: "rouge" },
+      { participant_name: "Pierrick Pinault", group_level: "violet" },
+    ]);
+
+    const ben = ranking.find((r) => r.display === "Ben Horny");
+    expect(ben).toEqual({
+      display: "Ben Horny",
+      count: 10,
+      groups: { vert: 5, rouge: 5, violet: 0 },
+    });
+
+    const lou = ranking.find((r) => r.display === "Lou Serrig");
+    expect(lou).toEqual({
+      display: "Lou Serrig",
+      count: 2,
+      groups: { vert: 1, rouge: 1, violet: 0 },
+    });
+
+    const pierrick = ranking.find((r) => r.display === "Pierrick Pinault");
+    expect(pierrick).toEqual({
+      display: "Pierrick Pinault",
+      count: 1,
+      groups: { vert: 0, rouge: 0, violet: 1 },
+    });
   });
 });

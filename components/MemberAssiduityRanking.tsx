@@ -57,6 +57,12 @@ export function MemberAssiduityRanking({ ranking }: { ranking: AssiduityEntry[] 
         <p className="text-[12.5px] text-black/45 dark:text-white/45">
           Visible par les admins uniquement · {ranking.length} membres ({activeMembersCount} avec sorties, {ranking.length - activeMembersCount} sans sortie).
         </p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[11px] text-black/50 dark:text-white/50">
+          <span className="font-medium">Par groupe :</span>
+          <span className="font-extrabold text-emerald-600 dark:text-emerald-400">(n) Vert</span>
+          <span className="font-extrabold text-red-600 dark:text-red-400">(n) Rouge</span>
+          <span className="font-extrabold text-[#AA26FF] dark:text-[#C084FC]">(n) Violet</span>
+        </div>
 
         {/* Barre de recherche rapide de membre */}
         <div className="relative mt-3">
@@ -111,13 +117,43 @@ export function MemberAssiduityRanking({ ranking }: { ranking: AssiduityEntry[] 
 
                 <Avatar name={m.display} seed={m.display} size="sm" />
 
-                <span
-                  className={`flex-1 truncate text-[13.5px] ${
-                    hasRides ? "font-bold text-black dark:text-white" : "font-medium text-black/75 dark:text-white/75"
-                  }`}
-                >
-                  {m.display}
-                </span>
+                <div className="flex min-w-0 flex-1 items-center gap-1.5">
+                  <span
+                    className={`truncate text-[13.5px] ${
+                      hasRides ? "font-bold text-black dark:text-white" : "font-medium text-black/75 dark:text-white/75"
+                    }`}
+                  >
+                    {m.display}
+                  </span>
+                  {hasRides && m.groups && (m.groups.vert > 0 || m.groups.rouge > 0 || m.groups.violet > 0) && (
+                    <span className="flex flex-none items-center gap-1 text-[11.5px] font-black tracking-tight">
+                      {m.groups.vert > 0 && (
+                        <span
+                          className="text-emerald-600 dark:text-emerald-400"
+                          title={`${m.groups.vert} sortie${m.groups.vert > 1 ? "s" : ""} en groupe Vert`}
+                        >
+                          ({m.groups.vert})
+                        </span>
+                      )}
+                      {m.groups.rouge > 0 && (
+                        <span
+                          className="text-red-600 dark:text-red-400"
+                          title={`${m.groups.rouge} sortie${m.groups.rouge > 1 ? "s" : ""} en groupe Rouge`}
+                        >
+                          ({m.groups.rouge})
+                        </span>
+                      )}
+                      {m.groups.violet > 0 && (
+                        <span
+                          className="text-[#AA26FF] dark:text-[#C084FC]"
+                          title={`${m.groups.violet} sortie${m.groups.violet > 1 ? "s" : ""} en groupe Violet`}
+                        >
+                          ({m.groups.violet})
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </div>
 
                 <span
                   className={`flex-none text-[12.5px] font-bold ${
