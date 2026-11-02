@@ -16,11 +16,14 @@ import { Icon } from "./Icons";
 
 const ALL_GROUPS: GroupLevel[] = ["vert", "rouge", "violet"];
 
-// Place le texte genere au debut de la description, sans jamais effacer ce
-// que l'admin a deja saisi (qui reste tel quel, en dessous).
+// Place le texte généré au début de la description, sans jamais écraser ce
+// que l'admin a déjà saisi, et sans le dupliquer s'il est déjà présent.
 function prependGenerated(current: string, generated: string): string {
   const trimmed = current.trim();
-  return trimmed ? `${generated}\n\n${trimmed}` : generated;
+  const genTrimmed = generated.trim();
+  if (!trimmed) return genTrimmed;
+  if (!genTrimmed || trimmed.includes(genTrimmed)) return trimmed;
+  return `${genTrimmed}\n\n${trimmed}`;
 }
 
 export function RideForm({
@@ -264,9 +267,6 @@ export function RideForm({
     if (isAutoFilledPlaceUrl(placeUrl)) setPlaceUrl(known);
   }
 
-  function regenerateDescription() {
-    if (preview) setDescription((prev) => prependGenerated(prev, describeRideProfile(preview)));
-  }
 
   async function handleSubmit(e?: React.FormEvent, options?: { skipNotification?: boolean }) {
     if (e) e.preventDefault();
@@ -352,20 +352,9 @@ export function RideForm({
         />
       </Field>
       <div className="px-5 pb-3.5">
-        <div className="mb-1.5 flex items-center justify-between">
-          <label className="block text-[12px] font-extrabold uppercase tracking-wide text-black/45 dark:text-white/45">
-            Description
-          </label>
-          {preview && (
-            <button
-              type="button"
-              onClick={regenerateDescription}
-              className="text-[11px] font-bold text-sps-violet600 dark:text-sps-violet400"
-            >
-              ✨ Générer depuis le parcours
-            </button>
-          )}
-        </div>
+        <label className="mb-1.5 block text-[12px] font-extrabold uppercase tracking-wide text-black/45 dark:text-white/45">
+          Description
+        </label>
         <textarea
           value={description}
           onChange={(e) => {
