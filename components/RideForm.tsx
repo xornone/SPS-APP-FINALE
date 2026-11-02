@@ -481,7 +481,7 @@ export function RideForm({
       <div className="px-5 pb-3.5">
         <div className="mb-1.5 flex items-center justify-between">
           <label className="block text-[12px] font-extrabold uppercase tracking-wide text-black/45 dark:text-white/45">
-            Arrêt boulangerie (optionnel)
+            Arrêt boulangerie
           </label>
           {savedBakeries.length > 0 && !isAddingBakery && (
             <button
@@ -498,31 +498,26 @@ export function RideForm({
         </div>
 
         {savedBakeries.length === 0 ? (
-          <div>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={selectedBakery}
-                onChange={(e) => handleBakeryChange(e.target.value)}
-                onBlur={() => {
-                  if (selectedBakery.trim()) saveBakeryToList(selectedBakery);
-                }}
-                placeholder="Ex : Boulangerie des Matelles, Le Fournil du Pic…"
-                className="input"
-              />
-              {selectedBakery.trim() && (
-                <button
-                  type="button"
-                  onClick={() => saveBakeryToList(selectedBakery)}
-                  className="flex-none rounded-xl bg-sps-violet600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-sps-violet700 dark:bg-sps-violet500"
-                >
-                  Enregistrer
-                </button>
-              )}
-            </div>
-            <p className="mt-1.5 text-[11px] text-black/40 dark:text-white/40">
-              Saisis le nom d’une boulangerie : elle sera automatiquement enregistrée dans la liste déroulante pour les prochaines sorties.
-            </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={selectedBakery}
+              onChange={(e) => handleBakeryChange(e.target.value)}
+              onBlur={() => {
+                if (selectedBakery.trim()) saveBakeryToList(selectedBakery);
+              }}
+              placeholder="Nom de la boulangerie"
+              className="input"
+            />
+            {selectedBakery.trim() && (
+              <button
+                type="button"
+                onClick={() => saveBakeryToList(selectedBakery)}
+                className="flex-none rounded-xl bg-sps-violet600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-sps-violet700 dark:bg-sps-violet500"
+              >
+                Enregistrer
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-2">
@@ -544,7 +539,7 @@ export function RideForm({
                 <option value="">-- Aucun arrêt boulangerie --</option>
                 {savedBakeries.map((b) => (
                   <option key={b} value={b}>
-                    🥐 {b}
+                    {b}
                   </option>
                 ))}
                 <option value="__NEW__">➕ Ajouter une nouvelle boulangerie…</option>
@@ -576,7 +571,7 @@ export function RideForm({
                       setIsAddingBakery(false);
                     }
                   }}
-                  placeholder="Nom de la boulangerie (ex : Fournil de Castries)"
+                  placeholder="Nom de la boulangerie"
                   className="input flex-1"
                 />
                 <button
@@ -597,15 +592,6 @@ export function RideForm({
               </div>
             )}
           </div>
-        )}
-
-        {selectedBakery && (
-          <p className="mt-1.5 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-            <Icon name="check" size={12} />
-            <span>
-              Ajouté à la description : <strong>🥐 Arrêt ravito : {selectedBakery}</strong>
-            </span>
-          </p>
         )}
       </div>
 
