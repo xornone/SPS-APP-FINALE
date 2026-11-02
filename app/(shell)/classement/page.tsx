@@ -52,12 +52,20 @@ export default async function ClassementPage() {
     participations.map((p) => normalizeMemberName(p.participant_name))
   ).size;
 
-  // Nombre de sorties ayant proposé chaque groupe
+  // Nombre de sorties ayant proposé chaque groupe (dynamique : sorties passées et à venir)
   const ridesOfferingGroup: Record<GroupLevel, number> = { vert: 0, rouge: 0, violet: 0 };
   rides.forEach((r) => {
-    const list = (r.ride_groups || []).map((g) => g.group_level);
+    let list = (r.ride_groups || []).map((g) => g.group_level);
+    if (list.length === 0) {
+      const detected = detectRideGroup(r);
+      if (detected) list = [detected];
+    }
+    const registeredGroups = participations
+      .filter((p) => p.ride_id === r.id)
+      .map((p) => p.group_level);
+    const allGroups = new Set([...list, ...registeredGroups]);
     (["vert", "rouge", "violet"] as GroupLevel[]).forEach((g) => {
-      if (list.includes(g)) ridesOfferingGroup[g]++;
+      if (allGroups.has(g)) ridesOfferingGroup[g]++;
     });
   });
   const avgParticipantsByGroup: Record<GroupLevel, number> = {
@@ -227,7 +235,7 @@ export default async function ClassementPage() {
                 Participants par groupe
               </h2>
               <span className="text-[11px] font-semibold text-neutral-500 dark:text-white/50">
-                Membres uniques et moyennes par allure
+                Moyenne ajustée selon les sorties proposées
               </span>
             </div>
             <span className="text-[11px] font-black uppercase tracking-wider text-neutral-500 dark:text-violet-300/60">
@@ -235,11 +243,13 @@ export default async function ClassementPage() {
             </span>
           </div>
 
-          {/* 3 Cartes Bento pour les participants uniques par groupe */}
+          {/* 3 Cartes Bento pour les moyennes ajustées par groupe */}
           <div className="grid grid-cols-3 gap-2.5 mb-5">
             {(["vert", "rouge", "violet"] as GroupLevel[]).map((g) => {
               const info = GROUP_INFO[g];
               const uniqueCount = uniqueParticipantsByGroup[g];
+              const totalParts = groupCounts[g];
+              const ridesCount = ridesOfferingGroup[g];
               const avg = avgParticipantsByGroup[g];
               return (
                 <div
@@ -258,35 +268,48 @@ export default async function ClassementPage() {
                     </span>
                   </div>
 
-                  <div className="my-1.5">
-                    <span className="font-display text-2xl font-black text-neutral-950 dark:text-white">
-                      {uniqueCount}
+                  <div className="my-2">
+                    <span className="font-display text-[26px] leading-none font-black text-neutral-950 dark:text-white">
+                      ~{avg > 0 ? avg.toFixed(1).replace(".", ",") : "0"}
                     </span>
-                    <span className="block text-[9.5px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                      participants
+                    <span className="block mt-1 text-[9.5px] font-extrabold uppercase tracking-wider text-neutral-500 dark:text-white/50">
+                      cyclistes / sortie
                     </span>
                   </div>
 
-                  <div className="border-t border-black/[0.06] pt-1.5 w-full dark:border-white/[0.08] text-[10.5px] font-extrabold text-neutral-500 dark:text-white/60">
-                    <span>~{avg > 0 ? avg.toFixed(1).replace(".", ",") : "0"} / sortie</span>
+                  <div className="border-t border-black/[0.06] pt-1.5 w-full dark:border-white/[0.08] text-[10px]">
+                    <span className="block font-black text-neutral-900 dark:text-white">
+                      {ridesCount} sortie{ridesCount > 1 ? "s" : ""}
+                    </span>
+                    <span className="text-[9.5px] font-semibold text-neutral-400 dark:text-white/40">
+                      {uniqueCount} membres ({totalParts} part.)
+                    </span>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* Volume total des participations */}
+          {/* Affluence moyenne ajustée par sortie */}
           <div className="border-t border-neutral-100 pt-4 dark:border-white/[0.06]">
-            <h3 className="mb-3 text-[11px] font-black uppercase tracking-wider text-neutral-500 dark:text-violet-300/70">
-              Volume total des participations ({totalGroupCounts})
-            </h3>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-[11px] font-black uppercase tracking-wider text-neutral-500 dark:text-violet-300/70">
+                Affluence moyenne par sortie proposée
+              </h3>
+              <span className="text-[10px] font-bold text-neutral-400 dark:text-white/40">
+                {totalGroupCounts} participations au total
+              </span>
+            </div>
             {totalGroupCounts === 0 ? (
               <p className="py-2 text-center text-sm text-neutral-400 dark:text-white/40">Pas encore d&apos;inscriptions.</p>
             ) : (
               <div className="flex flex-col gap-3.5">
                 {(["vert", "rouge", "violet"] as GroupLevel[]).map((g) => {
                   const count = groupCounts[g];
-                  const pct = Math.round((count / totalGroupCounts) * 100);
+                  const ridesCount = ridesOfferingGroup[g];
+                  const avg = avgParticipantsByGroup[g];
+                  const maxAvg = Math.max(...Object.values(avgParticipantsByGroup), 1);
+                  const barPct = Math.round((avg / maxAvg) * 100);
                   return (
                     <div key={g} className="flex flex-col gap-1.5">
                       <div className="flex items-center justify-between text-xs">
@@ -297,15 +320,20 @@ export default async function ClassementPage() {
                           />
                           {GROUP_INFO[g].label}
                         </span>
-                        <span className="font-extrabold text-neutral-600 dark:text-white/70">
-                          {pct}% · {count} participation{count > 1 ? "s" : ""}
-                        </span>
+                        <div className="flex items-center gap-1.5 font-extrabold text-neutral-600 dark:text-white/70">
+                          <span className="font-black text-neutral-900 dark:text-white">
+                            ~{avg > 0 ? avg.toFixed(1).replace(".", ",") : "0"} / sortie
+                          </span>
+                          <span className="text-[11px] text-neutral-400 dark:text-white/40">
+                            ({count} part. sur {ridesCount} sortie{ridesCount > 1 ? "s" : ""})
+                          </span>
+                        </div>
                       </div>
                       <div className="h-2 overflow-hidden rounded-full bg-neutral-100 p-0.5 dark:bg-white/[0.06]">
                         <div
                           className="h-full rounded-full transition-all duration-500"
                           style={{
-                            width: `${count > 0 ? Math.max(3, pct) : 0}%`,
+                            width: `${avg > 0 ? Math.max(6, barPct) : 0}%`,
                             backgroundColor: GROUP_INFO[g].hex,
                             boxShadow: `0 0 10px ${GROUP_INFO[g].hex}80`,
                           }}
