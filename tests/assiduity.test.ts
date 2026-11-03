@@ -68,9 +68,9 @@ describe("buildAssiduityRanking", () => {
     expect(ranking[0]).toMatchObject({ display: "Thomas Trégaro", count: 1 });
   });
 
-  it("retourne tout le classement des 100 membres quand aucune limite n'est passee", () => {
-    const ranking = buildAssiduityRanking(["Thomas Trégaro", "Lou Serrig", "lou serrig"]);
-    expect(ranking).toHaveLength(100);
+  it("retourne tout le classement des 99 membres quand aucune limite n'est passee", () => {
+    const ranking = buildAssiduityRanking(["Thomas Trégaro", "Lou Serrig", "lou serrig", "Martin Lemmens"]);
+    expect(ranking).toHaveLength(99);
     expect(ranking.find((r) => r.display === "Lou Serrig")).toMatchObject({
       display: "Lou Serrig",
       count: 2,
@@ -79,6 +79,7 @@ describe("buildAssiduityRanking", () => {
       display: "Ben Horny",
       count: 0,
     });
+    expect(ranking.find((r) => r.display === "Martin Lemmens")).toBeUndefined();
   });
 
   it("ignore les noms vides ou uniquement des espaces", () => {
@@ -86,9 +87,9 @@ describe("buildAssiduityRanking", () => {
     expect(ranking[0]).toMatchObject({ display: "Thomas Trégaro", count: 2 });
   });
 
-  it("retourne les 100 membres avec 0 sortie si aucune participation", () => {
+  it("retourne les 99 membres avec 0 sortie si aucune participation", () => {
     const ranking = buildAssiduityRanking([]);
-    expect(ranking).toHaveLength(100);
+    expect(ranking).toHaveLength(99);
     expect(ranking.every((r) => r.count === 0 && r.groups.vert === 0 && r.groups.rouge === 0 && r.groups.violet === 0)).toBe(true);
   });
 

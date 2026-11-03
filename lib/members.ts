@@ -40,8 +40,8 @@ export function stripEmojiAndDiacritics(value: string): string {
 }
 
 /**
- * Liste officielle des membres actifs SPS (100 membres au total :
- * 98 membres transmis par Thomas Trégaro + Martin Lemmens + Lou Serrig).
+ * Liste officielle des membres actifs SPS (99 membres au total :
+ * 98 membres transmis par Thomas Trégaro + Lou Serrig).
  */
 export const SPS_ACTIVE_MEMBERS: readonly string[] = [
   "Thomas Trégaro",
@@ -142,9 +142,7 @@ export const SPS_ACTIVE_MEMBERS: readonly string[] = [
   "Anaïs Gevaudan",
   "Maxime Colin",
   "Camille Frairrot",
-  // 99e membre : Martin Lemmens (admin de l'app, présent dans lib/admins.ts)
-  "Martin Lemmens",
-  // 100e membre : Lou Serrig
+  // 99e membre : Lou Serrig
   "Lou Serrig",
 ];
 
