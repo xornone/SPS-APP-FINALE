@@ -478,11 +478,11 @@ export async function fetchRideWeather(
     const estimatedArrivalTime = addMinutesToTimeString(timeStr, durationMinutes);
     const durationFormatted = formatDuration(durationMinutes);
 
-    // Heure de fin arrondie au créneau supérieur
+    // Heure de fin arrondie au créneau horaire le plus proche (évite d'englober une heure +1 inutilement quand l'arrivée est à 12h05)
     const endMinutes = (parseInt(timeStr.slice(0, 2), 10) || 9) * 60 +
       (parseInt(timeStr.slice(3, 5), 10) || 0) +
       durationMinutes;
-    const endHour = Math.min(23, Math.ceil(endMinutes / 60));
+    const endHour = Math.max(startHour, Math.min(23, Math.round(endMinutes / 60)));
 
     const url =
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +

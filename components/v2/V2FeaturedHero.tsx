@@ -173,9 +173,9 @@ export function V2FeaturedHero({
         </div>
       </div>
 
-      {/* Weather Badge (Single Line) */}
+      {/* Weather Badge */}
       {weather && weather.suitabilityScore !== undefined && (
-        <div className="relative z-10 mb-3 flex items-center justify-center">
+        <div className="relative z-10 mb-3 flex flex-col items-center justify-center w-full">
           <RideWeatherBadge weather={weather} variant="featured" />
         </div>
       )}

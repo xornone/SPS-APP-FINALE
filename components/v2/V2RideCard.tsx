@@ -153,9 +153,9 @@ export function V2RideCard({
         </div>
       </div>
 
-      {/* Weather Badge (Single Line) */}
+      {/* Weather Badge */}
       {weather && weather.suitabilityScore !== undefined && (
-        <div className="flex items-center justify-center pt-0.5">
+        <div className="flex flex-col items-center justify-center pt-0.5 w-full">
           <RideWeatherBadge weather={weather} />
         </div>
       )}

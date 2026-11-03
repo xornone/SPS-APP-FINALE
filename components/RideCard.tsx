@@ -125,7 +125,7 @@ export function RideCard({
         </div>
       </div>
       {weather && weather.suitabilityScore !== undefined && (
-        <div className="flex items-center justify-center py-0.5">
+        <div className="flex flex-col items-center justify-center py-0.5 w-full">
           <RideWeatherBadge weather={weather} />
         </div>
       )}

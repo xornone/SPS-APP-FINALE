@@ -37,7 +37,7 @@ export function computeTemperatureGaugePosition(weather?: Pick<RideWeather, "tem
 export function TemperatureGauge({
   weather,
   className = "",
-  barWidth = "w-11",
+  barWidth = "w-6",
 }: {
   weather: RideWeather | null | undefined;
   className?: string;
@@ -50,25 +50,25 @@ export function TemperatureGauge({
 
   return (
     <div
-      className={`inline-flex items-center gap-1 select-none ${className}`}
+      className={`inline-flex items-center gap-0.5 select-none flex-shrink-0 ${className}`}
       title={`Échelle de confort thermique : 0°C (trop froid) à 36°C (trop chaud) · Sortie : ${rawMin}° → ${rawMax}°`}
       aria-label={`Jauge de température de ${rawMin}° à ${rawMax}°`}
     >
-      <span className="text-[9px] leading-none opacity-75" aria-hidden="true" title="Trop froid (0°C)">
+      <span className="text-[8px] leading-none opacity-70" aria-hidden="true" title="Trop froid (0°C)">
         ❄️
       </span>
-      <div className={`relative h-[4.5px] ${barWidth} rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 to-rose-500 shadow-inner`}>
+      <div className={`relative h-[4px] ${barWidth} rounded-full bg-gradient-to-r from-sky-400 via-emerald-400 to-rose-500 shadow-inner`}>
         {/* Curseur de température actif */}
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute -top-[2px] h-[8.5px] rounded-full border border-black/30 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] dark:border-white/60"
+          className="pointer-events-none absolute -top-[2px] h-[8px] rounded-full border border-black/30 bg-white shadow-[0_1px_3px_rgba(0,0,0,0.35)] dark:border-white/60"
           style={{
             left: `${leftPct}%`,
             width: `${widthPct}%`,
           }}
         />
       </div>
-      <span className="text-[9px] leading-none opacity-75" aria-hidden="true" title="Trop chaud (36°C)">
+      <span className="text-[8px] leading-none opacity-70" aria-hidden="true" title="Trop chaud (36°C)">
         🔥
       </span>
     </div>

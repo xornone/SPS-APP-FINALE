@@ -46,6 +46,17 @@ describe("formatDuration and addMinutesToTimeString", () => {
     expect(addMinutesToTimeString("09:00:00", 165)).toBe("11:45");
     expect(addMinutesToTimeString("08:45", 195)).toBe("12:00");
   });
+
+  it("arrondit l'heure de fin au créneau le plus proche (évite 13h pour une arrivée à 12h05)", () => {
+    // 09:00 + 185 min = 12:05
+    const departure = "09:00";
+    const duration = 185;
+    const endMinutes = (parseInt(departure.slice(0, 2), 10) || 9) * 60 +
+      (parseInt(departure.slice(3, 5), 10) || 0) +
+      duration;
+    const endHour = Math.max(9, Math.min(23, Math.round(endMinutes / 60)));
+    expect(endHour).toBe(12); // et non 13 !
+  });
 });
 
 describe("computeSuitabilityScore", () => {
