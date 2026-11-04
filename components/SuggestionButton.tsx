@@ -37,16 +37,13 @@ export function SuggestionButton({ className = "" }: { className?: string }) {
     };
   }, [isAdmin]);
 
-  // Avant-première : visible uniquement pour les administrateurs connectés
-  if (!isAdmin) return null;
-
   return (
     <Link
       href="/boite-a-idees"
       prefetch={true}
       aria-label="Boîte à idées : Une idée >"
       title={
-        unhandledCount > 0
+        isAdmin && unhandledCount > 0
           ? `Boîte à idées — ${unhandledCount} nouvelle${unhandledCount > 1 ? "s" : ""} idée${unhandledCount > 1 ? "s" : ""} à voir`
           : "Boîte à idées — Proposer une idée au club"
       }
@@ -65,7 +62,7 @@ export function SuggestionButton({ className = "" }: { className?: string }) {
         size={12}
         className="flex-shrink-0 text-amber-600/70 transition-transform duration-200 group-hover:translate-x-0.5 dark:text-amber-300/80"
       />
-      {unhandledCount > 0 && (
+      {isAdmin && unhandledCount > 0 && (
         <span className="ml-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-sps-red px-1 text-[9px] font-black text-white shadow-sm ring-1 ring-white dark:ring-[#1A1422]">
           {unhandledCount > 9 ? "9+" : unhandledCount}
         </span>

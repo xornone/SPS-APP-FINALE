@@ -7,8 +7,10 @@ import { SuggestionForm } from "./SuggestionForm";
 import { AdminSuggestionsList } from "./AdminSuggestionsList";
 import { AdminOnly } from "./AdminOnly";
 import { Icon } from "./Icons";
+import { useIsAdmin } from "@/lib/useIsAdmin";
 
 export function BoiteAIdeesView() {
+  const isAdmin = useIsAdmin();
   const [refreshKey, setRefreshKey] = useState(0);
 
   function handleIdeaSubmitted() {
@@ -30,7 +32,7 @@ export function BoiteAIdeesView() {
           </Link>
           <div>
             <span className="text-[11.5px] font-extrabold uppercase tracking-wider text-sps-violet600 dark:text-sps-violet400">
-              Avant-première Admin 👑
+              {isAdmin ? "Espace Admin 👑" : "Club SPS · Vos suggestions"}
             </span>
             <h1 className="font-display text-[24px] tracking-wide text-black dark:text-white">
               Boîte à idées 💡
