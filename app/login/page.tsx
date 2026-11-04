@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Icon } from "@/components/Icons";
 
 // Connexion admin par email + mot de passe. Pas d'inscription publique :
 // les comptes admin sont crees directement par le club dans le tableau de
@@ -14,6 +16,14 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+
+  function handleBack() {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/home");
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -32,7 +42,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-8 bg-gradient-to-b from-[#3a1a63] via-[#1a0f2c] to-[#0c0714] px-6 py-12 text-white">
+    <div className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-gradient-to-b from-[#3a1a63] via-[#1a0f2c] to-[#0c0714] px-6 py-12 text-white">
+      {/* Bouton retour en arrière en haut à gauche */}
+      <div className="absolute left-4 top-4 z-10 sm:left-6 sm:top-6">
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="Retour à la page précédente"
+          className="flex items-center gap-1.5 rounded-xl border border-white/15 bg-white/10 px-3.5 py-2 text-xs font-semibold text-white shadow-md backdrop-blur-md transition hover:bg-white/20 active:scale-95"
+        >
+          <Icon name="chevL" size={16} />
+          <span>Retour</span>
+        </button>
+      </div>
+
       <div className="flex flex-col items-center gap-2 text-center">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-gradient-to-br from-sps-violet400 to-sps-violet600 shadow-[0_0_0_4px_rgba(167,139,250,.18)]" />
@@ -81,6 +104,24 @@ export default function LoginPage() {
         >
           {status === "sending" ? "Connexion…" : "Se connecter"}
         </button>
+
+        <div className="mt-4 flex flex-col items-center gap-2 pt-2">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-white/60 transition hover:text-white"
+          >
+            <Icon name="chevL" size={14} />
+            <span>Retour à la page précédente</span>
+          </button>
+          <Link
+            href="/home"
+            prefetch={true}
+            className="text-[11px] text-white/40 transition hover:text-white/70"
+          >
+            Accéder à l&apos;accueil du club
+          </Link>
+        </div>
       </form>
     </div>
   );
