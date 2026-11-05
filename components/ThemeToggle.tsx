@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "./Icons";
+import { hapticTap } from "@/lib/haptics";
 
 export function ThemeToggle({ className = "" }: { className?: string }) {
   const [mounted, setMounted] = useState(false);
@@ -19,6 +20,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   }, []);
 
   const toggleTheme = () => {
+    hapticTap(8);
     const isCurrentlyDark = document.documentElement.classList.contains("dark");
     const nextDark = !isCurrentlyDark;
     setIsDark(nextDark);

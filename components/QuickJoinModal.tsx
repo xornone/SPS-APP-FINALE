@@ -13,6 +13,7 @@ import {
   type MyParticipation,
 } from "@/lib/myParticipations";
 import { fmtDateLong, fmtKm, fmtM, fmtTime } from "@/lib/format";
+import { hapticSuccess, hapticWarning, hapticTap } from "@/lib/haptics";
 
 interface QuickJoinModalProps {
   ride: Ride | null;
@@ -140,6 +141,7 @@ export function QuickJoinModal({
       };
       setMyParticipation(ride.id, record);
       setMine(record);
+      hapticSuccess();
 
       onJoinSuccess({
         id: data.id,
@@ -200,6 +202,7 @@ export function QuickJoinModal({
       };
       setMyParticipation(ride.id, record);
       setMine(record);
+      hapticSuccess();
 
       onJoinSuccess({
         id: data.id,
@@ -239,6 +242,7 @@ export function QuickJoinModal({
       const removedId = mine.id;
       clearMyParticipation(ride.id);
       setMine(null);
+      hapticWarning();
 
       onLeaveSuccess(removedId, ride.id);
       router.refresh();
@@ -251,6 +255,7 @@ export function QuickJoinModal({
 
   async function handleChangeGroup(g: GroupLevel) {
     if (!mine || !ride || g === mine.group_level) return;
+    hapticTap(8);
     setPending(true);
     setError("");
 

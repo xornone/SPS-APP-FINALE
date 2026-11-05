@@ -44,7 +44,16 @@ export function V2FeaturedHero({
         : null;
 
   return (
-    <div className="relative isolate group block overflow-hidden rounded-[32px] border-2 border-violet-200/90 bg-white p-5 text-neutral-950 shadow-[0_16px_36px_-6px_rgba(109,40,217,0.12)] ring-1 ring-black/[0.04] transition-all duration-300 dark:border dark:border-white/20 dark:bg-gradient-to-br dark:from-[#1E0938] dark:via-[#120524] dark:to-[#080210] dark:text-white dark:shadow-[0_24px_50px_-12px_rgba(124,58,237,0.45)] dark:ring-white/10">
+    <div className="relative isolate group block overflow-hidden rounded-[32px] border-2 border-violet-200/90 bg-white p-5 text-neutral-950 shadow-[0_16px_36px_-6px_rgba(109,40,217,0.12)] ring-1 ring-black/[0.04] transition-all duration-300 hover:border-violet-300 dark:border dark:border-white/20 dark:bg-gradient-to-br dark:from-[#1E0938] dark:via-[#120524] dark:to-[#080210] dark:text-white dark:shadow-[0_24px_50px_-12px_rgba(124,58,237,0.45)] dark:ring-white/10 active:scale-[0.995]">
+      {/* Lien englobant pour navigation directe et fluide au toucher de la carte */}
+      <Link
+        href={`${hrefPrefix}/${ride.id}`}
+        prefetch={true}
+        className="absolute inset-0 z-0 cursor-pointer"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+
       {/* Ambient background glows using clean radial gradients (avoids iOS WebKit GPU blur clipping bug) */}
       <div
         aria-hidden="true"

@@ -7,6 +7,7 @@ import { AdminOnly } from "./AdminOnly";
 import { WhatsAppShareButton } from "./WhatsAppShareButton";
 import { Icon } from "./Icons";
 import { isAdminName } from "@/lib/admins";
+import { hapticTap } from "@/lib/haptics";
 import type { GroupLevel, Participation } from "@/lib/types";
 
 /**
@@ -77,7 +78,8 @@ export function RideParticipationSection({
           <a
             href={gpxUrl}
             download
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-[13px] font-bold dark:border-white/15 dark:bg-[#1A1422]"
+            onClick={() => hapticTap(12)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-[13px] font-bold transition-all duration-150 active:scale-[0.98] hover:border-sps-violet500/40 hover:bg-black/[0.02] dark:border-white/15 dark:bg-[#1A1422] dark:hover:bg-white/[0.03]"
           >
             <Icon name="download" size={15} /> Télécharger GPX
           </a>
@@ -87,7 +89,8 @@ export function RideParticipationSection({
             href={stravaUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-[13px] font-bold dark:border-white/15 dark:bg-[#1A1422]"
+            onClick={() => hapticTap(10)}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-[13px] font-bold transition-all duration-150 active:scale-[0.98] hover:border-[#FC4C02]/40 hover:bg-[#FC4C02]/5 dark:border-white/15 dark:bg-[#1A1422] dark:hover:bg-[#FC4C02]/10"
           >
             <Icon name="external" size={15} /> Ouvrir sur Strava
           </a>

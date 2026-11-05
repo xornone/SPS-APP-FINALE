@@ -21,6 +21,16 @@ body {
   overscroll-behavior-y: contain;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+[role="button"],
+nav a {
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 
 html.dark,

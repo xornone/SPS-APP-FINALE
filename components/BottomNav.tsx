@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "./Icons";
 import { useIsAdmin } from "@/lib/useIsAdmin";
+import { hapticTap } from "@/lib/haptics";
 
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
@@ -19,7 +20,7 @@ export function BottomNav() {
   const visibleTabs = TABS.filter((t) => !t.adminOnly || isAdmin);
 
   return (
-    <div className="fixed bottom-4 inset-x-4 z-50 mx-auto max-w-sm pointer-events-none">
+    <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-4 z-50 mx-auto max-w-sm pointer-events-none will-change-transform">
       <nav className="pointer-events-auto flex items-center justify-around gap-1 rounded-full border border-black/[0.08] bg-white/85 p-1.5 backdrop-blur-2xl shadow-[0_12px_32px_-4px_rgba(0,0,0,0.10)] ring-1 ring-black/[0.04] transition-colors dark:border-white/15 dark:bg-[#0F0A1A]/85 dark:shadow-[0_16px_40px_-6px_rgba(0,0,0,0.7)] dark:ring-white/10">
         {visibleTabs.map((t) => {
           const active =
@@ -32,6 +33,9 @@ export function BottomNav() {
               key={t.href}
               href={t.href}
               prefetch={true}
+              onClick={() => {
+                if (!active) hapticTap(6);
+              }}
               className={`group relative flex flex-1 flex-col items-center gap-1 rounded-full py-2 transition-all duration-200 active:scale-95 ${
                 active
                   ? "text-violet-700 dark:text-white"

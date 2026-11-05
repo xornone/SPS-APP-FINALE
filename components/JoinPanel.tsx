@@ -6,6 +6,7 @@ import { GROUP_INFO, type GroupLevel, type Participation } from "@/lib/types";
 import { Icon } from "./Icons";
 import { Avatar } from "./Avatar";
 import { clearMyParticipation, getLastUsedName, getMyParticipation, setMyParticipation } from "@/lib/myParticipations";
+import { hapticSuccess, hapticWarning, hapticTap } from "@/lib/haptics";
 
 export function JoinPanel({
   rideId,
@@ -86,6 +87,7 @@ export function JoinPanel({
     const record = { id: data.id, client_token: data.client_token, participant_name: trimmed, group_level: group };
     setMyParticipation(rideId, record);
     setMine(record);
+    hapticSuccess();
     onJoin?.({
       id: data.id,
       ride_id: rideId,
@@ -129,6 +131,7 @@ export function JoinPanel({
     const record = { id: data.id, client_token: data.client_token, participant_name: trimmed, group_level: group };
     setMyParticipation(rideId, record);
     setMine(record);
+    hapticSuccess();
     onJoin?.({
       id: data.id,
       ride_id: rideId,
@@ -154,12 +157,14 @@ export function JoinPanel({
     }
     clearMyParticipation(rideId);
     setMine(null);
+    hapticWarning();
     onLeave?.(mine.id);
     router.refresh();
   }
 
   async function handleChangeGroup(g: GroupLevel) {
     if (!mine || g === mine.group_level) return;
+    hapticTap(8);
     setPending(true);
     const res = await fetch(`/api/participations/${mine.id}`, {
       method: "PATCH",
