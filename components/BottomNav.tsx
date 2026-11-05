@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icon } from "./Icons";
@@ -16,11 +17,23 @@ const TABS = [
 export function BottomNav() {
   const pathname = usePathname();
   const isAdmin = useIsAdmin();
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    const checkModal = () => {
+      setModalOpen(typeof document !== "undefined" && document.body.classList.contains("modal-open"));
+    };
+    checkModal();
+    window.addEventListener("sps-modal-toggle", checkModal);
+    return () => window.removeEventListener("sps-modal-toggle", checkModal);
+  }, []);
+
+  if (modalOpen) return null;
 
   const visibleTabs = TABS.filter((t) => !t.adminOnly || isAdmin);
 
   return (
-    <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-4 z-50 mx-auto max-w-sm pointer-events-none will-change-transform">
+    <div className="bottom-nav-container fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-4 z-40 mx-auto max-w-sm pointer-events-none will-change-transform">
       <nav className="pointer-events-auto flex items-center justify-around gap-1 rounded-full border border-black/[0.08] bg-white/85 p-1.5 backdrop-blur-2xl shadow-[0_12px_32px_-4px_rgba(0,0,0,0.10)] ring-1 ring-black/[0.04] transition-colors dark:border-white/15 dark:bg-[#0F0A1A]/85 dark:shadow-[0_16px_40px_-6px_rgba(0,0,0,0.7)] dark:ring-white/10">
         {visibleTabs.map((t) => {
           const active =

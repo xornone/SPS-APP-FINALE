@@ -33,6 +33,10 @@ nav a {
   user-select: none;
 }
 
+body.modal-open .bottom-nav-container {
+  display: none !important;
+}
+
 html.dark,
 html.dark body {
   background-color: #130D1A;

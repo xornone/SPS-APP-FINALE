@@ -65,15 +65,21 @@ export function QuickJoinModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ride?.id, isOpen]);
 
-  // Bloquer le defilement de l'arriere-plan quand la modale est ouverte
+  // Bloquer le defilement de l'arriere-plan et masquer la navigation quand la modale est ouverte
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      document.body.classList.add("modal-open");
+      window.dispatchEvent(new Event("sps-modal-toggle"));
     } else {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
+      window.dispatchEvent(new Event("sps-modal-toggle"));
     }
     return () => {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open");
+      window.dispatchEvent(new Event("sps-modal-toggle"));
     };
   }, [isOpen]);
 
@@ -289,11 +295,11 @@ export function QuickJoinModal({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 backdrop-blur-sm sm:items-center sm:p-4"
+      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-t-[28px] border border-black/[0.08] bg-white p-5 shadow-2xl dark:border-white/10 dark:bg-[#1A1422] sm:rounded-[28px]"
+        className="w-full max-w-md max-h-[92dvh] overflow-y-auto rounded-t-[32px] border border-black/[0.08] bg-white p-5 pb-[calc(1.75rem+env(safe-area-inset-bottom))] shadow-2xl dark:border-white/10 dark:bg-[#1A1422] sm:rounded-[28px] sm:pb-5"
       >
         {/* Poignee tactile sur mobile */}
         <div className="mx-auto -mt-1 mb-3.5 h-1.5 w-12 rounded-full bg-black/15 dark:bg-white/15 sm:hidden" />
