@@ -33,8 +33,12 @@ nav a {
   user-select: none;
 }
 
-body.modal-open .bottom-nav-container {
+body.modal-open .bottom-nav-container,
+body.modal-open [data-bottom-nav] {
   display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
 }
 
 html.dark,

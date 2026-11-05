@@ -22,18 +22,18 @@ describe("BottomNav and Modal interaction", () => {
     expect(screen.getByText("Accueil")).toBeDefined();
   });
 
-  it("hides navigation when sps-modal-toggle event is fired with modal-open class", () => {
+  it("hides navigation when sps-modal-toggle event is fired with modal-open class", async () => {
     const { container } = render(<BottomNav />);
     expect(container.querySelector(".bottom-nav-container")).toBeTruthy();
 
-    act(() => {
+    await act(async () => {
       document.body.classList.add("modal-open");
       window.dispatchEvent(new Event("sps-modal-toggle"));
     });
 
     expect(container.querySelector(".bottom-nav-container")).toBeNull();
 
-    act(() => {
+    await act(async () => {
       document.body.classList.remove("modal-open");
       window.dispatchEvent(new Event("sps-modal-toggle"));
     });

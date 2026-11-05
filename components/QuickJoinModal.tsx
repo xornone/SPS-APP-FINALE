@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Icon } from "./Icons";
@@ -33,7 +34,12 @@ export function QuickJoinModal({
   onChangeGroupSuccess,
 }: QuickJoinModalProps) {
   const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [error, setError] = useState("");
   const [conflict, setConflict] = useState<{ id: string; title: string } | null>(null);
   const [mine, setMine] = useState<MyParticipation | null>(null);
@@ -94,7 +100,7 @@ export function QuickJoinModal({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen || !ride) return null;
+  if (!mounted || !isOpen || !ride) return null;
 
   async function handleJoin(e: React.FormEvent) {
     e.preventDefault();
@@ -292,14 +298,14 @@ export function QuickJoinModal({
     }
   }
 
-  return (
+  return createPortal(
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[100] flex items-end justify-center bg-black/70 p-0 backdrop-blur-md sm:items-center sm:p-4"
+      className="fixed inset-0 z-[9999] flex items-end justify-center bg-black/75 p-0 backdrop-blur-md sm:items-center sm:p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md max-h-[92dvh] overflow-y-auto rounded-t-[32px] border border-black/[0.08] bg-white p-5 pb-[calc(1.75rem+env(safe-area-inset-bottom))] shadow-2xl dark:border-white/10 dark:bg-[#1A1422] sm:rounded-[28px] sm:pb-5"
+        className="w-full max-w-md max-h-[88dvh] overflow-y-auto rounded-t-[32px] border border-black/[0.08] bg-white p-5 pb-[calc(2.25rem+env(safe-area-inset-bottom))] shadow-2xl dark:border-white/10 dark:bg-[#1A1422] sm:rounded-[28px] sm:pb-5"
       >
         {/* Poignee tactile sur mobile */}
         <div className="mx-auto -mt-1 mb-3.5 h-1.5 w-12 rounded-full bg-black/15 dark:bg-white/15 sm:hidden" />
@@ -476,6 +482,7 @@ export function QuickJoinModal({
           </form>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
