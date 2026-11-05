@@ -7,7 +7,7 @@ import { WeekDivider } from "@/components/WeekDivider";
 import { QuickJoinModal } from "@/components/QuickJoinModal";
 import { fmtWeekLabel, weekKey } from "@/lib/format";
 import { getMyRideIds } from "@/lib/myParticipations";
-import { getMissingAdminGroups, getRegisteredAdmins } from "@/lib/admins";
+import { getMissingAdminGroups, getRegisteredCaptains } from "@/lib/admins";
 import type { GroupLevel, Participation, Ride } from "@/lib/types";
 import type { RideWeather } from "@/lib/weather";
 
@@ -54,9 +54,9 @@ export function V2HomeRidesSection({
   }
 
   const countsFor = (rideId: string) => currentParticipations.filter((p) => p.ride_id === rideId);
-  const adminsFor = (rideId: string) => getRegisteredAdmins(countsFor(rideId));
+  const adminsFor = (ride: Ride) => getRegisteredCaptains(countsFor(ride.id), ride.description);
   const missingAdminGroupsFor = (ride: Ride) =>
-    getMissingAdminGroups((ride.ride_groups || []).map((g) => g.group_level), adminsFor(ride.id));
+    getMissingAdminGroups((ride.ride_groups || []).map((g) => g.group_level), adminsFor(ride));
 
   const list = rest;
 
@@ -84,7 +84,7 @@ export function V2HomeRidesSection({
                 isJoined={myRideIds.has(ride.id)}
                 weather={weatherByRideId?.[ride.id]}
                 onQuickAction={(r) => setSelectedRideForModal(r)}
-                registeredAdmins={adminsFor(ride.id)}
+                registeredAdmins={adminsFor(ride)}
                 missingAdminGroups={missingAdminGroupsFor(ride)}
               />
             ))}
@@ -125,7 +125,7 @@ export function V2HomeRidesSection({
                       isJoined={myRideIds.has(r.id)}
                       weather={weatherByRideId?.[r.id]}
                       onQuickAction={(ride) => setSelectedRideForModal(ride)}
-                      registeredAdmins={adminsFor(r.id)}
+                      registeredAdmins={adminsFor(r)}
                       missingAdminGroups={missingAdminGroupsFor(r)}
                     />
                   </Fragment>

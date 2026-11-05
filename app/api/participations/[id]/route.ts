@@ -24,7 +24,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     const { data: row, error: rowError } = await admin
       .from("participations")
-      .select("id, ride_id, client_token")
+      .select("id, ride_id, participant_name, client_token")
       .eq("id", params.id)
       .maybeSingle();
     if (rowError) return NextResponse.json({ error: `Erreur serveur : ${rowError.message}` }, { status: 500 });
@@ -43,6 +43,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // de suite (voir POST /api/participations).
     revalidatePath("/home");
     revalidatePath(`/rides/${row.ride_id}`);
+    revalidatePath(`/v2/rides/${row.ride_id}`);
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

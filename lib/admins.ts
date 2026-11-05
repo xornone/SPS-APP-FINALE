@@ -1,4 +1,5 @@
 import type { GroupLevel } from "./types";
+import { extractCaptainFromDescription } from "./captain";
 
 // Liste des membres administrateurs du club. Il n'existe pas de compte
 // membre (voir supabase/migrations/0001_init.sql : toute session
@@ -11,7 +12,6 @@ export const ADMIN_NAMES = [
   "Duc Nguyen",
   "Huu Duc Nguyen",
   "Tanguy Delacôte",
-  "Margaux Dirat",
   "Aymeric Closier",
   "Franck Georges",
   "Martin Lemmens",
@@ -39,18 +39,66 @@ export interface RegisteredAdmin {
   group: GroupLevel;
 }
 
-/** Parmi les inscrits d'une sortie, ceux qui correspondent a un admin — avec leur groupe. */
-export function getRegisteredAdmins(
-  participants: { participant_name: string; group_level: GroupLevel }[]
+/**
+ * Retourne la liste des capitaines d'allure / encadrants d'une sortie :
+ * - Les administrateurs inscrits (qui sont automatiquement capitaines de route)
+ * - Les membres non-admins désignés capitaines dans la description de la sortie
+ *
+ * Ils sont tous représentés de la même manière dans l'onglet des sorties.
+ */
+export function getRegisteredCaptains(
+  participants: { participant_name: string; group_level: GroupLevel }[],
+  rideDescription?: string | null
 ): RegisteredAdmin[] {
+  const result: RegisteredAdmin[] = [];
+  const added = new Set<string>();
+
+  // 1. Les admins inscrits dans un groupe
+  for (const p of participants) {
+    if (isAdminName(p.participant_name)) {
+      result.push({ name: p.participant_name, group: p.group_level });
+      added.add(normalize(p.participant_name));
+    }
+  }
+
+  // 2. Les capitaines désignés dans la description (non-admins ou admins)
+  const captainStr = extractCaptainFromDescription(rideDescription || "");
+  if (captainStr) {
+    const rawNames = captainStr.split(/[,;\/]+/).map((s) => s.trim()).filter(Boolean);
+    for (const name of rawNames) {
+      const norm = normalize(name);
+      if (!added.has(norm)) {
+        const found = participants.find((p) => normalize(p.participant_name) === norm);
+        if (found) {
+          result.push({ name: found.participant_name, group: found.group_level });
+        } else {
+          result.push({ name, group: "vert" });
+        }
+        added.add(norm);
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Parmi les inscrits d'une sortie, ceux qui correspondent à un admin ou capitaine d'allure.
+ */
+export function getRegisteredAdmins(
+  participants: { participant_name: string; group_level: GroupLevel }[],
+  rideDescription?: string | null
+): RegisteredAdmin[] {
+  if (rideDescription) {
+    return getRegisteredCaptains(participants, rideDescription);
+  }
   return participants
     .filter((p) => isAdminName(p.participant_name))
     .map((p) => ({ name: p.participant_name, group: p.group_level }));
 }
 
 /** Parmi les groupes de niveau proposes sur une sortie, ceux ou aucun admin
- * n'est inscrit — pour alerter les autres admins qu'il faudra en trouver un
- * (encadrement du groupe). */
+ * ou capitaine n'est inscrit — pour alerter les autres admins qu'il faudra en trouver un. */
 export function getMissingAdminGroups(
   rideGroups: GroupLevel[],
   registeredAdmins: RegisteredAdmin[]

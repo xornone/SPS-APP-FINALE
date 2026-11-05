@@ -1,6 +1,7 @@
 import { fmtDateLong, fmtKm, fmtM, fmtTime } from "./format";
 import { GROUP_INFO, type GroupLevel } from "./types";
 import { weatherCodeInfo, windDirectionLabel, type RideWeather } from "./weather";
+import { cleanVisibleDescription } from "./captain";
 
 export interface ShareableRide {
   title: string;
@@ -38,9 +39,10 @@ export function buildRideShareMessage(
   lines.push(`📅 ${fmtDateLong(ride.ride_date)} à ${fmtTime(ride.ride_time)}`);
   lines.push(`📍 ${ride.place}`);
 
-  if (ride.description) {
+  const cleanDesc = cleanVisibleDescription(ride.description);
+  if (cleanDesc) {
     lines.push("");
-    lines.push(ride.description);
+    lines.push(cleanDesc);
   }
 
   lines.push("");

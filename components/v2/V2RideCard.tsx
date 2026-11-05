@@ -118,7 +118,7 @@ export function V2RideCard({
               <span className="text-black/30 flex-shrink-0 dark:text-white/40">·</span>
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <span className="text-[10.5px] font-black text-neutral-900 whitespace-nowrap flex-shrink-0 dark:text-violet-200/90">
-                  👑 {registeredAdmins?.length || 0}
+                  🧭 {registeredAdmins?.length || 0}
                 </span>
                 {registeredAdmins?.map((a) => (
                   <AdminBadge key={a.name} name={a.name} group={a.group} />

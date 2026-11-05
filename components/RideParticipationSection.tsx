@@ -1,21 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { JoinPanel } from "./JoinPanel";
 import { ParticipantsList } from "./ParticipantsList";
 import { AdminOnly } from "./AdminOnly";
 import { WhatsAppShareButton } from "./WhatsAppShareButton";
 import { Icon } from "./Icons";
+import { isAdminName } from "@/lib/admins";
 import type { GroupLevel, Participation } from "@/lib/types";
 
 /**
- * Regroupe JoinPanel et ParticipantsList sous un seul state partage : une
- * inscription, un retrait ou un changement de groupe apparait donc
- * immediatement dans "Participants", sans attendre router.refresh() (qui
- * peut renvoyer une page mise en cache quelques secondes, voir
- * export const revalidate sur la fiche sortie). Les boutons GPX/Strava et
- * "Publier sur WhatsApp" vivent ici aussi simplement parce qu'ils se
- * trouvent entre les deux dans la mise en page.
+ * Regroupe JoinPanel et ParticipantsList sous un seul state partagé : une
+ * inscription, un retrait ou un changement de groupe apparaît donc
+ * immédiatement dans "Participants", sans attendre router.refresh().
+ *
+ * Gère également le capitaine de route en state local réactif.
  */
 export function RideParticipationSection({
   rideId,
@@ -25,6 +24,7 @@ export function RideParticipationSection({
   gpxUrl,
   stravaUrl,
   shareMessage,
+  captainName,
 }: {
   rideId: string;
   availableGroups: GroupLevel[];
@@ -33,8 +33,14 @@ export function RideParticipationSection({
   gpxUrl: string | null;
   stravaUrl: string | null;
   shareMessage: string;
+  captainName?: string | null;
 }) {
   const [participants, setParticipants] = useState(initialParticipants);
+  const [captain, setCaptain] = useState(captainName ?? null);
+
+  useEffect(() => {
+    setCaptain(captainName ?? null);
+  }, [captainName]);
 
   return (
     <>
@@ -44,8 +50,22 @@ export function RideParticipationSection({
           availableGroups={availableGroups}
           isPast={isPast}
           participants={participants}
-          onJoin={(p) => setParticipants((prev) => [...prev, p])}
-          onLeave={(id) => setParticipants((prev) => prev.filter((p) => p.id !== id))}
+          onJoin={(p) => {
+            setParticipants((prev) => [...prev, p]);
+            if (isAdminName(p.participant_name)) {
+              setCaptain((prev) => (prev ? `${prev}, ${p.participant_name}` : p.participant_name));
+            }
+          }}
+          onLeave={(id) => {
+            const leaving = participants.find((p) => p.id === id);
+            setParticipants((prev) => prev.filter((p) => p.id !== id));
+            if (leaving && isAdminName(leaving.participant_name)) {
+              const remaining = participants
+                .filter((p) => p.id !== id && isAdminName(p.participant_name))
+                .map((p) => p.participant_name);
+              setCaptain(remaining.length > 0 ? remaining.join(", ") : null);
+            }
+          }}
           onChangeGroup={(id, group) =>
             setParticipants((prev) => prev.map((p) => (p.id === id ? { ...p, group_level: group } : p)))
           }
@@ -86,6 +106,8 @@ export function RideParticipationSection({
       <ParticipantsList
         rideId={rideId}
         participants={participants}
+        captainName={captain}
+        onCaptainChange={(newCap) => setCaptain(newCap)}
         onRemoved={(ids) => setParticipants((prev) => prev.filter((p) => !ids.has(p.id)))}
       />
     </>

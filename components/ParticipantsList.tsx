@@ -1,45 +1,61 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Avatar } from "./Avatar";
 import { GroupBadge } from "./GroupBadge";
 import { Icon } from "./Icons";
 import { useIsAdmin } from "@/lib/useIsAdmin";
+import { isAdminName } from "@/lib/admins";
+import { stripEmojiAndDiacritics } from "@/lib/members";
 import type { Participation } from "@/lib/types";
 
 /**
- * Liste des participants d'une sortie. Le tableau est controle par le
- * parent (voir RideParticipationSection) plutot que copie dans un state
- * local : ainsi une inscription/un retrait via JoinPanel se reflete ici
- * immediatement, sans attendre un rechargement serveur. Pour un admin
- * (verifie cote client, voir lib/useIsAdmin.ts), chaque ligne gagne une
- * case a cocher permettant de selectionner un ou plusieurs participants a
- * retirer ; une confirmation explicite (avec les noms concernes) est
- * demandee avant tout retrait, pour eviter une manipulation involontaire.
- * Au-dela de COLLAPSE_THRESHOLD participants, la liste est repliee par
- * defaut (les premiers inscrits restent visibles) avec un bouton pour la
- * derouler entierement, et un autre pour la reduire a nouveau.
+ * Liste des participants d'une sortie. Le tableau est contrôlé par le
+ * parent (voir RideParticipationSection) plutôt que copié dans un state
+ * local : ainsi une inscription/un retrait via JoinPanel se reflète ici
+ * immédiatement, sans attendre un rechargement serveur.
+ *
+ * Pour un admin :
+ * - Case à cocher pour sélectionner un ou plusieurs participants à retirer.
+ * - Bouton 🧭 sur chaque participant pour le désigner comme capitaine de route
+ *   en 1 clic (ou lui retirer le rôle s'il est déjà capitaine).
  */
 const COLLAPSE_THRESHOLD = 8;
 
 export function ParticipantsList({
   rideId,
   participants,
+  captainName,
   onRemoved,
+  onCaptainChange,
 }: {
   rideId: string;
   participants: Participation[];
-  /** Met a jour la liste partagee du parent une fois le retrait confirme cote serveur. */
+  captainName?: string | null;
+  /** Met à jour la liste partagée du parent une fois le retrait confirmé côté serveur. */
   onRemoved: (ids: Set<string>) => void;
+  /** Notifie le parent d'un changement de capitaine pour mise à jour instantanée. */
+  onCaptainChange?: (newCaptain: string | null) => void;
 }) {
   const isAdmin = useIsAdmin();
+  const router = useRouter();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [pending, setPending] = useState(false);
+  const [captainPending, setCaptainPending] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(false);
 
   const isCollapsible = participants.length > COLLAPSE_THRESHOLD;
   const visibleParticipants = isCollapsible && !expanded ? participants.slice(0, COLLAPSE_THRESHOLD) : participants;
+
+  function isCaptain(name: string) {
+    if (isAdminName(name)) return true;
+    if (!captainName) return false;
+    const norm = stripEmojiAndDiacritics(name).toLowerCase().trim();
+    const parts = captainName.split(/[,;\/]+/).map((s) => stripEmojiAndDiacritics(s).toLowerCase().trim());
+    return parts.includes(norm);
+  }
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -48,6 +64,32 @@ export function ParticipantsList({
       else next.add(id);
       return next;
     });
+  }
+
+  async function handleToggleCaptain(name: string) {
+    const isCurrent = isCaptain(name);
+    const targetName = isCurrent ? "" : name;
+    setCaptainPending(name);
+    setError("");
+
+    try {
+      const res = await fetch(`/api/admin/rides/${rideId}/captain`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ captainName: targetName }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(data.error || "Impossible de désigner le capitaine.");
+      } else {
+        onCaptainChange?.(data.captain || null);
+        router.refresh();
+      }
+    } catch {
+      setError("Erreur de connexion lors de la désignation du capitaine.");
+    } finally {
+      setCaptainPending(null);
+    }
   }
 
   async function handleRemove() {
@@ -75,6 +117,17 @@ export function ParticipantsList({
     if (removedIds.size < toRemove.length) {
       setError("Certains participants n'ont pas pu être retirés.");
     }
+
+    // Si le capitaine retiré faisait partie des sélectionnés, réinitialiser le capitaine
+    if (toRemove.some((p) => isCaptain(p.participant_name))) {
+      fetch(`/api/admin/rides/${rideId}/captain`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ captainName: "" }),
+      }).catch(() => {});
+      onCaptainChange?.(null);
+    }
+
     onRemoved(removedIds);
     setSelected(new Set());
   }
@@ -84,11 +137,29 @@ export function ParticipantsList({
       data-ride-id={rideId}
       className="mx-5 mb-6 overflow-hidden rounded-2xl border border-black/[0.06] bg-white dark:border-white/10 dark:bg-[#1A1422]"
     >
+      {/* Bandeau d'aide discret pour les admins */}
+      {isAdmin && participants.length > 0 && (
+        <div className="flex items-center justify-between border-b border-black/[0.05] bg-black/[0.02] px-4 py-1.5 text-[11px] font-medium text-black/50 dark:border-white/[0.06] dark:bg-white/[0.02] dark:text-white/50">
+          <span>💡 Cliquez sur 🧭 pour désigner le capitaine de route</span>
+          {captainName && (
+            <span className="font-semibold text-amber-700 dark:text-amber-300">
+              Actuel : {captainName}
+            </span>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <div className="border-b border-red-500/20 bg-red-500/10 px-4 py-2 text-xs text-red-600 dark:text-red-400">
+          {error}
+        </div>
+      )}
+
       {participants.length === 0 ? (
         <p className="p-6 text-center text-sm text-black/40 dark:text-white/40">Personne n&apos;est encore inscrit.</p>
       ) : (
         visibleParticipants.map((p) => (
-          <div key={p.id} className="flex items-center gap-3 px-4 py-2.5">
+          <div key={p.id} className="flex items-center gap-2.5 px-4 py-2.5">
             {isAdmin && (
               <input
                 type="checkbox"
@@ -99,7 +170,43 @@ export function ParticipantsList({
               />
             )}
             <Avatar name={p.participant_name} seed={p.participant_name} />
-            <span className="flex-1 text-[13.5px] font-bold">{p.participant_name}</span>
+            <div className="flex flex-1 items-center gap-1.5 flex-wrap min-w-0">
+              <span className="text-[13.5px] font-bold truncate">{p.participant_name}</span>
+              {isCaptain(p.participant_name) && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-black text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 flex-shrink-0">
+                  🧭 Capitaine
+                  {isAdmin && !isAdminName(p.participant_name) && (
+                    <button
+                      type="button"
+                      disabled={captainPending !== null}
+                      onClick={() => handleToggleCaptain(p.participant_name)}
+                      className="ml-1 text-amber-800/80 hover:text-red-600 dark:text-amber-200/80 dark:hover:text-red-400 font-black text-xs leading-none"
+                      title="Retirer le rôle de capitaine"
+                      aria-label="Retirer le rôle de capitaine"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </span>
+              )}
+            </div>
+
+            {/* Action admin : désigner capitaine de route */}
+            {isAdmin && !isCaptain(p.participant_name) && (
+              <button
+                type="button"
+                disabled={captainPending !== null}
+                onClick={() => handleToggleCaptain(p.participant_name)}
+                className="inline-flex items-center gap-1 rounded-lg border border-black/10 bg-black/[0.03] px-2 py-1 text-[11px] font-bold text-black/65 hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-800 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/65 dark:hover:border-amber-400/40 dark:hover:bg-amber-400/10 dark:hover:text-amber-300 transition-colors flex-shrink-0"
+                title={`Désigner ${p.participant_name} comme capitaine de route`}
+              >
+                <span>🧭</span>
+                <span className="hidden sm:inline">
+                  {captainPending === p.participant_name ? "En cours…" : "Capitaine"}
+                </span>
+              </button>
+            )}
+
             <GroupBadge group={p.group_level} withRange={false} />
           </div>
         ))
@@ -118,7 +225,6 @@ export function ParticipantsList({
 
       {isAdmin && selected.size > 0 && (
         <div className="flex flex-col gap-2 border-t border-black/[0.06] p-3 dark:border-white/10">
-          {error && <p className="text-xs text-red-500">{error}</p>}
           <button
             type="button"
             disabled={pending}

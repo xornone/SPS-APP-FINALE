@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isAdminName } from "@/lib/admins";
 
 const GROUPS = ["vert", "rouge", "violet"];
 
@@ -157,8 +158,9 @@ export async function POST(request: Request) {
     // attendre la fenetre de revalidation (15-20s).
     revalidatePath("/home");
     revalidatePath(`/rides/${rideId}`);
+    revalidatePath(`/v2/rides/${rideId}`);
 
-    return NextResponse.json({ id: data.id, client_token: data.client_token });
+    return NextResponse.json({ id: data.id, client_token: data.client_token, is_admin: isAdminName(name) });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Erreur serveur inattendue." }, { status: 500 });
   }

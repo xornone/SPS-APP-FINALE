@@ -12,6 +12,8 @@ import { buildRideShareMessage } from "@/lib/shareMessage";
 import { shortRideCode } from "@/lib/shortLink";
 import { GROUP_INFO, type GroupLevel } from "@/lib/types";
 import { cleanRideTitle, getRideEffectiveGroups } from "@/lib/rideGroup";
+import { getRideCaptain } from "@/lib/captain";
+import { getRegisteredAdmins } from "@/lib/admins";
 import { fmtDateDimNov, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
 import {
   addMinutesToTimeString,
@@ -53,6 +55,8 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   ]);
 
   const past = isPastDate(ride.ride_date);
+  const registeredAdmins = getRegisteredAdmins(participations);
+  const captain = getRideCaptain(ride, registeredAdmins);
 
   const groupCounts: Record<GroupLevel, number> = { vert: 0, rouge: 0, violet: 0 };
   participations.forEach((p) => groupCounts[p.group_level]++);
@@ -183,6 +187,28 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         ))}
       </div>
 
+      {/* Capitaine de route */}
+      {captain && (
+        <div className="mx-5 mb-2 mt-1 flex items-center justify-between rounded-2xl border border-amber-500/25 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent p-3.5 shadow-cardSm dark:border-amber-400/25 dark:from-amber-500/15">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-lg">
+              🧭
+            </span>
+            <div>
+              <span className="text-[10.5px] font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+                Capitaine de route
+              </span>
+              <p className="font-display text-[15px] font-bold text-neutral-900 dark:text-white">
+                {captain}
+              </p>
+            </div>
+          </div>
+          <span className="rounded-full bg-amber-500/15 px-2.5 py-1 text-[11px] font-bold text-amber-800 dark:bg-amber-400/20 dark:text-amber-200">
+            Guide l&apos;allure 🚴
+          </span>
+        </div>
+      )}
+
       {/* Description */}
       <RideDescription description={ride.description} showSafetyNotice={ride.show_safety_notice !== false} />
 
@@ -195,6 +221,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
         gpxUrl={gpxUrl}
         stravaUrl={ride.strava_url}
         shareMessage={shareMessage}
+        captainName={captain}
       />
     </div>
   );

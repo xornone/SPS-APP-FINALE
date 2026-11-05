@@ -11,7 +11,8 @@ import { Icon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getMyStravaConnection } from "@/lib/strava";
 import { StravaConnectPanel } from "@/components/StravaConnectPanel";
-import { AdminDevicePushCard } from "@/components/AdminDevicePushCard";
+import { AdminAutoPushSync } from "@/components/AdminAutoPushSync";
+import { AdminRideReminderCard } from "@/components/AdminRideReminderCard";
 
 // Deja rendue dynamiquement de fait (createClient() appelle cookies()),
 // mais explicite ici comme sur le reste des pages admin qui doivent
@@ -94,12 +95,15 @@ export default async function AdminPage() {
         </Suspense>
       </div>
 
+      {/* Synchronisation push silencieuse et automatique pour l'admin connecté */}
+      <AdminAutoPushSync />
+
       <div className="px-5 pb-5">
-        <h2 className="mb-2 font-display text-lg tracking-wide">Alertes administrateur</h2>
+        <h2 className="mb-2 font-display text-lg tracking-wide">Rappels automatiques (veille de sortie)</h2>
         <p className="mb-2 text-[11.5px] text-black/40 dark:text-white/40">
-          Reçois une notification push sur cet appareil à chaque nouvelle idée dans la boîte à idées.
+          Rappels envoyés automatiquement chaque soir à 19h aux inscrits d&apos;une sortie du lendemain.
         </p>
-        <AdminDevicePushCard />
+        <AdminRideReminderCard />
       </div>
 
       {isNotificationAdmin(user?.email) && (

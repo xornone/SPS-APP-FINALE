@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { RIDE_SAFETY_NOTICE } from "@/lib/rideSafetyNotice";
+import { cleanVisibleDescription } from "@/lib/captain";
 
 // Description ecrite par l'admin + consignes fixes (lib/rideSafetyNotice.ts,
 // uniquement si showSafetyNotice est vrai : case a cocher du formulaire de
@@ -18,7 +19,7 @@ export function RideDescription({
   description: string;
   showSafetyNotice?: boolean;
 }) {
-  const base = description || "Pas de description pour cette sortie.";
+  const base = cleanVisibleDescription(description) || "Pas de description pour cette sortie.";
   const text = showSafetyNotice ? `${base}\n\n${RIDE_SAFETY_NOTICE}` : base;
 
   const [expanded, setExpanded] = useState(false);
