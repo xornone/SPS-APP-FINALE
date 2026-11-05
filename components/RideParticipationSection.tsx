@@ -51,7 +51,7 @@ export function RideParticipationSection({
           isPast={isPast}
           participants={participants}
           onJoin={(p) => {
-            setParticipants((prev) => [...prev, p]);
+            setParticipants((prev) => [p, ...prev]);
             if (isAdminName(p.participant_name)) {
               setCaptain((prev) => (prev ? `${prev}, ${p.participant_name}` : p.participant_name));
             }

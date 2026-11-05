@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Avatar } from "./Avatar";
 import { GroupBadge } from "./GroupBadge";
@@ -15,6 +15,9 @@ import type { Participation } from "@/lib/types";
  * parent (voir RideParticipationSection) plutôt que copié dans un state
  * local : ainsi une inscription/un retrait via JoinPanel se reflète ici
  * immédiatement, sans attendre un rechargement serveur.
+ *
+ * Les participants sont ordonnés par ordre d'inscription : le premier inscrit
+ * se trouve en bas de liste, le plus récemment inscrit en haut.
  *
  * Pour un admin :
  * - Case à cocher pour sélectionner un ou plusieurs participants à retirer.
@@ -46,8 +49,18 @@ export function ParticipantsList({
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(false);
 
-  const isCollapsible = participants.length > COLLAPSE_THRESHOLD;
-  const visibleParticipants = isCollapsible && !expanded ? participants.slice(0, COLLAPSE_THRESHOLD) : participants;
+  // Ordonné par date d'inscription : plus récent en haut, premier inscrit en bas
+  const sortedParticipants = useMemo(() => {
+    return [...participants].sort((a, b) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      if (timeA !== timeB) return timeB - timeA;
+      return 0;
+    });
+  }, [participants]);
+
+  const isCollapsible = sortedParticipants.length > COLLAPSE_THRESHOLD;
+  const visibleParticipants = isCollapsible && !expanded ? sortedParticipants.slice(0, COLLAPSE_THRESHOLD) : sortedParticipants;
 
   function isCaptain(name: string) {
     if (isAdminName(name)) return true;

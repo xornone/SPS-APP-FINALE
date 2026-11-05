@@ -35,7 +35,7 @@ export async function fetchParticipationsForRide(
     .from("ride_participants")
     .select("*")
     .eq("ride_id", rideId)
-    .order("participant_name");
+    .order("created_at", { ascending: false });
   if (error) throw error;
   return (data || []) as unknown as Participation[];
 }
