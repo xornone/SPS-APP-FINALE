@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       email,
     });
 
-    // Envoi silencieux de la notification push aux seuls appareils des administrateurs
+    // Envoi de la notification push aux seuls appareils des administrateurs
     try {
       const author = isAnonymous ? "Un membre (anonyme)" : (suggestion.author_name || "Un membre");
       const preview =
@@ -54,13 +54,12 @@ export async function POST(request: NextRequest) {
           ? `${suggestion.message.slice(0, 67)}...`
           : suggestion.message;
 
-      sendPushToAdmins({
+      const pushRes = await sendPushToAdmins({
         title: "💡 Nouvelle idée boîte à idées",
         body: `${author} : « ${preview} »`,
         url: "/boite-a-idees",
-      }).catch((pushErr) => {
-        console.error("[suggestions] Échec push admin :", pushErr);
       });
+      console.log("[suggestions] Notification push admin déclenchée :", pushRes);
     } catch (pushErr) {
       console.error("[suggestions] Échec déclenchement push admin :", pushErr);
     }

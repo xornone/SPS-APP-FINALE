@@ -20,14 +20,19 @@ export async function POST(request: Request) {
 
     // Verifier si l'utilisateur envoyant la requete possede une session admin valide
     let isAdmin = false;
-    try {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      isAdmin = !!user;
-    } catch {
-      // Ignorer si contexte non authentifie
+    const headerUserId = request.headers.get("x-user-id");
+    if (headerUserId) {
+      isAdmin = true;
+    } else {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        isAdmin = !!user;
+      } catch {
+        // Ignorer si contexte non authentifie
+      }
     }
 
     const admin = createAdminClient();

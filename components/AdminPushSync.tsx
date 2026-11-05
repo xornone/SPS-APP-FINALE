@@ -23,7 +23,8 @@ export function AdminPushSync() {
 
     async function syncSubscription() {
       try {
-        const reg = await navigator.serviceWorker.ready;
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (!reg || cancelled) return;
         const sub = await reg.pushManager.getSubscription();
         if (!sub || cancelled) return;
 

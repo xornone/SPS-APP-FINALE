@@ -11,6 +11,7 @@ import { Icon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getMyStravaConnection } from "@/lib/strava";
 import { StravaConnectPanel } from "@/components/StravaConnectPanel";
+import { AdminDevicePushCard } from "@/components/AdminDevicePushCard";
 
 // Deja rendue dynamiquement de fait (createClient() appelle cookies()),
 // mais explicite ici comme sur le reste des pages admin qui doivent
@@ -93,9 +94,17 @@ export default async function AdminPage() {
         </Suspense>
       </div>
 
+      <div className="px-5 pb-5">
+        <h2 className="mb-2 font-display text-lg tracking-wide">Alertes administrateur</h2>
+        <p className="mb-2 text-[11.5px] text-black/40 dark:text-white/40">
+          Reçois une notification push sur cet appareil à chaque nouvelle idée dans la boîte à idées.
+        </p>
+        <AdminDevicePushCard />
+      </div>
+
       {isNotificationAdmin(user?.email) && (
         <div className="px-5 pb-5">
-          <h2 className="mb-2 font-display text-lg tracking-wide">Notifications</h2>
+          <h2 className="mb-2 font-display text-lg tracking-wide">Message général club</h2>
           <p className="mb-2 text-[11.5px] text-black/40 dark:text-white/40">
             Envoie un message push à tous les membres ayant activé les notifications.
           </p>

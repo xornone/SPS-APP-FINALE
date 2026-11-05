@@ -75,12 +75,15 @@ export async function sendPushToAll(payload: PushPayload): Promise<void> {
  * Envoie une notification push UNIQUEMENT aux appareils des administrateurs
  * (ex: alerte lorsqu'une nouvelle idee est postee dans la boîte à idées).
  */
-export async function sendPushToAdmins(payload: PushPayload): Promise<void> {
+export async function sendPushToAdmins(
+  payload: PushPayload
+): Promise<{ success: boolean; count: number; error?: string }> {
   try {
     configureWebPush();
   } catch (err) {
-    console.error("[push] configuration manquante :", err);
-    return;
+    const msg = (err as Error)?.message || String(err);
+    console.error("[push] configuration manquante :", msg);
+    return { success: false, count: 0, error: msg };
   }
 
   const admin = createAdminClient();
@@ -90,10 +93,17 @@ export async function sendPushToAdmins(payload: PushPayload): Promise<void> {
     .eq("is_admin", true);
 
   if (error) {
-    // Si la colonne is_admin n'a pas encore ete executee en migration, log sans crasher
     console.error("[push] impossible de lire les abonnements admin :", error.message);
-    return;
+    return { success: false, count: 0, error: error.message };
   }
 
-  await sendPushToSubscribers(subs || [], payload);
+  const list = subs || [];
+  console.log(`[push] Envoi notification aux admins : ${list.length} appareil(s) admin ciblé(s)`);
+  if (list.length === 0) {
+    console.warn("[push] Aucun appareil abonné avec is_admin=true. Aucune notification push délivrée.");
+    return { success: true, count: 0 };
+  }
+
+  await sendPushToSubscribers(list, payload);
+  return { success: true, count: list.length };
 }
