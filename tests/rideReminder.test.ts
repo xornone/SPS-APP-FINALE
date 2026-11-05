@@ -1,12 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildReminderMessage, getTomorrowDateString } from "@/lib/rideReminder";
+import { buildReminderMessage, formatReminderWeather, getTomorrowDateString } from "@/lib/rideReminder";
 import type { Ride } from "@/lib/types";
+import type { RideWeather } from "@/lib/weather";
 
 vi.mock("@/lib/weather", () => ({
   getRideCoordinates: () => [43.6, 3.8],
   fetchRideWeather: vi.fn().mockResolvedValue({
     temperatureC: 15,
-    suitabilityLabel: "Bonnes conditions",
+    weatherCode: 0,
+    dominantWeatherCode: 0,
+    precipitationProbability: 0,
+    maxPrecipitationProbability: 0,
+    windSpeedKmh: 10,
+    windDirectionDeg: 180,
   }),
 }));
 
@@ -29,13 +35,53 @@ describe("lib/rideReminder", () => {
     updated_at: "2026-11-01T10:00:00Z",
   };
 
-  it("builds reminder message with departure time, place and weather", async () => {
-    const message = await buildReminderMessage(mockRide);
-    expect(message.title).toContain("Rappel SPS : Sortie Rouge — Pic Saint-Loup demain 🚴");
-    expect(message.body).toContain("Départ 09:00 (Castelnau)");
-    expect(message.body).toContain("15°C, Bonnes conditions");
-    expect(message.body).toContain("N'oublie pas ton bidon et ta trace GPX !");
-    expect(message.url).toBe("/rides/ride-123");
+  describe("formatReminderWeather", () => {
+    it("formats clear sky with sun emoji", () => {
+      const weather: RideWeather = {
+        temperatureC: 18.2,
+        weatherCode: 0,
+        precipitationProbability: 0,
+        windSpeedKmh: 10,
+        windDirectionDeg: 180,
+      };
+      expect(formatReminderWeather(weather)).toBe("18°C, ☀️ Ciel dégagé");
+    });
+
+    it("formats overcast sky", () => {
+      const weather: RideWeather = {
+        temperatureC: 12.6,
+        weatherCode: 3,
+        precipitationProbability: 10,
+        windSpeedKmh: 15,
+        windDirectionDeg: 200,
+      };
+      expect(formatReminderWeather(weather)).toBe("13°C, 🌥️ Ciel couvert");
+    });
+
+    it("formats rain with percentage risk", () => {
+      const weather: RideWeather = {
+        temperatureC: 11.1,
+        weatherCode: 61,
+        precipitationProbability: 70,
+        maxPrecipitationProbability: 70,
+        windSpeedKmh: 20,
+        windDirectionDeg: 220,
+      };
+      expect(formatReminderWeather(weather)).toBe("11°C, 🌧️ Pluie (70% de risque)");
+    });
+  });
+
+  describe("buildReminderMessage", () => {
+    it("builds reminder message with departure time, place and accurate weather without accessories", async () => {
+      const message = await buildReminderMessage(mockRide);
+      expect(message.title).toBe("Rappel SPS : Sortie Rouge — Pic Saint-Loup demain 🚴");
+      expect(message.body).toBe("Départ 09:00 (Castelnau) · 15°C, ☀️ Ciel dégagé");
+      expect(message.body).not.toContain("bidon");
+      expect(message.body).not.toContain("GPX");
+      expect(message.type).toBe("ride_reminder");
+      expect(message.rideId).toBe("ride-123");
+      expect(message.url).toBe("/rides/ride-123");
+    });
   });
 
   it("calculates tomorrow's date string format YYYY-MM-DD", () => {

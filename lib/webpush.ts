@@ -19,6 +19,9 @@ export interface PushPayload {
   body: string;
   // Chemin ouvert au clic sur la notification (ex: "/rides/<id>").
   url?: string;
+  // Métadonnées de ciblage (ex: "ride_reminder" + rideId)
+  type?: string;
+  rideId?: string;
 }
 
 async function sendPushToSubscribers(

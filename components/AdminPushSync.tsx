@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useIsAdmin } from "@/lib/useIsAdmin";
+import { syncRegistrationsToWorker } from "@/lib/myParticipations";
 
 /**
  * Synchronise silencieusement l'abonnement push du navigateur des administrateurs
@@ -12,6 +13,10 @@ import { useIsAdmin } from "@/lib/useIsAdmin";
 export function AdminPushSync() {
   const isAdmin = useIsAdmin();
   const hasSyncedRef = useRef(false);
+
+  useEffect(() => {
+    syncRegistrationsToWorker();
+  }, []);
 
   useEffect(() => {
     if (!isAdmin || hasSyncedRef.current) return;
