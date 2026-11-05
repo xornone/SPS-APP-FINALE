@@ -140,8 +140,9 @@ export function AdminDevicePushCard() {
         </div>
 
         {hasSubscription && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-sps-green/10 px-2.5 py-0.5 text-[10.5px] font-bold text-sps-green">
-            Actif ✓
+          <span className="inline-flex items-center gap-1 rounded-full bg-sps-green/10 px-2.5 py-0.5 text-[11px] font-bold text-sps-green">
+            <span className="leading-none">Actif</span>
+            <Icon name="check" size={11} className="stroke-[2.5]" />
           </span>
         )}
       </div>

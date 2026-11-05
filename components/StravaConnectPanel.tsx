@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import type { StravaConnection } from "@/lib/strava";
+import { Icon } from "./Icons";
 
 // Chaque admin ne voit et ne gere que SA propre connexion Strava (jamais
 // celle des autres admins) : pas de liste, un seul etat connecte/deconnecte.
@@ -39,7 +40,10 @@ export function StravaConnectPanel({ connection }: { connection: StravaConnectio
         <div className="flex items-center justify-between rounded-2xl border border-black/[0.06] bg-white px-3.5 py-2.5 dark:border-white/10 dark:bg-[#1A1422]">
           <span className="text-sm font-medium">{current.athleteName}</span>
           <div className="flex items-center gap-2.5">
-            <span className="text-xs font-semibold text-sps-green">Connecté ✓</span>
+            <span className="inline-flex items-center gap-1 text-xs font-semibold text-sps-green">
+              <span>Connecté</span>
+              <Icon name="check" size={11} className="stroke-[2.5]" />
+            </span>
             <button
               type="button"
               disabled={busy}
