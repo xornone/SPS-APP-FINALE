@@ -94,6 +94,54 @@ body {
   animation: subtleBadgeBlink 2s ease-in-out infinite;
 }
 
+/* Lueur dynamique précommandes & maillot ("hop ça allume derrière") */
+@keyframes auraIgniteAndBreathe {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.72);
+    filter: blur(14px);
+  }
+  38% {
+    opacity: 1;
+    transform: scale(1.18);
+    filter: blur(32px);
+  }
+  70% {
+    opacity: 0.85;
+    transform: scale(0.98);
+    filter: blur(24px);
+  }
+  85% {
+    opacity: 0.95;
+    transform: scale(1.04);
+    filter: blur(26px);
+  }
+  100% {
+    opacity: 0.9;
+    transform: scale(1);
+    filter: blur(24px);
+  }
+}
+
+.animate-aura-ignite {
+  animation: auraIgniteAndBreathe 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes bannerAuraPulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.animate-banner-aura {
+  animation: bannerAuraPulse 3.5s ease-in-out infinite;
+}
+
 /* Optimisation GPU et fluidité mobile UI/UX Pro Max */
 .gpu-accelerated {
   transform: translateZ(0);

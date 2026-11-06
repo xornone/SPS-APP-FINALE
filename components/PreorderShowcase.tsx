@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@/components/Icons";
 import { PreorderCircularCountdown } from "@/components/PreorderCircularCountdown";
+import { hapticTap } from "@/lib/haptics";
 
 const HELLO_ASSO_URL = "https://www.helloasso.com/associations/sps/boutiques/equipement-sps";
 const GOBIK_FITTING_GUIDE_URL = "https://gobik.com/fr/pages/fitting-guide";
@@ -20,6 +21,12 @@ interface ArticleItem {
   image: string;
   alt: string;
   buttonLabel: string;
+  glowColors: {
+    from: string;
+    via: string;
+    to: string;
+    dropShadow: string;
+  };
   metrics: {
     value: string;
     label: string;
@@ -46,6 +53,12 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/maillot-sps.webp",
     alt: "Nouveau maillot officiel SPS 2027 Gobik CX SCA",
     buttonLabel: "Pré-commander sur HelloAsso",
+    glowColors: {
+      from: "rgba(217, 70, 239, 0.80)",
+      via: "rgba(168, 85, 247, 0.65)",
+      to: "rgba(109, 40, 217, 0.45)",
+      dropShadow: "rgba(168, 85, 247, 0.60)",
+    },
     metrics: [
       { value: "123 g", label: "Poids (M)" },
       { value: "UPF 50", label: "Anti-UV" },
@@ -74,6 +87,12 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/maillot-pulse-sps.webp",
     alt: "Nouveau maillot manches longues officiel SPS 2027 Gobik Pulse",
     buttonLabel: "Pré-commander sur HelloAsso",
+    glowColors: {
+      from: "rgba(244, 63, 94, 0.80)",
+      via: "rgba(236, 72, 153, 0.65)",
+      to: "rgba(139, 92, 246, 0.45)",
+      dropShadow: "rgba(236, 72, 153, 0.60)",
+    },
     metrics: [
       { value: "260 g", label: "Poids (M)" },
       { value: "8-16°C", label: "Température" },
@@ -102,6 +121,12 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/gilet-plus-sps.webp",
     alt: "Nouveau gilet officiel SPS 2027 Gobik Plus 2.0",
     buttonLabel: "Pré-commander sur HelloAsso",
+    glowColors: {
+      from: "rgba(6, 182, 212, 0.80)",
+      via: "rgba(59, 130, 246, 0.65)",
+      to: "rgba(147, 51, 234, 0.45)",
+      dropShadow: "rgba(6, 182, 212, 0.60)",
+    },
     metrics: [
       { value: "100 g", label: "Poids (M)" },
       { value: "10-18°C", label: "Température" },
@@ -130,6 +155,12 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/cuissard-sps.webp",
     alt: "Nouveau cuissard officiel SPS 2027 Gobik Modèle X",
     buttonLabel: "Pré-commander sur HelloAsso",
+    glowColors: {
+      from: "rgba(168, 85, 247, 0.80)",
+      via: "rgba(124, 58, 237, 0.65)",
+      to: "rgba(79, 70, 229, 0.45)",
+      dropShadow: "rgba(147, 51, 234, 0.60)",
+    },
     metrics: [
       { value: "165 g", label: "Poids (M)" },
       { value: "UPF 50", label: "Anti-UV" },
@@ -158,6 +189,12 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/running-flash-sps.webp",
     alt: "Nouveau maillot running officiel SPS 2027 Gobik Flash",
     buttonLabel: "Pré-commander sur HelloAsso",
+    glowColors: {
+      from: "rgba(16, 185, 129, 0.80)",
+      via: "rgba(168, 85, 247, 0.65)",
+      to: "rgba(236, 72, 153, 0.45)",
+      dropShadow: "rgba(168, 85, 247, 0.60)",
+    },
     metrics: [
       { value: "95 g", label: "Poids (M)" },
       { value: "UPF 50", label: "Anti-UV" },
@@ -192,11 +229,20 @@ export function PreorderShowcase() {
   const article = ARTICLES[activeIndex];
 
   const handlePrev = () => {
+    hapticTap(6);
     setActiveIndex((prev) => (prev === 0 ? ARTICLES.length - 1 : prev - 1));
   };
 
   const handleNext = () => {
+    hapticTap(6);
     setActiveIndex((prev) => (prev === ARTICLES.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleSelectTab = (idx: number) => {
+    if (idx !== activeIndex) {
+      hapticTap(6);
+      setActiveIndex(idx);
+    }
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -218,10 +264,10 @@ export function PreorderShowcase() {
 
   return (
     <div className="relative min-h-[calc(100dvh-70px)] overflow-hidden bg-gradient-to-b from-[#1C0D2E] via-[#120720] to-[#0A0413] text-white">
-      {/* Halos lumineux d'ambiance Apple Keynote */}
+      {/* Halos lumineux d'ambiance Apple Keynote sans banding grisâtre */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -top-24 left-1/2 -z-10 h-96 w-96 -translate-x-1/2 rounded-full bg-gradient-to-br from-fuchsia-600/35 via-violet-600/25 to-transparent blur-3xl transition-all duration-700"
+        className="pointer-events-none absolute -top-24 left-1/2 -z-10 h-96 w-96 -translate-x-1/2 rounded-full bg-gradient-to-br from-fuchsia-600/35 via-violet-600/25 to-purple-950/0 blur-3xl transition-all duration-700"
       />
       <div
         aria-hidden="true"
@@ -261,7 +307,7 @@ export function PreorderShowcase() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveIndex(idx)}
+                  onClick={() => handleSelectTab(idx)}
                   className={`relative flex items-center gap-1 rounded-full px-2.5 sm:px-3.5 py-1.5 text-[11px] sm:text-xs font-bold transition-all duration-300 ${
                     isActive
                       ? "bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white shadow-[0_2px_12px_rgba(217,70,239,0.5)]"
@@ -320,20 +366,31 @@ export function PreorderShowcase() {
           rel="noopener noreferrer"
           className="group relative block transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
         >
-          {/* Lueur dynamique derrière le produit */}
-          <div className="absolute inset-0 -z-10 scale-90 rounded-full bg-gradient-to-tr from-fuchsia-600/40 via-purple-600/40 to-blue-500/30 opacity-75 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
-
-          {/* Image du produit actif */}
+          {/* Zone du produit avec halo lumineux dynamique centré */}
           <div className="relative flex items-center justify-center py-2 min-h-[300px]">
+            {/* Lueur dynamique qui s'allume automatiquement ("hop ça allume derrière") à chaque changement de produit */}
+            <div
+              key={`glow-${article.id}-${activeIndex}`}
+              aria-hidden="true"
+              style={{
+                background: `radial-gradient(circle at center, ${article.glowColors.from} 0%, ${article.glowColors.via} 38%, ${article.glowColors.to} 62%, rgba(10,4,19,0) 80%)`,
+              }}
+              className="pointer-events-none absolute h-[270px] w-[270px] sm:h-[310px] sm:w-[310px] rounded-full blur-2xl animate-aura-ignite will-change-transform"
+            />
+
+            {/* Image du produit actif avec son drop-shadow vibrant */}
             <Image
-              key={article.id}
+              key={`img-${article.id}`}
               src={article.image}
               alt={article.alt}
               width={727}
               height={1024}
               sizes="(max-width: 480px) 285px, 285px"
               priority
-              className="h-auto w-full max-w-[285px] drop-shadow-[0_20px_35px_rgba(168,85,247,0.45)] transition-all duration-500 group-hover:drop-shadow-[0_25px_45px_rgba(217,70,239,0.65)]"
+              className="relative z-10 h-auto w-full max-w-[285px] animate-in transition-all duration-500 will-change-transform"
+              style={{
+                filter: `drop-shadow(0 20px 35px ${article.glowColors.dropShadow})`,
+              }}
             />
           </div>
 
@@ -349,7 +406,7 @@ export function PreorderShowcase() {
           {ARTICLES.map((_, dotIdx) => (
             <button
               key={dotIdx}
-              onClick={() => setActiveIndex(dotIdx)}
+              onClick={() => handleSelectTab(dotIdx)}
               aria-label={`Aller à l'article ${dotIdx + 1}`}
               className={`h-1.5 rounded-full transition-all duration-300 ${
                 dotIdx === activeIndex

@@ -10,10 +10,10 @@ export function JerseyPreorderBanner() {
         prefetch={true}
         className="group relative isolate flex items-center justify-between overflow-hidden rounded-2xl bg-gradient-to-br from-[#2D1047] via-[#421568] to-[#1C0A30] p-4 text-white shadow-card transition-all duration-200 hover:shadow-lg active:scale-[0.99]"
       >
-        {/* Lueur d'ambiance propre en radial-gradient sans filtre blur */}
+        {/* Lueur d'ambiance propre en radial-gradient avec fondu sans banding noir */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_right,rgba(217,70,239,0.30),transparent_65%)]"
+          className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(217,70,239,0.30)_0%,rgba(147,51,234,0.15)_45%,rgba(28,10,48,0)_75%)]"
         />
 
         <div className="relative z-10 flex flex-1 flex-col pr-2">
@@ -42,15 +42,20 @@ export function JerseyPreorderBanner() {
           </div>
         </div>
 
-        {/* Miniature du maillot (format d'origine) */}
-        <div className="relative z-10 flex-shrink-0">
+        {/* Miniature du maillot avec halo lumineux dédié centré */}
+        <div className="relative z-10 flex-shrink-0 flex items-center justify-center">
+          {/* Lueur lumineuse centrée exactement derrière le maillot */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -inset-2.5 rounded-full bg-gradient-to-tr from-fuchsia-500/60 via-purple-500/50 to-[#AA26FF]/60 blur-xl opacity-90 transition-all duration-300 group-hover:scale-115 group-hover:opacity-100 animate-banner-aura will-change-transform"
+          />
           <div className="relative h-24 w-20 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2">
             <Image
               src="/images/maillot-sps.webp"
               alt="Maillot SPS"
               fill
               sizes="80px"
-              className="object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]"
+              className="object-contain drop-shadow-[0_10px_22px_rgba(0,0,0,0.6)]"
             />
           </div>
         </div>
