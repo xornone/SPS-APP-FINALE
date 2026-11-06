@@ -4,9 +4,10 @@ import React from "react";
 import { BottomNav } from "@/components/BottomNav";
 
 const mockPush = vi.fn();
+let mockPathname = "/home";
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/home",
+  usePathname: () => mockPathname,
   useRouter: () => ({
     push: mockPush,
     prefetch: vi.fn(),
@@ -20,6 +21,7 @@ vi.mock("@/lib/useIsAdmin", () => ({
 describe("BottomNav and Modal interaction", () => {
   beforeEach(() => {
     document.body.className = "";
+    mockPathname = "/home";
     mockPush.mockClear();
     vi.spyOn(window, "scrollTo").mockImplementation(() => {});
   });
@@ -50,7 +52,7 @@ describe("BottomNav and Modal interaction", () => {
     expect(container.querySelector(".bottom-nav-container")).toBeTruthy();
   });
 
-  it("smoothly scrolls to top when active tab is clicked", async () => {
+  it("smoothly scrolls to top when active tab is clicked from root /home", async () => {
     render(<BottomNav />);
     const homeTab = screen.getByText("Accueil").closest("a");
     expect(homeTab).toBeTruthy();
@@ -61,6 +63,24 @@ describe("BottomNav and Modal interaction", () => {
 
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
     expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("keeps Accueil active on /rides/[id] and navigates back to /home when clicked", async () => {
+    mockPathname = "/rides/019ad7fe-test";
+    render(<BottomNav />);
+    const homeTab = screen.getByText("Accueil").closest("a");
+    expect(homeTab).toBeTruthy();
+
+    // Vérifier que l'onglet Accueil a bien le style actif (badge violet)
+    const activePill = homeTab!.querySelector(".from-sps-violet600");
+    expect(activePill).toBeTruthy();
+
+    // Cliquer sur Accueil depuis la page de détail d'une sortie doit retourner sur /home
+    await act(async () => {
+      fireEvent.click(homeTab!);
+    });
+
+    expect(mockPush).toHaveBeenCalledWith("/home");
   });
 
   it("triggers navigation when an inactive tab is clicked", async () => {

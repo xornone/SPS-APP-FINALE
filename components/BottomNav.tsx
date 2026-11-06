@@ -14,6 +14,45 @@ const TABS = [
   { href: "/admin", label: "Admin", icon: "gear" as const },
 ];
 
+/**
+ * Détermine si un onglet est visuellement actif.
+ * Pour "Accueil", la page de détail d'une sortie (/rides/...) fait partie de la section Accueil,
+ * donc le badge violet doit être allumé sur Accueil.
+ */
+function isTabActive(tabHref: string, currentPath: string): boolean {
+  if (tabHref === "/home") {
+    return (
+      currentPath === "/home" ||
+      currentPath === "/" ||
+      currentPath.startsWith("/rides") ||
+      currentPath === "/v2/home" ||
+      currentPath.startsWith("/v2/rides")
+    );
+  }
+  if (tabHref === "/classement") {
+    return (
+      currentPath === "/classement" ||
+      currentPath.startsWith("/classement/") ||
+      currentPath === "/v2/classement" ||
+      currentPath.startsWith("/v2/classement/")
+    );
+  }
+  return currentPath === tabHref || currentPath.startsWith(tabHref + "/");
+}
+
+/**
+ * Détermine si l'utilisateur est DÉJÀ exactement sur la racine de cet onglet.
+ * Seul ce cas déclenche un scroll-to-top.
+ * Si l'utilisateur est sur /rides/... (détail d'une sortie), il n'est PAS sur la racine /home :
+ * un clic sur "Accueil" DOIT naviguer vers /home.
+ */
+function isExactRootTab(tabHref: string, currentPath: string): boolean {
+  if (tabHref === "/home") {
+    return currentPath === "/home" || currentPath === "/";
+  }
+  return currentPath === tabHref;
+}
+
 export function BottomNav() {
   const pathname = usePathname();
   let router: ReturnType<typeof useRouter> | null = null;
@@ -58,11 +97,11 @@ export function BottomNav() {
   }, []);
 
   const triggerNavigation = useCallback(
-    (href: string, isCurrentTab: boolean) => {
+    (href: string, isCurrentRoot: boolean) => {
       lastNavTimeRef.current = Date.now();
 
-      // Si l'utilisateur clique sur l'onglet déjà actif : retour fluide en haut de page
-      if (isCurrentTab) {
+      // Si l'utilisateur est déjà sur la page racine exacte : scroll fluide vers le haut
+      if (isCurrentRoot) {
         if (typeof window !== "undefined") {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
@@ -96,7 +135,7 @@ export function BottomNav() {
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent, href: string, isCurrentTab: boolean) => {
+  const handleTouchEnd = (e: React.TouchEvent, href: string, isCurrentRoot: boolean) => {
     if (!touchStartRef.current) return;
     const touch = e.changedTouches[0];
     const dx = Math.abs(touch.clientX - touchStartRef.current.x);
@@ -107,11 +146,11 @@ export function BottomNav() {
     // Détection d'un tap tactile franc (déplacement max 18px, durée < 450ms)
     // Permet d'éliminer les faux négatifs d'iOS Safari (qui annule le clic lors d'un micro-roulement du pouce)
     if (dx < 18 && dy < 18 && duration < 450) {
-      triggerNavigation(href, isCurrentTab);
+      triggerNavigation(href, isCurrentRoot);
     }
   };
 
-  const handleClick = (e: React.MouseEvent, href: string, isCurrentTab: boolean) => {
+  const handleClick = (e: React.MouseEvent, href: string, isCurrentRoot: boolean) => {
     // Si déjà géré par le touchEnd tactile il y a moins de 600ms, empêcher l'action doublon
     if (Date.now() - lastNavTimeRef.current < 600) {
       e.preventDefault();
@@ -122,7 +161,7 @@ export function BottomNav() {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
 
     e.preventDefault();
-    triggerNavigation(href, isCurrentTab);
+    triggerNavigation(href, isCurrentRoot);
   };
 
   if (modalOpen) return null;
@@ -137,16 +176,8 @@ export function BottomNav() {
     >
       <nav className="pointer-events-auto flex items-center justify-around gap-1 rounded-full border border-black/[0.08] bg-white/85 p-1.5 backdrop-blur-2xl shadow-[0_12px_32px_-4px_rgba(0,0,0,0.10)] ring-1 ring-black/[0.04] transition-colors dark:border-white/15 dark:bg-[#0F0A1A]/85 dark:shadow-[0_16px_40px_-6px_rgba(0,0,0,0.7)] dark:ring-white/10">
         {visibleTabs.map((t) => {
-          const isCurrentTab =
-            pathname === t.href ||
-            (t.href !== "/home" && pathname.startsWith(t.href + "/")) ||
-            (t.href === "/home" && (pathname === "/" || pathname.startsWith("/rides")));
-
-          const active =
-            activePath === t.href ||
-            (t.href !== "/home" && activePath.startsWith(t.href + "/")) ||
-            (t.href === "/home" && (activePath === "/" || activePath.startsWith("/rides")));
-
+          const isCurrentRoot = isExactRootTab(t.href, pathname);
+          const active = isTabActive(t.href, activePath);
           const isNavigatingToThisTab = isPending && optimisticPath === t.href;
 
           return (
@@ -155,8 +186,8 @@ export function BottomNav() {
               href={t.href}
               prefetch={true}
               onTouchStart={handleTouchStart}
-              onTouchEnd={(e) => handleTouchEnd(e, t.href, isCurrentTab)}
-              onClick={(e) => handleClick(e, t.href, isCurrentTab)}
+              onTouchEnd={(e) => handleTouchEnd(e, t.href, isCurrentRoot)}
+              onClick={(e) => handleClick(e, t.href, isCurrentRoot)}
               className={`group relative flex flex-1 flex-col items-center justify-center gap-1 rounded-full py-2 select-none touch-manipulation transition-all duration-200 active:scale-95 ${
                 active
                   ? "text-violet-700 dark:text-white"

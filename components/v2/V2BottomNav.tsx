@@ -25,7 +25,13 @@ export function V2BottomNav() {
           const active =
             pathname === t.href ||
             (t.href !== "/v2/home" && pathname.startsWith(t.href + "/")) ||
-            (t.href === "/v2/home" && (pathname === "/v2" || pathname.startsWith("/v2/rides")));
+            (t.href === "/v2/home" &&
+              (pathname === "/v2" ||
+                pathname === "/v2/home" ||
+                pathname === "/home" ||
+                pathname === "/" ||
+                pathname.startsWith("/v2/rides") ||
+                pathname.startsWith("/rides")));
           return (
             <Link
               key={t.href}
