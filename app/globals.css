@@ -94,37 +94,25 @@ body {
   animation: subtleBadgeBlink 2s ease-in-out infinite;
 }
 
-/* Lueur dynamique précommandes & maillot ("hop ça allume derrière") */
+/* Lueur dynamique précommandes : s'allume progressivement et reste allumée au maximum */
 @keyframes auraIgniteAndBreathe {
   0% {
-    opacity: 0.2;
-    transform: scale(0.72);
-    filter: blur(14px);
+    opacity: 0.15;
+    transform: scale(0.78);
   }
-  38% {
-    opacity: 1;
-    transform: scale(1.18);
-    filter: blur(32px);
-  }
-  70% {
-    opacity: 0.85;
-    transform: scale(0.98);
-    filter: blur(24px);
-  }
-  85% {
-    opacity: 0.95;
-    transform: scale(1.04);
-    filter: blur(26px);
+  50% {
+    opacity: 0.75;
+    transform: scale(0.96);
   }
   100% {
-    opacity: 0.9;
-    transform: scale(1);
-    filter: blur(24px);
+    opacity: 1;
+    transform: scale(1.04);
   }
 }
 
 .animate-aura-ignite {
-  animation: auraIgniteAndBreathe 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: auraIgniteAndBreathe 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
 }
 
 @keyframes bannerAuraPulse {
@@ -184,21 +172,6 @@ body {
 
 .animate-shadow-levitate {
   animation: shadowLevitate 4.5s ease-in-out infinite;
-}
-
-@keyframes shadowLevitateSmall {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.55;
-  }
-  50% {
-    transform: scale(0.80);
-    opacity: 0.30;
-  }
-}
-
-.animate-shadow-small {
-  animation: shadowLevitateSmall 3.8s ease-in-out infinite;
 }
 
 /* Optimisation GPU et fluidité mobile UI/UX Pro Max */

@@ -43,7 +43,7 @@ export function JerseyPreorderBanner() {
         </div>
 
         {/* Miniature du maillot en lévitation avec son halo lumineux dédié centré */}
-        <div className="relative z-10 flex-shrink-0 flex flex-col items-center justify-center">
+        <div className="relative z-10 flex-shrink-0 flex items-center justify-center">
           {/* Lueur lumineuse centrée exactement derrière le maillot */}
           <div
             aria-hidden="true"
@@ -57,15 +57,9 @@ export function JerseyPreorderBanner() {
               alt="Maillot SPS"
               fill
               sizes="80px"
-              className="object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.55)]"
+              className="object-contain drop-shadow-md"
             />
           </div>
-
-          {/* Ombre portée au sol en phase avec la lévitation */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none -mt-1 h-2 w-14 rounded-full bg-black/60 blur-[3px] animate-shadow-small will-change-transform"
-          />
         </div>
       </Link>
     </div>
