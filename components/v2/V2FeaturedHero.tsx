@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icons";
 import { GroupBadge } from "@/components/GroupBadge";
@@ -12,7 +13,7 @@ import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import type { RideWeather } from "@/lib/weather";
 
-export function V2FeaturedHero({
+export const V2FeaturedHero = memo(function V2FeaturedHero({
   ride,
   participantCount,
   isJoined,
@@ -204,4 +205,4 @@ export function V2FeaturedHero({
       </Link>
     </div>
   );
-}
+});

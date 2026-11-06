@@ -9,6 +9,7 @@
 
 html {
   color-scheme: light;
+  scroll-behavior: smooth;
 }
 
 html.dark {
@@ -89,6 +90,18 @@ body {
 
 .animate-subtle-blink {
   animation: subtleBadgeBlink 2s ease-in-out infinite;
+}
+
+/* Optimisation GPU et fluidité mobile UI/UX Pro Max */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 150px;
 }
 
 @media (prefers-reduced-motion: reduce) {

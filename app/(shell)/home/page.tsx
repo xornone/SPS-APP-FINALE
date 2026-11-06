@@ -34,17 +34,25 @@ export default async function HomePage() {
   // HomeRidesSection).
   const rest = upcoming.filter((r) => r.ride_date !== nextDate);
 
-  // Récupère les points GPS réels des sorties à venir pour avoir exactement les mêmes coordonnées
-  // de départ que sur la fiche détaillée (évite les approximations de géocodage textuel).
-  const upcomingIds = upcoming.map((r) => r.id);
-  const { data: upcomingRoutes } = upcomingIds.length > 0
-    ? await supabase.from("rides").select("id, route_points").in("id", upcomingIds)
+  // Récupère les coordonnées de départ de manière optimale :
+  // utilise les lieux connus en cache immédiat et n'interroge les points GPS
+  // que pour les sorties dont le lieu n'est pas répertorié (évite de transférer
+  // de gros volumes de coordonnées GPS inutilement).
+  const ridesNeedingCoords = upcoming.filter((r) => {
+    const norm = (r.place || "").trim().toLowerCase();
+    return norm !== "corum" && norm !== "le corum" && norm !== "marché du lez" && norm !== "marche du lez" && norm !== "montpellier";
+  });
+
+  const idsToFetch = ridesNeedingCoords.map((r) => r.id);
+  const { data: upcomingRoutes } = idsToFetch.length > 0
+    ? await supabase.from("rides").select("id, route_points").in("id", idsToFetch)
     : { data: [] };
   const routePointsMap = new Map<string, [number, number][]>(
     (upcomingRoutes || []).map((r) => [r.id, r.route_points])
   );
 
-  // Pré-charge la météo en parallèle pour toutes les sorties à venir (synchronisée à 100% avec la fiche sortie)
+  // Pré-charge la météo en parallèle avec un délai limite de sécurité (1.5s max)
+  // pour garantir un affichage ultra-fluide sans bloquer le rendu si l'API météo externe ralentit.
   const weatherEntries = await Promise.all(
     upcoming.map(async (ride) => {
       try {
@@ -52,11 +60,18 @@ export default async function HomePage() {
         const coords = await getRideCoordinates(routePoints, ride.place);
         if (!coords) return [ride.id, null] as const;
         const groups = (ride.ride_groups || []).map((g) => g.group_level);
-        const w = await fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time, {
+
+        const weatherPromise = fetchRideWeather(coords[0], coords[1], ride.ride_date, ride.ride_time, {
           distanceKm: ride.distance_km,
           elevationGainM: ride.elevation_gain_m,
           groups,
         });
+
+        const timeoutPromise = new Promise<null>((resolve) =>
+          setTimeout(() => resolve(null), 1500)
+        );
+
+        const w = await Promise.race([weatherPromise, timeoutPromise]);
         return [ride.id, w] as const;
       } catch {
         return [ride.id, null] as const;

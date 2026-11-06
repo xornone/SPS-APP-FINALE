@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { V2FeaturedHero } from "./v2/V2FeaturedHero";
 import { V2RideCard } from "./v2/V2RideCard";
 import { WeekDivider } from "./WeekDivider";
@@ -56,10 +56,26 @@ export function HomeRidesSection({
     );
   }
 
-  const countsFor = (rideId: string) => currentParticipations.filter((p) => p.ride_id === rideId);
-  const adminsFor = (ride: Ride) => getRegisteredCaptains(countsFor(ride.id), ride.description);
-  const missingAdminGroupsFor = (ride: Ride) =>
-    getMissingAdminGroups((ride.ride_groups || []).map((g) => g.group_level), adminsFor(ride));
+  // Indexation O(1) de toutes les participations, capitaines et groupes manquants :
+  // élimine des dizaines d'itérations et de recalculs redondants lors du scroll.
+  const { partsByRideId, adminsByRideId, missingByRideId } = useMemo(() => {
+    const partsMap: Record<string, Participation[]> = {};
+    for (const p of currentParticipations) {
+      if (!partsMap[p.ride_id]) partsMap[p.ride_id] = [];
+      partsMap[p.ride_id].push(p);
+    }
+    const adminsMap: Record<string, ReturnType<typeof getRegisteredCaptains>> = {};
+    const missingMap: Record<string, ReturnType<typeof getMissingAdminGroups>> = {};
+    const allRides = [...featured, ...rest];
+    for (const r of allRides) {
+      const parts = partsMap[r.id] || [];
+      const admins = getRegisteredCaptains(parts, r.description);
+      adminsMap[r.id] = admins;
+      const groups = (r.ride_groups || []).map((g) => g.group_level);
+      missingMap[r.id] = getMissingAdminGroups(groups, admins);
+    }
+    return { partsByRideId: partsMap, adminsByRideId: adminsMap, missingByRideId: missingMap };
+  }, [currentParticipations, featured, rest]);
 
   const list = rest;
 
@@ -77,12 +93,12 @@ export function HomeRidesSection({
               <V2FeaturedHero
                 key={ride.id}
                 ride={ride}
-                participantCount={countsFor(ride.id).length}
+                participantCount={partsByRideId[ride.id]?.length || 0}
                 isJoined={myRideIds.has(ride.id)}
                 weather={weatherByRideId?.[ride.id]}
                 onQuickAction={(r) => setSelectedRideForModal(r)}
-                registeredAdmins={adminsFor(ride)}
-                missingAdminGroups={missingAdminGroupsFor(ride)}
+                registeredAdmins={adminsByRideId[ride.id]}
+                missingAdminGroups={missingByRideId[ride.id]}
                 hrefPrefix="/rides"
               />
             ))}
@@ -102,7 +118,7 @@ export function HomeRidesSection({
               </p>
             )}
             {list.map((r, i) => {
-              const parts = countsFor(r.id);
+              const parts = partsByRideId[r.id] || [];
               const wKey = weekKey(r.ride_date);
               const isNewWeek = i === 0 || weekKey(list[i - 1].ride_date) !== wKey;
               return (
@@ -116,8 +132,8 @@ export function HomeRidesSection({
                     isJoined={myRideIds.has(r.id)}
                     weather={weatherByRideId?.[r.id]}
                     onQuickAction={(ride) => setSelectedRideForModal(ride)}
-                    registeredAdmins={adminsFor(r)}
-                    missingAdminGroups={missingAdminGroupsFor(r)}
+                    registeredAdmins={adminsByRideId[r.id]}
+                    missingAdminGroups={missingByRideId[r.id]}
                     hrefPrefix="/rides"
                   />
                 </Fragment>

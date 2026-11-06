@@ -1,11 +1,23 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import type { RideWeather } from "@/lib/weather";
 import { computeScrubAtProgress, type ActiveScrub } from "@/lib/scrub";
 import { WeatherWidget } from "./WeatherWidget";
-import { RideMap } from "./RideMap";
 import { ElevationChart } from "./ElevationChart";
+
+const RideMap = dynamic(
+  () => import("./RideMap").then((mod) => mod.RideMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full w-full items-center justify-center bg-black/[0.03] dark:bg-white/[0.03] animate-pulse">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-sps-violet600 border-t-transparent" />
+      </div>
+    ),
+  }
+);
 
 export function InteractiveRideTrack({
   points,

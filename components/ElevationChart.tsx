@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import type { ActiveScrub } from "@/lib/scrub";
 import { weatherCodeInfo } from "@/lib/weather";
 import { Icon } from "./Icons";
@@ -32,21 +32,31 @@ export function ElevationChart({
     [onScrub]
   );
 
-  if (!elevations || elevations.length < 2) return null;
-
   const w = 300;
   const h = 70;
-  const min = Math.min(...elevations);
-  const max = Math.max(...elevations);
-  const span = max - min || 1;
 
-  const pts = elevations.map((v, i) => {
-    const x = (i / (elevations.length - 1)) * w;
-    const y = h - 4 - ((v - min) / span) * (h - 8);
-    return `${x.toFixed(1)},${y.toFixed(1)}`;
-  });
-  const line = "M " + pts.join(" L ");
-  const area = `${line} L ${w},${h} L 0,${h} Z`;
+  const { line, area, min, max, span } = useMemo(() => {
+    if (!elevations || elevations.length < 2) {
+      return { line: "", area: "", min: 0, max: 0, span: 1 };
+    }
+    let minVal = elevations[0];
+    let maxVal = elevations[0];
+    for (let i = 1; i < elevations.length; i++) {
+      if (elevations[i] < minVal) minVal = elevations[i];
+      if (elevations[i] > maxVal) maxVal = elevations[i];
+    }
+    const s = maxVal - minVal || 1;
+    const pts = elevations.map((v, i) => {
+      const x = (i / (elevations.length - 1)) * w;
+      const y = h - 4 - ((v - minVal) / s) * (h - 8);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    });
+    const l = "M " + pts.join(" L ");
+    const a = `${l} L ${w},${h} L 0,${h} Z`;
+    return { line: l, area: a, min: minVal, max: maxVal, span: s };
+  }, [elevations]);
+
+  if (!elevations || elevations.length < 2) return null;
 
   // Le survol actif est prioritaire ; sinon repli immédiat sur km 0
   const currentScrub = activeScrub || defaultScrub;

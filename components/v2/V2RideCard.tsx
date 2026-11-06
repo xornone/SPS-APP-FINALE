@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 import { GroupBadge } from "@/components/GroupBadge";
 import { AdminBadge } from "@/components/AdminBadge";
@@ -13,7 +14,7 @@ import { fmtDateShort, fmtKm, fmtM, fmtTime } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import type { RideWeather } from "@/lib/weather";
 
-export function V2RideCard({
+export const V2RideCard = memo(function V2RideCard({
   ride,
   participantCount,
   participantPreview,
@@ -50,7 +51,7 @@ export function V2RideCard({
     <Link
       href={`${hrefPrefix}/${ride.id}`}
       prefetch={true}
-      className="group relative isolate flex flex-col gap-3.5 overflow-hidden rounded-[26px] border border-neutral-200/90 bg-white p-4.5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-violet-400 hover:shadow-[0_12px_28px_-6px_rgba(124,58,237,0.18)] active:scale-[0.99] dark:border-white/[0.09] dark:bg-[#130B22]/75 dark:shadow-[0_8px_24px_-6px_rgba(0,0,0,0.4)] dark:hover:border-white/20 dark:hover:bg-[#1A1030]/85"
+      className="group relative isolate flex flex-col gap-3.5 overflow-hidden rounded-[26px] border border-neutral-200/90 bg-white p-4.5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:border-violet-400 hover:shadow-[0_12px_28px_-6px_rgba(124,58,237,0.18)] active:scale-[0.99] dark:border-white/[0.09] dark:bg-[#130B22]/75 dark:shadow-[0_8px_24px_-6px_rgba(0,0,0,0.4)] dark:hover:border-white/20 dark:hover:bg-[#1A1030]/85 content-visibility-auto gpu-accelerated"
     >
       {groupSpeedline && (
         <span
@@ -185,4 +186,4 @@ export function V2RideCard({
       </div>
     </Link>
   );
-}
+});
