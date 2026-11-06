@@ -37,9 +37,7 @@ export async function POST(request: Request, { params }: { params: { id: string 
 
     // 3. Revalider les caches Next.js
     revalidatePath(`/rides/${params.id}`);
-    revalidatePath(`/v2/rides/${params.id}`);
     revalidatePath("/rides");
-    revalidatePath("/v2/rides");
     revalidatePath("/");
 
     return NextResponse.json({

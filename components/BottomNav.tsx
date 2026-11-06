@@ -24,17 +24,13 @@ function isTabActive(tabHref: string, currentPath: string): boolean {
     return (
       currentPath === "/home" ||
       currentPath === "/" ||
-      currentPath.startsWith("/rides") ||
-      currentPath === "/v2/home" ||
-      currentPath.startsWith("/v2/rides")
+      currentPath.startsWith("/rides")
     );
   }
   if (tabHref === "/classement") {
     return (
       currentPath === "/classement" ||
-      currentPath.startsWith("/classement/") ||
-      currentPath === "/v2/classement" ||
-      currentPath.startsWith("/v2/classement/")
+      currentPath.startsWith("/classement/")
     );
   }
   return currentPath === tabHref || currentPath.startsWith(tabHref + "/");

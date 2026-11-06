@@ -1,8 +1,8 @@
 "use client";
 
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { V2FeaturedHero } from "./v2/V2FeaturedHero";
-import { V2RideCard } from "./v2/V2RideCard";
+import { FeaturedHero } from "./FeaturedHero";
+import { RideCard } from "./RideCard";
 import { WeekDivider } from "./WeekDivider";
 import { QuickJoinModal } from "./QuickJoinModal";
 import {
@@ -90,7 +90,7 @@ export function HomeRidesSection({
           </div>
           <div className="mb-6 flex flex-col gap-3 px-5">
             {featured.map((ride) => (
-              <V2FeaturedHero
+              <FeaturedHero
                 key={ride.id}
                 ride={ride}
                 participantCount={partsByRideId[ride.id]?.length || 0}
@@ -124,7 +124,7 @@ export function HomeRidesSection({
               return (
                 <Fragment key={r.id}>
                   {isNewWeek && <WeekDivider label={fmtWeekLabel(r.ride_date)} />}
-                  <V2RideCard
+                  <RideCard
                     key={r.id}
                     ride={r}
                     participantCount={parts.length}

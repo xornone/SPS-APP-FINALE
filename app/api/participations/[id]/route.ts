@@ -43,7 +43,6 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     // de suite (voir POST /api/participations).
     revalidatePath("/home");
     revalidatePath(`/rides/${row.ride_id}`);
-    revalidatePath(`/v2/rides/${row.ride_id}`);
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

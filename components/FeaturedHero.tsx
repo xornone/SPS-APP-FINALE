@@ -13,7 +13,7 @@ import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import type { RideWeather } from "@/lib/weather";
 
-export const V2FeaturedHero = memo(function V2FeaturedHero({
+export const FeaturedHero = memo(function FeaturedHero({
   ride,
   participantCount,
   isJoined,
@@ -21,7 +21,7 @@ export const V2FeaturedHero = memo(function V2FeaturedHero({
   onQuickAction,
   registeredAdmins,
   missingAdminGroups,
-  hrefPrefix = "/v2/rides",
+  hrefPrefix = "/rides",
 }: {
   ride: Ride;
   participantCount: number;
@@ -206,3 +206,5 @@ export const V2FeaturedHero = memo(function V2FeaturedHero({
     </div>
   );
 });
+
+export const V2FeaturedHero = FeaturedHero;
