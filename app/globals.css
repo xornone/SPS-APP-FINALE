@@ -32,6 +32,8 @@ button,
 nav a {
   -webkit-touch-callout: none;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 body.modal-open .bottom-nav-container,
