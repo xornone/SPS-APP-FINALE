@@ -41,6 +41,14 @@ interface ArticleItem {
   featureDesc: string;
 }
 
+// Halo signature officiel SPS identique pour tous les articles : fuchsia éclatant (#D946EF) & violet SPS (#A855F7)
+const SPS_SIGNATURE_GLOW_COLORS = {
+  from: "rgba(217, 70, 239, 0.85)", // #D946EF
+  via: "rgba(168, 85, 247, 0.70)",  // #A855F7
+  to: "rgba(109, 40, 217, 0.45)",   // #6D28D9
+  dropShadow: "rgba(168, 85, 247, 0.65)",
+};
+
 const ARTICLES: ArticleItem[] = [
   {
     id: "maillot",
@@ -53,12 +61,7 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/maillot-sps.webp",
     alt: "Nouveau maillot officiel SPS 2027 Gobik CX SCA",
     buttonLabel: "Pré-commander sur HelloAsso",
-    glowColors: {
-      from: "rgba(217, 70, 239, 0.80)",
-      via: "rgba(168, 85, 247, 0.65)",
-      to: "rgba(109, 40, 217, 0.45)",
-      dropShadow: "rgba(168, 85, 247, 0.60)",
-    },
+    glowColors: SPS_SIGNATURE_GLOW_COLORS,
     metrics: [
       { value: "123 g", label: "Poids (M)" },
       { value: "UPF 50", label: "Anti-UV" },
@@ -87,12 +90,7 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/maillot-pulse-sps.webp",
     alt: "Nouveau maillot manches longues officiel SPS 2027 Gobik Pulse",
     buttonLabel: "Pré-commander sur HelloAsso",
-    glowColors: {
-      from: "rgba(244, 63, 94, 0.80)",
-      via: "rgba(236, 72, 153, 0.65)",
-      to: "rgba(139, 92, 246, 0.45)",
-      dropShadow: "rgba(236, 72, 153, 0.60)",
-    },
+    glowColors: SPS_SIGNATURE_GLOW_COLORS,
     metrics: [
       { value: "260 g", label: "Poids (M)" },
       { value: "8-16°C", label: "Température" },
@@ -121,12 +119,7 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/gilet-plus-sps.webp",
     alt: "Nouveau gilet officiel SPS 2027 Gobik Plus 2.0",
     buttonLabel: "Pré-commander sur HelloAsso",
-    glowColors: {
-      from: "rgba(6, 182, 212, 0.80)",
-      via: "rgba(59, 130, 246, 0.65)",
-      to: "rgba(147, 51, 234, 0.45)",
-      dropShadow: "rgba(6, 182, 212, 0.60)",
-    },
+    glowColors: SPS_SIGNATURE_GLOW_COLORS,
     metrics: [
       { value: "100 g", label: "Poids (M)" },
       { value: "10-18°C", label: "Température" },
@@ -155,12 +148,7 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/cuissard-sps.webp",
     alt: "Nouveau cuissard officiel SPS 2027 Gobik Modèle X",
     buttonLabel: "Pré-commander sur HelloAsso",
-    glowColors: {
-      from: "rgba(168, 85, 247, 0.80)",
-      via: "rgba(124, 58, 237, 0.65)",
-      to: "rgba(79, 70, 229, 0.45)",
-      dropShadow: "rgba(147, 51, 234, 0.60)",
-    },
+    glowColors: SPS_SIGNATURE_GLOW_COLORS,
     metrics: [
       { value: "165 g", label: "Poids (M)" },
       { value: "UPF 50", label: "Anti-UV" },
@@ -189,12 +177,7 @@ const ARTICLES: ArticleItem[] = [
     image: "/images/running-flash-sps.webp",
     alt: "Nouveau maillot running officiel SPS 2027 Gobik Flash",
     buttonLabel: "Pré-commander sur HelloAsso",
-    glowColors: {
-      from: "rgba(16, 185, 129, 0.80)",
-      via: "rgba(168, 85, 247, 0.65)",
-      to: "rgba(236, 72, 153, 0.45)",
-      dropShadow: "rgba(168, 85, 247, 0.60)",
-    },
+    glowColors: SPS_SIGNATURE_GLOW_COLORS,
     metrics: [
       { value: "95 g", label: "Poids (M)" },
       { value: "UPF 50", label: "Anti-UV" },
