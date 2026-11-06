@@ -42,22 +42,30 @@ export function JerseyPreorderBanner() {
           </div>
         </div>
 
-        {/* Miniature du maillot avec halo lumineux dédié centré */}
-        <div className="relative z-10 flex-shrink-0 flex items-center justify-center">
+        {/* Miniature du maillot en lévitation avec son halo lumineux dédié centré */}
+        <div className="relative z-10 flex-shrink-0 flex flex-col items-center justify-center">
           {/* Lueur lumineuse centrée exactement derrière le maillot */}
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -inset-2.5 rounded-full bg-gradient-to-tr from-fuchsia-500/60 via-purple-500/50 to-[#AA26FF]/60 blur-xl opacity-90 transition-all duration-300 group-hover:scale-115 group-hover:opacity-100 animate-banner-aura will-change-transform"
           />
-          <div className="relative h-24 w-20 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-2">
+
+          {/* Maillot flottant en lévitation 3D continue */}
+          <div className="relative h-24 w-20 transition-transform duration-300 group-hover:scale-110 animate-float-small will-change-transform">
             <Image
               src="/images/maillot-sps.webp"
               alt="Maillot SPS"
               fill
               sizes="80px"
-              className="object-contain drop-shadow-[0_10px_22px_rgba(0,0,0,0.6)]"
+              className="object-contain drop-shadow-[0_8px_18px_rgba(0,0,0,0.55)]"
             />
           </div>
+
+          {/* Ombre portée au sol en phase avec la lévitation */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none -mt-1 h-2 w-14 rounded-full bg-black/60 blur-[3px] animate-shadow-small will-change-transform"
+          />
         </div>
       </Link>
     </div>

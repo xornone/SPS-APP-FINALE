@@ -366,8 +366,8 @@ export function PreorderShowcase() {
           rel="noopener noreferrer"
           className="group relative block transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98]"
         >
-          {/* Zone du produit avec halo lumineux dynamique centré */}
-          <div className="relative flex items-center justify-center py-2 min-h-[300px]">
+          {/* Zone du produit avec halo lumineux dynamique centré et lévitation 3D */}
+          <div className="relative flex flex-col items-center justify-center pt-2 pb-5 min-h-[310px]">
             {/* Lueur dynamique qui s'allume automatiquement ("hop ça allume derrière") à chaque changement de produit */}
             <div
               key={`glow-${article.id}-${activeIndex}`}
@@ -378,19 +378,27 @@ export function PreorderShowcase() {
               className="pointer-events-none absolute h-[270px] w-[270px] sm:h-[310px] sm:w-[310px] rounded-full blur-2xl animate-aura-ignite will-change-transform"
             />
 
-            {/* Image du produit actif avec son drop-shadow vibrant */}
-            <Image
-              key={`img-${article.id}`}
-              src={article.image}
-              alt={article.alt}
-              width={727}
-              height={1024}
-              sizes="(max-width: 480px) 285px, 285px"
-              priority
-              className="relative z-10 h-auto w-full max-w-[285px] animate-in transition-all duration-500 will-change-transform"
-              style={{
-                filter: `drop-shadow(0 20px 35px ${article.glowColors.dropShadow})`,
-              }}
+            {/* Vêtement en lévitation 3D continue */}
+            <div className="relative z-10 flex items-center justify-center w-full animate-float-levitate will-change-transform">
+              <Image
+                key={`img-${article.id}`}
+                src={article.image}
+                alt={article.alt}
+                width={727}
+                height={1024}
+                sizes="(max-width: 480px) 285px, 285px"
+                priority
+                className="h-auto w-full max-w-[285px] animate-in transition-all duration-500 will-change-transform"
+                style={{
+                  filter: `drop-shadow(0 20px 35px ${article.glowColors.dropShadow})`,
+                }}
+              />
+            </div>
+
+            {/* Ombre portée au sol en phase avec la lévitation */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none -mt-2 h-3 w-40 sm:w-48 rounded-full bg-black/60 blur-[5px] animate-shadow-levitate will-change-transform"
             />
           </div>
 

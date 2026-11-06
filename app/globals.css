@@ -142,6 +142,65 @@ body {
   animation: bannerAuraPulse 3.5s ease-in-out infinite;
 }
 
+/* Animations de lévitation flottante 3D (Maillots & articles) */
+@keyframes floatLevitate {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.6deg);
+  }
+}
+
+.animate-float-levitate {
+  animation: floatLevitate 4.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes floatLevitateSmall {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(-1deg);
+  }
+}
+
+.animate-float-small {
+  animation: floatLevitateSmall 3.8s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes shadowLevitate {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  50% {
+    transform: scale(0.82);
+    opacity: 0.40;
+  }
+}
+
+.animate-shadow-levitate {
+  animation: shadowLevitate 4.5s ease-in-out infinite;
+}
+
+@keyframes shadowLevitateSmall {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(0.80);
+    opacity: 0.30;
+  }
+}
+
+.animate-shadow-small {
+  animation: shadowLevitateSmall 3.8s ease-in-out infinite;
+}
+
 /* Optimisation GPU et fluidité mobile UI/UX Pro Max */
 .gpu-accelerated {
   transform: translateZ(0);
