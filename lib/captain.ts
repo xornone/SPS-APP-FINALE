@@ -10,8 +10,8 @@
 const CAPTAIN_COMMENT_REGEX = /<!--\s*captain\s*:\s*([^>]+?)\s*-->/iu;
 const CAPTAIN_COMMENT_LINE_REGEX = /(?:\r?\n)*<!--\s*captain\s*:\s*[^>]*?-->/giu;
 
-const CAPTAIN_REGEX = /(?:(?:🧭|👑|⭐)\s*)?Capitaine(?:\s+de\s+(?:route|sortie))?\s*:\s*([^\r\n]+)/iu;
-const CAPTAIN_LINE_REGEX = /(?:\r?\n)*[^\S\r\n]*(?:(?:🧭|👑|⭐)\s*)?Capitaine(?:\s+de\s+(?:route|sortie))?\s*:[^\r\n]*/giu;
+const CAPTAIN_REGEX = /(?:(?:🧭|👑|⭐)\s*)?(?:Capitaine(?:\s+de\s+(?:route|sortie))?|Groupe?\s+Leader|Leader(?:\s+de\s+(?:groupe|route|sortie))?)\s*:\s*([^\r\n]+)/iu;
+const CAPTAIN_LINE_REGEX = /(?:\r?\n)*[^\S\r\n]*(?:(?:🧭|👑|⭐)\s*)?(?:Capitaine(?:\s+de\s+(?:route|sortie))?|Groupe?\s+Leader|Leader(?:\s+de\s+(?:groupe|route|sortie))?)\s*:[^\r\n]*/giu;
 
 /**
  * Nettoie la description pour l'affichage visible aux membres (fiche et partage WhatsApp) :

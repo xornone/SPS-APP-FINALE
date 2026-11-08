@@ -12,6 +12,18 @@ describe("lib/captain", () => {
     expect(extractCaptainFromDescription(desc)).toBe("Aymeric Guibert");
   });
 
+  it("extracts leader with compass and 'Groupe Leader'", () => {
+    const desc = "Sortie rythmée vers le Pic.\n\n🧭 Groupe Leader : Aymeric Guibert\n\nN'oubliez pas vos bidons.";
+    expect(extractCaptainFromDescription(desc)).toBe("Aymeric Guibert");
+    expect(cleanVisibleDescription(desc)).toBe("Sortie rythmée vers le Pic.\n\nN'oubliez pas vos bidons.");
+  });
+
+  it("extracts leader with 'Leader' keyword", () => {
+    const desc = "Sortie rythmée.\n\nLeader : Thomas Trégaro";
+    expect(extractCaptainFromDescription(desc)).toBe("Thomas Trégaro");
+    expect(cleanVisibleDescription(desc)).toBe("Sortie rythmée.");
+  });
+
   it("extracts captain with comment format", () => {
     const desc = "Sortie rythmée vers le Pic.\n\n<!-- captain: Aymeric Guibert -->";
     expect(extractCaptainFromDescription(desc)).toBe("Aymeric Guibert");

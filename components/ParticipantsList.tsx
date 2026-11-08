@@ -93,13 +93,13 @@ export function ParticipantsList({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error || "Impossible de désigner le capitaine.");
+        setError(data.error || "Impossible de désigner le leader.");
       } else {
         onCaptainChange?.(data.captain || null);
         router.refresh();
       }
     } catch {
-      setError("Erreur de connexion lors de la désignation du capitaine.");
+      setError("Erreur de connexion lors de la désignation du leader.");
     } finally {
       setCaptainPending(null);
     }
@@ -153,7 +153,7 @@ export function ParticipantsList({
       {/* Bandeau d'aide discret pour les admins */}
       {isAdmin && participants.length > 0 && (
         <div className="flex items-center justify-between border-b border-black/[0.05] bg-black/[0.02] px-4 py-1.5 text-[11px] font-medium text-black/50 dark:border-white/[0.06] dark:bg-white/[0.02] dark:text-white/50">
-          <span>💡 Cliquez sur 🧭 pour désigner le capitaine de route</span>
+          <span>💡 Cliquez sur 🧭 pour désigner le Groupe Leader</span>
           {captainName && (
             <span className="font-semibold text-amber-700 dark:text-amber-300">
               Actuel : {captainName}
@@ -187,15 +187,15 @@ export function ParticipantsList({
               <span className="text-[13.5px] font-bold truncate">{p.participant_name}</span>
               {isCaptain(p.participant_name) && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-black text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 flex-shrink-0">
-                  🧭 Capitaine
+                  🧭 Leader
                   {isAdmin && !isAdminName(p.participant_name) && (
                     <button
                       type="button"
                       disabled={captainPending !== null}
                       onClick={() => handleToggleCaptain(p.participant_name)}
                       className="ml-1 text-amber-800/80 hover:text-red-600 dark:text-amber-200/80 dark:hover:text-red-400 font-black text-xs leading-none"
-                      title="Retirer le rôle de capitaine"
-                      aria-label="Retirer le rôle de capitaine"
+                      title="Retirer le rôle de leader"
+                      aria-label="Retirer le rôle de leader"
                     >
                       ✕
                     </button>
@@ -204,18 +204,18 @@ export function ParticipantsList({
               )}
             </div>
 
-            {/* Action admin : désigner capitaine de route */}
+            {/* Action admin : désigner Groupe Leader */}
             {isAdmin && !isCaptain(p.participant_name) && (
               <button
                 type="button"
                 disabled={captainPending !== null}
                 onClick={() => handleToggleCaptain(p.participant_name)}
                 className="inline-flex items-center gap-1 rounded-lg border border-black/10 bg-black/[0.03] px-2 py-1 text-[11px] font-bold text-black/65 hover:border-amber-500/40 hover:bg-amber-500/10 hover:text-amber-800 disabled:opacity-50 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/65 dark:hover:border-amber-400/40 dark:hover:bg-amber-400/10 dark:hover:text-amber-300 transition-colors flex-shrink-0"
-                title={`Désigner ${p.participant_name} comme capitaine de route`}
+                title={`Désigner ${p.participant_name} comme Groupe Leader`}
               >
                 <span>🧭</span>
                 <span className="hidden sm:inline">
-                  {captainPending === p.participant_name ? "En cours…" : "Capitaine"}
+                  {captainPending === p.participant_name ? "En cours…" : "Leader"}
                 </span>
               </button>
             )}
