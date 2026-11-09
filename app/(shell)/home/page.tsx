@@ -3,7 +3,7 @@ import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { HomeRidesSection } from "@/components/HomeRidesSection";
 import { NotificationOptIn } from "@/components/NotificationOptIn";
 import { JerseyPreorderBanner } from "@/components/JerseyPreorderBanner";
-import { AdminOnly } from "@/components/AdminOnly";
+import { PreorderVisibility } from "@/components/PreorderVisibility";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SuggestionButton } from "@/components/SuggestionButton";
 import { isPastDate } from "@/lib/format";
@@ -89,9 +89,9 @@ export default async function HomePage() {
           <ThemeToggle />
         </div>
       </div>
-      <AdminOnly>
+      <PreorderVisibility>
         <JerseyPreorderBanner />
-      </AdminOnly>
+      </PreorderVisibility>
       <NotificationOptIn />
       <HomeRidesSection
         featured={featured}

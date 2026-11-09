@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { PreorderShowcase } from "@/components/PreorderShowcase";
+import { isPreorderOpenToPublic } from "@/lib/preorder";
 
 export const dynamic = "force-dynamic";
 
@@ -13,19 +14,21 @@ export const metadata: Metadata = {
 };
 
 export default async function PrecommandesPage() {
-  const reqHeaders = headers();
-  const headerUserId = reqHeaders.get("x-user-id");
+  // Avant la date d'ouverture publique officielle (mardi 10 nov 2026 à 20h00),
+  // l'accès est restreint aux administrateurs connectés.
+  if (!isPreorderOpenToPublic()) {
+    const reqHeaders = headers();
+    const headerUserId = reqHeaders.get("x-user-id");
 
-  // Si l'utilisateur est déjà vérifié par le middleware, affichage instantané
-  // sans second appel réseau bloquant.
-  if (!headerUserId) {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    if (!headerUserId) {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-    if (!user) {
-      redirect("/login?next=/precommandes");
+      if (!user) {
+        redirect("/login?next=/precommandes");
+      }
     }
   }
 

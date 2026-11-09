@@ -5,11 +5,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "./Icons";
 import { useIsAdmin } from "@/lib/useIsAdmin";
+import { isPreorderOpenToPublic } from "@/lib/preorder";
 import { hapticTap } from "@/lib/haptics";
 
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
-  { href: "/precommandes", label: "Pré-commandes", icon: "shirt" as const, adminOnly: true },
+  { href: "/precommandes", label: "Pré-commandes", icon: "shirt" as const, preorderTab: true },
   { href: "/classement", label: "Stats SPS", icon: "trophy" as const },
   { href: "/admin", label: "Admin", icon: "gear" as const },
 ];
@@ -162,7 +163,11 @@ export function BottomNav() {
 
   if (modalOpen) return null;
 
-  const visibleTabs = TABS.filter((t) => !t.adminOnly || isAdmin);
+  const isPreorderOpen = isPreorderOpenToPublic();
+  const visibleTabs = TABS.filter((t) => {
+    if (t.preorderTab && !isAdmin && !isPreorderOpen) return false;
+    return true;
+  });
   const activePath = optimisticPath || pathname;
 
   return (
