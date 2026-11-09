@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function PrecommandesPage() {
-  // Avant la date d'ouverture publique officielle (mardi 10 nov 2026 à 20h00),
+  // Avant la date d'ouverture publique officielle (mardi 10 nov 2026 à 21h00),
   // l'accès est restreint aux administrateurs connectés.
   if (!isPreorderOpenToPublic()) {
     const reqHeaders = headers();

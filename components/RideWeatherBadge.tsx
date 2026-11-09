@@ -58,95 +58,68 @@ export function RideWeatherBadge({
   }
 
   const badgeContent = (
-    <>
-      <div className="flex items-center gap-1.5 flex-shrink-0">
-        <span className="text-[12.5px] leading-none select-none" aria-hidden="true">
+    <div className="flex w-full items-center justify-between gap-1.5 sm:gap-2">
+      {/* Zone Gauche : Icône + Libellé météo (aligné à gauche, tronqué proprement si très long) */}
+      <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-start">
+        <span className="text-[13px] sm:text-[14px] leading-none select-none flex-shrink-0" aria-hidden="true">
           {emoji}
         </span>
         <span
-          className={
-            variant === "featured"
-              ? "text-[11px] font-bold text-neutral-900 dark:text-white whitespace-nowrap"
-              : "text-[10.5px] font-bold whitespace-nowrap"
-          }
+          className={`truncate text-[10.5px] sm:text-[11px] font-bold text-neutral-900 dark:text-white ${
+            variant === "featured" ? "font-extrabold" : ""
+          }`}
+          title={weather.suitabilityLabel}
         >
           {weather.suitabilityLabel}
         </span>
       </div>
 
+      {/* Zone Centrale : Température + Jauge de confort thermique */}
       {tempRange && (
-        <>
-          <span
-            className={
-              variant === "featured"
-                ? "text-black/30 dark:text-white/30 text-[10px] flex-shrink-0"
-                : "opacity-30 text-[9px] flex-shrink-0"
-            }
-          >
-            ·
+        <div className="flex items-center justify-center gap-1 sm:gap-1.5 flex-shrink-0 px-1">
+          <span className="text-[10.5px] sm:text-[11px] font-extrabold text-neutral-900 dark:text-violet-100 whitespace-nowrap">
+            {tempRange}
           </span>
-          <div className="flex items-center gap-1 flex-shrink-0">
-            <span
-              className={
-                variant === "featured"
-                  ? "text-[11px] font-extrabold text-neutral-900 dark:text-violet-100 whitespace-nowrap"
-                  : "text-[10.5px] font-extrabold whitespace-nowrap"
-              }
-            >
-              {tempRange}
-            </span>
-            <TemperatureGauge weather={weather} barWidth="w-6" />
-          </div>
-        </>
+          <TemperatureGauge weather={weather} barWidth="w-5 sm:w-6" />
+        </div>
       )}
 
-      <span
-        className={
-          variant === "featured"
-            ? "text-black/30 dark:text-white/30 text-[10px] flex-shrink-0"
-            : "opacity-30 text-[9px] flex-shrink-0"
-        }
-      >
-        ·
-      </span>
-
-      <span className="flex items-baseline gap-0.5 whitespace-nowrap flex-shrink-0">
+      {/* Zone Droite : Score /10 + Chevron interactif (aligné à droite) */}
+      <div className="flex items-center justify-end gap-1 sm:gap-1.5 flex-1 flex-shrink-0">
         <span
-          className={`font-display font-black text-xs ${
-            variant === "featured" ? "text-emerald-700 dark:text-emerald-300" : scoreColor
-          }`}
-        >
-          {weather.suitabilityScore}
-        </span>
-        <span
-          className={
+          className={`flex items-baseline gap-0.5 rounded-full px-2 py-0.5 whitespace-nowrap ${
             variant === "featured"
-              ? "text-[9px] text-neutral-500 dark:text-violet-200/60"
-              : "text-[8.5px] opacity-50"
-          }
-        >
-          /10
-        </span>
-      </span>
-
-      {canExpand && (
-        <span
-          className={`ml-0.5 inline-flex items-center flex-shrink-0 transition-transform duration-200 ${
-            expanded
-              ? "rotate-180 text-violet-700 dark:text-violet-300"
-              : "text-neutral-400 group-hover:text-neutral-700 dark:text-white/45 dark:group-hover:text-white"
+              ? "bg-black/[0.04] text-emerald-700 dark:bg-white/10 dark:text-emerald-300"
+              : `bg-black/[0.03] dark:bg-white/[0.08] ${scoreColor}`
           }`}
-          aria-hidden="true"
         >
-          <Icon name="chevDown" size={11} />
+          <span className="font-display font-black text-xs leading-none">
+            {weather.suitabilityScore}
+          </span>
+          <span className="text-[8.5px] font-bold text-neutral-500 dark:text-white/60">
+            /10
+          </span>
         </span>
-      )}
-    </>
+
+        {canExpand && (
+          <span
+            className={`inline-flex items-center flex-shrink-0 transition-transform duration-200 ${
+              expanded
+                ? "rotate-180 text-violet-700 dark:text-violet-300"
+                : "text-neutral-400 group-hover:text-neutral-700 dark:text-white/45 dark:group-hover:text-white"
+            }`}
+            aria-hidden="true"
+          >
+            <Icon name="chevDown" size={11} />
+          </span>
+        )}
+      </div>
+    </div>
   );
 
   return (
     <div className={`flex flex-col items-center w-full ${className}`}>
-      {/* Clickable Badge Trigger */}
+      {/* Clickable Badge Trigger - Responsive Full-Width Pill */}
       <button
         type="button"
         onClick={handleToggle}
@@ -159,27 +132,19 @@ export function RideWeatherBadge({
             : undefined
         }
         aria-expanded={canExpand ? expanded : undefined}
-        className={
+        className={`group w-full max-w-full flex items-center justify-between rounded-full border px-3 py-1.5 sm:px-3.5 transition-all text-neutral-900 dark:text-white shadow-xs ${
           variant === "featured"
-            ? `group inline-flex flex-nowrap items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/[0.08] bg-black/[0.04] px-3 py-1 text-neutral-900 backdrop-blur-sm shadow-xs transition-all dark:border-white/20 dark:bg-white/10 dark:text-white ${
-                canExpand
-                  ? "cursor-pointer hover:border-violet-400 hover:bg-violet-500/10 active:scale-[0.98] dark:hover:border-violet-400/50"
-                  : ""
-              } ${
-                expanded
-                  ? "ring-2 ring-violet-500/40 dark:ring-violet-400/50 bg-violet-50/80 dark:bg-violet-950/40"
-                  : ""
-              }`
-            : `group inline-flex flex-nowrap items-center justify-center gap-1.5 whitespace-nowrap rounded-full border border-black/[0.08] bg-black/[0.03] px-2.5 py-1 text-black/80 transition-all dark:border-white/10 dark:bg-white/[0.05] dark:text-white/80 ${
-                canExpand
-                  ? "cursor-pointer hover:border-violet-400 hover:bg-violet-500/10 active:scale-[0.98] dark:hover:border-violet-400/50"
-                  : ""
-              } ${
-                expanded
-                  ? "ring-2 ring-violet-500/40 dark:ring-violet-400/50 bg-violet-50/80 dark:bg-violet-950/40"
-                  : ""
-              }`
-        }
+            ? "border-black/[0.08] bg-black/[0.03] backdrop-blur-sm dark:border-white/15 dark:bg-white/[0.06]"
+            : "border-black/[0.07] bg-black/[0.02] dark:border-white/10 dark:bg-white/[0.04]"
+        } ${
+          canExpand
+            ? "cursor-pointer hover:border-violet-400 hover:bg-violet-500/10 active:scale-[0.99] dark:hover:border-violet-400/50"
+            : ""
+        } ${
+          expanded
+            ? "ring-2 ring-violet-500/40 dark:ring-violet-400/50 bg-violet-50/80 dark:bg-violet-950/40"
+            : ""
+        }`}
       >
         {badgeContent}
       </button>
@@ -211,38 +176,36 @@ export function RideWeatherBadge({
                 setExpanded(false);
               }}
               title="Fermer le détail heure par heure"
-              className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-black/[0.08] bg-black/[0.04] text-neutral-500 transition hover:bg-black/[0.08] hover:text-neutral-900 active:scale-95 dark:border-white/10 dark:bg-white/10 dark:text-neutral-300 dark:hover:bg-white/20 dark:hover:text-white"
+              className="flex h-6 w-6 items-center justify-center rounded-full text-neutral-400 hover:bg-black/[0.05] hover:text-neutral-700 dark:text-white/40 dark:hover:bg-white/10 dark:hover:text-white"
             >
-              <Icon name="x" size={12} />
+              <Icon name="x" size={13} />
             </button>
           </div>
 
-          {/* Ride timing & estimated duration pill */}
-          <div className="mt-2.5 mb-3 flex items-center justify-between gap-2 rounded-xl bg-violet-500/[0.08] px-3 py-1.5 border border-violet-500/20 dark:bg-violet-500/15 dark:border-violet-400/25">
-            <span className="text-[11px] font-bold text-neutral-700 dark:text-violet-100">
-              ⏱️ Créneau estimé :{" "}
-              <strong className="font-extrabold text-neutral-950 dark:text-white">
-                {departureTime} → {estimatedArrivalTime}
-              </strong>
+          {/* Timing Subtitle */}
+          <div className="mt-2 flex items-center justify-between text-[11px] text-neutral-500 dark:text-white/50">
+            <span className="font-medium">
+              Créneau : <strong className="text-neutral-800 dark:text-violet-200">{departureTime} → {estimatedArrivalTime}</strong>
             </span>
-            <span className="rounded-md bg-violet-600/15 px-2 py-0.5 text-[10.5px] font-black text-violet-800 dark:bg-violet-400/20 dark:text-violet-200 flex-shrink-0">
+            <span className="font-semibold text-neutral-600 dark:text-violet-300/80">
               ~{durationFormatted}
             </span>
           </div>
 
-          {/* Horizontal scrollable hourly forecast cards */}
-          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 pt-0.5 -mx-1 px-1">
+          {/* Horizontal Hour-by-Hour Cards (Horizontal Scroll with Snap) */}
+          <div className="mt-3 flex gap-2 overflow-x-auto pb-1 pt-0.5 no-scrollbar scroll-smooth">
             {hourlySlots.map((slot, idx) => {
+              const info = weatherCodeInfo(slot.weatherCode);
+              const temp = Math.round(slot.temperatureC);
+              const rain = slot.precipitationProbability ?? 0;
               const isFirst = idx === 0;
               const isLast = idx === hourlySlots.length - 1;
-              const info = weatherCodeInfo(slot.weatherCode);
-              const rain = slot.precipitationProbability ?? 0;
-              const temp = slot.temperatureC ?? 0;
 
+              // Color-coded rain risk badge
               const rainBadgeStyle =
-                rain >= 60
-                  ? "bg-rose-100 text-rose-700 font-black border-rose-300/80 dark:bg-rose-950/70 dark:text-rose-300 dark:border-rose-700/50"
-                  : rain >= 30
+                rain >= 40
+                  ? "bg-rose-100 text-rose-800 font-black border-rose-300 dark:bg-rose-950/80 dark:text-rose-300 dark:border-rose-700/60"
+                  : rain >= 20
                   ? "bg-amber-100 text-amber-800 font-extrabold border-amber-300/80 dark:bg-amber-950/70 dark:text-amber-300 dark:border-amber-700/50"
                   : rain > 10
                   ? "bg-sky-100 text-sky-800 font-bold border-sky-300/80 dark:bg-sky-950/70 dark:text-sky-300 dark:border-sky-700/50"
