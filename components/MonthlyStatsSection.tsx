@@ -26,9 +26,28 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
     return computeMonthlyStats(rides, participations, selectedMonth);
   }, [rides, participations, selectedMonth]);
 
+  // Gestion des ex æquo pour le plus assidu du mois
+  const maxRides = stats.topAttendance[0]?.ridesCount || 0;
+  const topAttendanceLeaders = useMemo(() => {
+    if (maxRides <= 0) return [];
+    return stats.topAttendance.filter((m) => m.ridesCount === maxRides);
+  }, [stats.topAttendance, maxRides]);
+
+  const isAttendanceTie = topAttendanceLeaders.length > 1;
+
+  // Calcul des rangs avec ex æquo pour le TOP 10
+  const rankedTopAttendance = useMemo(() => {
+    let rank = 1;
+    return stats.topAttendance.map((m, idx, arr) => {
+      if (idx > 0 && m.ridesCount < arr[idx - 1].ridesCount) {
+        rank = idx + 1;
+      }
+      return { ...m, rank };
+    });
+  }, [stats.topAttendance]);
+
   if (!months || months.length === 0) return null;
 
-  const topAttendanceLeader = stats.topAttendance[0];
   const topElevationLeader = stats.topElevation[0];
   const topDistanceLeader = stats.topDistance[0];
   const mostReactiveLeader = stats.mostReactive[0];
@@ -80,24 +99,33 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
               </div>
             </div>
 
-            {/* Chiffres collectifs du mois en micro-bento (5 indicateurs) */}
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-              <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
+            {/* Chiffres collectifs du mois :
+                1. Sorties en haut pleine largeur
+                2. Membres actifs / 100 en face de Inscriptions
+                3. Cumul Km et Cumul D+ sur la même ligne
+            */}
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              {/* Ligne 1 : Sorties pleine largeur en haut */}
+              <div className="col-span-2 rounded-2xl border border-neutral-100 bg-neutral-50/80 p-3 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
                   Sorties
                 </span>
-                <span className="font-display text-base font-black text-neutral-900 dark:text-white">
-                  {stats.totalRidesInMonth}
+                <span className="font-display text-lg font-black text-neutral-900 dark:text-white">
+                  {stats.totalRidesInMonth} sortie{stats.totalRidesInMonth > 1 ? "s" : ""}
                 </span>
               </div>
+
+              {/* Ligne 2 : Membres actifs / 100 & Inscriptions face à face */}
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
                   Membres actifs
                 </span>
-                <span className="font-display text-base font-black text-emerald-600 dark:text-emerald-400">
-                  {stats.uniqueActiveMembersInMonth}
-                </span>
+                <div className="flex items-baseline justify-center gap-1 font-display text-base font-black text-emerald-600 dark:text-emerald-400">
+                  <span>{stats.uniqueActiveMembersInMonth}</span>
+                  <span className="text-xs font-bold text-neutral-400 dark:text-white/40">/ 100</span>
+                </div>
               </div>
+
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40" title="Total des inscriptions enregistrées toutes sorties confondues">
                   Inscriptions
@@ -106,6 +134,8 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                   {stats.totalParticipationsInMonth}
                 </span>
               </div>
+
+              {/* Ligne 3 : Cumul Km & Cumul D+ sur la même ligne */}
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
                   Cumul Km
@@ -114,7 +144,8 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                   {fmtKm(stats.totalKmInMonth)}
                 </span>
               </div>
-              <div className="col-span-2 rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center sm:col-span-1 dark:border-white/[0.06] dark:bg-white/[0.03]">
+
+              <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
                   Cumul D+
                 </span>
@@ -133,7 +164,7 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
             <div className="p-5 flex flex-col gap-5">
               {/* Les 4 Trophées Phares */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* 1. Assiduité du mois + TOP 10 (Strictement basé sur le nombre de sorties) */}
+                {/* 1. Assiduité du mois + TOP 10 (Gestion des ex æquo) */}
                 <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
                   <div>
                     <div className="flex items-center justify-between mb-3">
@@ -150,65 +181,71 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                           </span>
                         </div>
                       </div>
-                      <span className="text-xs font-black text-amber-500">#1 Sorties</span>
+                      <span className="text-xs font-black text-amber-500">
+                        {isAttendanceTie ? `🥇 ${topAttendanceLeaders.length} ex æquo` : "#1 Sorties"}
+                      </span>
                     </div>
 
-                    {topAttendanceLeader ? (
-                      <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-3">
-                        <Avatar name={topAttendanceLeader.display} seed={topAttendanceLeader.display} size="md" />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <span className="truncate font-display text-base font-black text-neutral-950 dark:text-white">
-                              {topAttendanceLeader.display}
-                            </span>
-                            <GroupPills groups={topAttendanceLeader.groups} />
+                    {topAttendanceLeaders.length > 0 ? (
+                      <div className="flex flex-col divide-y divide-amber-500/20 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
+                        {topAttendanceLeaders.map((leader) => (
+                          <div key={leader.display} className="flex items-center gap-3 p-3">
+                            <Avatar name={leader.display} seed={leader.display} size="md" />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="truncate font-display text-base font-black text-neutral-950 dark:text-white">
+                                  {leader.display}
+                                </span>
+                                <GroupPills groups={leader.groups} />
+                              </div>
+                              <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
+                                {leader.ridesCount} participation{leader.ridesCount > 1 ? "s" : ""} officielle{leader.ridesCount > 1 ? "s" : ""}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-display text-2xl font-black text-amber-600 dark:text-amber-400">
+                                {leader.ridesCount}
+                              </span>
+                              <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                                sortie{leader.ridesCount > 1 ? "s" : ""}
+                              </span>
+                            </div>
                           </div>
-                          <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
-                            {topAttendanceLeader.ridesCount} participation{topAttendanceLeader.ridesCount > 1 ? "s" : ""} officielle{topAttendanceLeader.ridesCount > 1 ? "s" : ""}
-                          </span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-display text-2xl font-black text-amber-600 dark:text-amber-400">
-                            {topAttendanceLeader.ridesCount}
-                          </span>
-                          <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                            sortie{topAttendanceLeader.ridesCount > 1 ? "s" : ""}
-                          </span>
-                        </div>
+                        ))}
                       </div>
                     ) : (
                       <p className="text-xs text-neutral-400">Aucune donnée</p>
                     )}
                   </div>
 
-                  {/* Bouton Top 10 Déroulable (uniquement les sorties) */}
-                  {stats.topAttendance.length > 1 && (
+                  {/* Bouton Top 10 Déroulable (uniquement les sorties avec rangs ex æquo) */}
+                  {rankedTopAttendance.length > 1 && (
                     <div className="mt-3">
                       <button
                         type="button"
                         onClick={() => setShowTop10((v) => !v)}
                         className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-2 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
                       >
-                        <span>{showTop10 ? "Masquer le TOP 10" : `Voir le TOP 10 du mois (${stats.topAttendance.length})`}</span>
+                        <span>{showTop10 ? "Masquer le TOP 10" : `Voir le TOP 10 du mois (${rankedTopAttendance.length})`}</span>
                         <Icon name="chevDown" size={13} className={showTop10 ? "rotate-180" : ""} />
                       </button>
 
                       {showTop10 && (
                         <div className="mt-2.5 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
-                          {stats.topAttendance.map((m, idx) => (
+                          {rankedTopAttendance.map((m) => (
                             <div key={m.display} className="flex items-center gap-2.5 px-3 py-2 text-xs">
                               <span
                                 className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
-                                  idx === 0
+                                  m.rank === 1
                                     ? "bg-amber-500/20 text-amber-600 dark:text-amber-300"
-                                    : idx === 1
+                                    : m.rank === 2
                                     ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
-                                    : idx === 2
+                                    : m.rank === 3
                                     ? "bg-amber-700/20 text-amber-800 dark:text-amber-400"
                                     : "bg-neutral-100 text-neutral-500 dark:bg-white/[0.05] dark:text-white/40"
                                 }`}
                               >
-                                {idx + 1}
+                                {m.rank}
                               </span>
                               <Avatar name={m.display} seed={m.display} size="sm" />
                               <div className="min-w-0 flex-1">
