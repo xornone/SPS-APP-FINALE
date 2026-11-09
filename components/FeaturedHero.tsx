@@ -71,7 +71,7 @@ export const FeaturedHero = memo(function FeaturedHero({
 
       {/* Header status bar */}
       <div className="relative z-10 flex items-center justify-between gap-2">
-        <span className="inline-flex items-center rounded-full border border-violet-300/80 bg-violet-100/90 px-3.5 py-1 text-[11px] font-black uppercase tracking-widest text-violet-950 shadow-xs dark:border-white/25 dark:bg-white/10 dark:text-white">
+        <span className="inline-flex items-center rounded-full border border-violet-300/80 bg-violet-100/90 px-3 sm:px-3.5 py-1 text-[10.5px] sm:text-[11px] font-black uppercase tracking-wider text-violet-950 shadow-xs dark:border-white/25 dark:bg-white/10 dark:text-white whitespace-nowrap flex-shrink-0">
           {daysUntil(ride.ride_date) === 0
             ? "Aujourd'hui"
             : daysUntil(ride.ride_date) === 1
@@ -89,7 +89,7 @@ export const FeaturedHero = memo(function FeaturedHero({
                 onQuickAction(ride);
               }}
               title="Gérer mon inscription ou me désinscrire"
-              className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-50 px-3.5 py-1 text-[11.5px] font-black text-emerald-800 shadow-xs transition hover:bg-emerald-100 active:scale-95 dark:border-emerald-400/50 dark:bg-emerald-500/25 dark:text-emerald-200"
+              className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-50 px-3 sm:px-3.5 py-1 text-[11px] sm:text-[11.5px] font-black text-emerald-800 shadow-xs transition hover:bg-emerald-100 active:scale-95 dark:border-emerald-400/50 dark:bg-emerald-500/25 dark:text-emerald-200 whitespace-nowrap flex-shrink-0"
             >
               <Icon name="check" size={13} /> Inscrit ✓
             </button>
@@ -102,7 +102,7 @@ export const FeaturedHero = memo(function FeaturedHero({
                 onQuickAction(ride);
               }}
               title="S'inscrire rapidement à cette sortie"
-              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-3.5 py-1 text-[11.5px] font-black text-white shadow-md shadow-violet-600/30 transition hover:brightness-110 active:scale-95"
+              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-3 sm:px-3.5 py-1 text-[11px] sm:text-[11.5px] font-black text-white shadow-md shadow-violet-600/30 transition hover:brightness-110 active:scale-95 whitespace-nowrap flex-shrink-0"
             >
               <Icon name="plus" size={13} /> Participer
             </button>

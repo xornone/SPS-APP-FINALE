@@ -62,7 +62,7 @@ export const RideCard = memo(function RideCard({
 
       {/* Header bar */}
       <div className="flex items-center justify-between gap-2">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100/90 border border-violet-300/80 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-violet-950 shadow-xs dark:bg-white/[0.06] dark:border-white/10 dark:text-violet-200">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100/90 border border-violet-300/80 px-2.5 sm:px-3 py-1 text-[10.5px] sm:text-[11px] font-black uppercase tracking-wider text-violet-950 shadow-xs dark:bg-white/[0.06] dark:border-white/10 dark:text-violet-200 whitespace-nowrap flex-shrink-0">
           <span>{fmtDateShort(ride.ride_date)}</span>
           <span className="opacity-40">·</span>
           <span>{fmtTime(ride.ride_time)}</span>
@@ -78,7 +78,7 @@ export const RideCard = memo(function RideCard({
                 onQuickAction(ride);
               }}
               title="Gérer mon inscription ou me désinscrire"
-              className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-800 transition hover:bg-emerald-100 active:scale-95 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-300"
+              className="flex items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-50 px-3 py-1 text-[11px] font-black text-emerald-800 transition hover:bg-emerald-100 active:scale-95 dark:border-emerald-400/40 dark:bg-emerald-500/20 dark:text-emerald-300 whitespace-nowrap flex-shrink-0"
             >
               <Icon name="check" size={12} /> Inscrit ✓
             </button>
@@ -91,7 +91,7 @@ export const RideCard = memo(function RideCard({
                 onQuickAction(ride);
               }}
               title="S'inscrire rapidement à cette sortie"
-              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-3 py-1 text-[11px] font-black text-white shadow-md shadow-violet-600/30 transition hover:brightness-110 active:scale-95"
+              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-3 py-1 text-[11px] font-black text-white shadow-md shadow-violet-600/30 transition hover:brightness-110 active:scale-95 whitespace-nowrap flex-shrink-0"
             >
               <Icon name="plus" size={12} /> Participer
             </button>
