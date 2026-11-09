@@ -58,17 +58,14 @@ export function RideWeatherBadge({
   }
 
   const badgeContent = (
-    <div className="flex w-full items-center justify-between gap-1.5 sm:gap-2">
-      {/* Zone Gauche : Icône + Libellé météo (aligné à gauche, tronqué proprement si très long) */}
-      <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-start">
-        <span className="text-[13px] sm:text-[14px] leading-none select-none flex-shrink-0" aria-hidden="true">
+    <div className="flex w-full items-center justify-between gap-1 sm:gap-2">
+      {/* Zone Gauche : Icône + Libellé météo complet (100% visible, jamais tronqué) */}
+      <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+        <span className="text-[12px] sm:text-[13px] leading-none select-none flex-shrink-0" aria-hidden="true">
           {emoji}
         </span>
         <span
-          className={`truncate text-[10.5px] sm:text-[11px] font-bold text-neutral-900 dark:text-white ${
-            variant === "featured" ? "font-extrabold" : ""
-          }`}
-          title={weather.suitabilityLabel}
+          className="whitespace-nowrap text-[10px] sm:text-[11px] font-bold text-neutral-900 dark:text-white"
         >
           {weather.suitabilityLabel}
         </span>
@@ -76,18 +73,18 @@ export function RideWeatherBadge({
 
       {/* Zone Centrale : Température + Jauge de confort thermique */}
       {tempRange && (
-        <div className="flex items-center justify-center gap-1 sm:gap-1.5 flex-shrink-0 px-1">
-          <span className="text-[10.5px] sm:text-[11px] font-extrabold text-neutral-900 dark:text-violet-100 whitespace-nowrap">
+        <div className="flex items-center justify-center gap-1 sm:gap-1.5 flex-shrink-0">
+          <span className="text-[9.5px] sm:text-[10.5px] font-extrabold text-neutral-900 dark:text-violet-100 whitespace-nowrap">
             {tempRange}
           </span>
-          <TemperatureGauge weather={weather} barWidth="w-5 sm:w-6" />
+          <TemperatureGauge weather={weather} barWidth="w-4 sm:w-6" />
         </div>
       )}
 
-      {/* Zone Droite : Score /10 + Chevron interactif (aligné à droite) */}
-      <div className="flex items-center justify-end gap-1 sm:gap-1.5 flex-1 flex-shrink-0">
+      {/* Zone Droite : Score /10 + Chevron interactif */}
+      <div className="flex items-center justify-end gap-1 flex-shrink-0">
         <span
-          className={`flex items-baseline gap-0.5 rounded-full px-2 py-0.5 whitespace-nowrap ${
+          className={`flex items-baseline gap-0.5 rounded-full px-1.5 sm:px-2 py-0.5 whitespace-nowrap ${
             variant === "featured"
               ? "bg-black/[0.04] text-emerald-700 dark:bg-white/10 dark:text-emerald-300"
               : `bg-black/[0.03] dark:bg-white/[0.08] ${scoreColor}`
@@ -132,7 +129,7 @@ export function RideWeatherBadge({
             : undefined
         }
         aria-expanded={canExpand ? expanded : undefined}
-        className={`group w-full max-w-full flex items-center justify-between rounded-full border px-3 py-1.5 sm:px-3.5 transition-all text-neutral-900 dark:text-white shadow-xs ${
+        className={`group w-full max-w-full flex items-center justify-between rounded-full border px-2 sm:px-3.5 py-1.5 transition-all text-neutral-900 dark:text-white shadow-xs ${
           variant === "featured"
             ? "border-black/[0.08] bg-black/[0.03] backdrop-blur-sm dark:border-white/15 dark:bg-white/[0.06]"
             : "border-black/[0.07] bg-black/[0.02] dark:border-white/10 dark:bg-white/[0.04]"
