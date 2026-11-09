@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import {
   computeMonthlyStats,
   formatMonthLabel,
-  formatReactionTime,
   getAvailableMonths,
 } from "@/lib/monthlyStats";
 import type { Participation, Ride } from "@/lib/types";
@@ -17,31 +16,6 @@ describe("monthlyStats", () => {
 
     it("falls back gracefully on invalid format", () => {
       expect(formatMonthLabel("invalid")).toBe("invalid");
-    });
-  });
-
-  describe("formatReactionTime", () => {
-    it("handles null or NaN", () => {
-      expect(formatReactionTime(null)).toBe("N/A");
-      expect(formatReactionTime(Number.NaN)).toBe("N/A");
-    });
-
-    it("handles minutes under 1 min", () => {
-      expect(formatReactionTime(0.5)).toBe("< 1 min");
-      expect(formatReactionTime(0)).toBe("< 1 min");
-    });
-
-    it("handles minutes under 1 hour", () => {
-      expect(formatReactionTime(25.4)).toBe("25 min");
-    });
-
-    it("handles hours", () => {
-      expect(formatReactionTime(65)).toBe("1h 5m");
-      expect(formatReactionTime(120)).toBe("2h");
-    });
-
-    it("handles days", () => {
-      expect(formatReactionTime(24 * 60 + 120)).toBe("1j 2h");
     });
   });
 
@@ -124,21 +98,21 @@ describe("monthlyStats", () => {
         ride_id: "ride-1",
         participant_name: "Aymeric",
         group_level: "violet",
-        created_at: "2026-10-30T10:05:00Z", // 5 min après
+        created_at: "2026-10-30T10:05:00Z",
       },
       {
         id: "p2",
         ride_id: "ride-1",
         participant_name: "Marion",
         group_level: "vert",
-        created_at: "2026-10-30T10:30:00Z", // 30 min après
+        created_at: "2026-10-30T10:30:00Z",
       },
       {
         id: "p3",
         ride_id: "ride-1",
         participant_name: "Thomas",
         group_level: "rouge",
-        created_at: "2026-10-30T11:00:00Z", // 60 min après
+        created_at: "2026-10-30T11:00:00Z",
       },
 
       // Ride 2 participations
@@ -147,7 +121,7 @@ describe("monthlyStats", () => {
         ride_id: "ride-2",
         participant_name: "Aymeric",
         group_level: "violet",
-        created_at: "2026-11-05T08:02:00Z", // 2 min après
+        created_at: "2026-11-05T08:02:00Z",
       },
       {
         id: "p5",
@@ -184,7 +158,7 @@ describe("monthlyStats", () => {
       const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-11");
 
       expect(stats.topAttendance.length).toBe(3);
-      // Aymeric and Marion have 2 rides each
+      // Aymeric and Marion have 2 rides each (ex aequo)
       expect(stats.topAttendance[0].ridesCount).toBe(2);
       expect(stats.topAttendance[1].ridesCount).toBe(2);
       // Thomas has 1 ride
@@ -192,32 +166,23 @@ describe("monthlyStats", () => {
       expect(stats.topAttendance[2].ridesCount).toBe(1);
     });
 
-    it("ranks top elevation (Grimpeur)", () => {
+    it("ranks top elevation (Grimpeur) limited to Top 3", () => {
       const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-11");
 
+      expect(stats.topElevation.length).toBeLessThanOrEqual(3);
       // Aymeric and Marion did both rides (800 + 1200 = 2000m)
       expect(stats.topElevation[0].totalElevation).toBe(2000);
       // Thomas only did ride 1 (800m)
       expect(stats.topElevation.find((m) => m.display === "Thomas")?.totalElevation).toBe(800);
     });
 
-    it("ranks top distance (Rouleur)", () => {
+    it("ranks top distance (Rouleur) limited to Top 3", () => {
       const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-11");
 
+      expect(stats.topDistance.length).toBeLessThanOrEqual(3);
       // Aymeric and Marion: 70 + 90 = 160km
       expect(stats.topDistance[0].totalKm).toBe(160);
       expect(stats.topDistance.find((m) => m.display === "Thomas")?.totalKm).toBe(70);
-    });
-
-    it("ranks most reactive members", () => {
-      const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-11");
-
-      // Aymeric: 5 min on ride 1, 2 min on ride 2 -> avg 3.5 min
-      // Marion: 30 min on ride 1, 15 min on ride 2 -> avg 22.5 min
-      // Thomas: 60 min on ride 1 -> avg 60 min
-      expect(stats.mostReactive[0].display).toBe("Aymeric");
-      expect(stats.mostReactive[0].avgReactionMinutes).toBe(3.5);
-      expect(stats.mostReactive[0].fastestReactionMinutes).toBe(2);
     });
   });
 });

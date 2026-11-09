@@ -6,7 +6,6 @@ import { Avatar } from "./Avatar";
 import { Icon } from "./Icons";
 import {
   computeMonthlyStats,
-  formatReactionTime,
   getAvailableMonths,
 } from "@/lib/monthlyStats";
 import { type GroupLevel, type Participation, type Ride } from "@/lib/types";
@@ -50,7 +49,6 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
 
   const topElevationLeader = stats.topElevation[0];
   const topDistanceLeader = stats.topDistance[0];
-  const mostReactiveLeader = stats.mostReactive[0];
 
   const hasData = stats.totalParticipationsInMonth > 0 || stats.totalRidesInMonth > 0;
 
@@ -161,113 +159,113 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
               Aucune sortie ni participation enregistrée pour {stats.monthLabel}.
             </div>
           ) : (
-            <div className="p-5 flex flex-col gap-5">
-              {/* Les 4 Trophées Phares */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* 1. Assiduité du mois + TOP 10 (Gestion des ex æquo) */}
-                <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
-                          🥇
-                        </span>
-                        <div>
-                          <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-                            Plus Assidu du mois
-                          </h3>
-                          <span className="text-[10px] font-semibold text-neutral-400 dark:text-white/40">
-                            Nombre de sorties réalisées
-                          </span>
-                        </div>
-                      </div>
-                      <span className="text-xs font-black text-amber-500">
-                        {isAttendanceTie ? `🥇 ${topAttendanceLeaders.length} ex æquo` : "#1 Sorties"}
+            <div className="p-5 flex flex-col gap-4">
+              {/* 1. Assiduité du mois (Full width) + TOP 10 (Gestion des ex æquo) */}
+              <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500">
+                        🥇
                       </span>
-                    </div>
-
-                    {topAttendanceLeaders.length > 0 ? (
-                      <div className="flex flex-col divide-y divide-amber-500/20 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
-                        {topAttendanceLeaders.map((leader) => (
-                          <div key={leader.display} className="flex items-center gap-3 p-3">
-                            <Avatar name={leader.display} seed={leader.display} size="md" />
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="truncate font-display text-base font-black text-neutral-950 dark:text-white">
-                                  {leader.display}
-                                </span>
-                                <GroupPills groups={leader.groups} />
-                              </div>
-                              <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
-                                {leader.ridesCount} participation{leader.ridesCount > 1 ? "s" : ""} officielle{leader.ridesCount > 1 ? "s" : ""}
-                              </span>
-                            </div>
-                            <div className="text-right">
-                              <span className="font-display text-2xl font-black text-amber-600 dark:text-amber-400">
-                                {leader.ridesCount}
-                              </span>
-                              <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                                sortie{leader.ridesCount > 1 ? "s" : ""}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
+                      <div>
+                        <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                          Plus Assidu du mois
+                        </h3>
+                        <span className="text-[10px] font-semibold text-neutral-400 dark:text-white/40">
+                          Nombre de sorties réalisées
+                        </span>
                       </div>
-                    ) : (
-                      <p className="text-xs text-neutral-400">Aucune donnée</p>
-                    )}
+                    </div>
+                    <span className="text-xs font-black text-amber-500">
+                      {isAttendanceTie ? `🥇 ${topAttendanceLeaders.length} ex æquo` : "#1 Sorties"}
+                    </span>
                   </div>
 
-                  {/* Bouton Top 10 Déroulable (uniquement les sorties avec rangs ex æquo) */}
-                  {rankedTopAttendance.length > 1 && (
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        onClick={() => setShowTop10((v) => !v)}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-2 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
-                      >
-                        <span>{showTop10 ? "Masquer le TOP 10" : `Voir le TOP 10 du mois (${rankedTopAttendance.length})`}</span>
-                        <Icon name="chevDown" size={13} className={showTop10 ? "rotate-180" : ""} />
-                      </button>
-
-                      {showTop10 && (
-                        <div className="mt-2.5 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
-                          {rankedTopAttendance.map((m) => (
-                            <div key={m.display} className="flex items-center gap-2.5 px-3 py-2 text-xs">
-                              <span
-                                className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
-                                  m.rank === 1
-                                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-300"
-                                    : m.rank === 2
-                                    ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
-                                    : m.rank === 3
-                                    ? "bg-amber-700/20 text-amber-800 dark:text-amber-400"
-                                    : "bg-neutral-100 text-neutral-500 dark:bg-white/[0.05] dark:text-white/40"
-                                }`}
-                              >
-                                {m.rank}
+                  {topAttendanceLeaders.length > 0 ? (
+                    <div className="flex flex-col divide-y divide-amber-500/20 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
+                      {topAttendanceLeaders.map((leader) => (
+                        <div key={leader.display} className="flex items-center gap-3 p-3">
+                          <Avatar name={leader.display} seed={leader.display} size="md" />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="truncate font-display text-base font-black text-neutral-950 dark:text-white">
+                                {leader.display}
                               </span>
-                              <Avatar name={m.display} seed={m.display} size="sm" />
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-1">
-                                  <span className="truncate font-bold text-neutral-900 dark:text-white">
-                                    {m.display}
-                                  </span>
-                                  <GroupPills groups={m.groups} />
-                                </div>
-                              </div>
-                              <span className="font-extrabold text-neutral-700 dark:text-white/80">
-                                {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
-                              </span>
+                              <GroupPills groups={leader.groups} />
                             </div>
-                          ))}
+                            <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
+                              {leader.ridesCount} participation{leader.ridesCount > 1 ? "s" : ""} officielle{leader.ridesCount > 1 ? "s" : ""}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-display text-2xl font-black text-amber-600 dark:text-amber-400">
+                              {leader.ridesCount}
+                            </span>
+                            <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                              sortie{leader.ridesCount > 1 ? "s" : ""}
+                            </span>
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
+                  ) : (
+                    <p className="text-xs text-neutral-400">Aucune donnée</p>
                   )}
                 </div>
 
-                {/* 2. Roi du D+ (Grimpeur du mois) */}
+                {/* Bouton Top 10 Déroulable (uniquement les sorties avec rangs ex æquo) */}
+                {rankedTopAttendance.length > 1 && (
+                  <div className="mt-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowTop10((v) => !v)}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-2 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
+                    >
+                      <span>{showTop10 ? "Masquer le TOP 10" : `Voir le TOP 10 du mois (${rankedTopAttendance.length})`}</span>
+                      <Icon name="chevDown" size={13} className={showTop10 ? "rotate-180" : ""} />
+                    </button>
+
+                    {showTop10 && (
+                      <div className="mt-2.5 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
+                        {rankedTopAttendance.map((m) => (
+                          <div key={m.display} className="flex items-center gap-2.5 px-3 py-2 text-xs">
+                            <span
+                              className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
+                                m.rank === 1
+                                  ? "bg-amber-500/20 text-amber-600 dark:text-amber-300"
+                                  : m.rank === 2
+                                  ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
+                                  : m.rank === 3
+                                  ? "bg-amber-700/20 text-amber-800 dark:text-amber-400"
+                                  : "bg-neutral-100 text-neutral-500 dark:bg-white/[0.05] dark:text-white/40"
+                              }`}
+                            >
+                              {m.rank}
+                            </span>
+                            <Avatar name={m.display} seed={m.display} size="sm" />
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1">
+                                <span className="truncate font-bold text-neutral-900 dark:text-white">
+                                  {m.display}
+                                </span>
+                                <GroupPills groups={m.groups} />
+                              </div>
+                            </div>
+                            <span className="font-extrabold text-neutral-700 dark:text-white/80">
+                              {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 2 & 3. Grimpeur (TOP 3) & Rouleur (TOP 3) côte à côte */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* 2. Roi du D+ (Grimpeur du mois : TOP 3) */}
                 <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
                   <div>
                     <div className="flex items-center justify-between mb-3">
@@ -280,11 +278,11 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                             Grimpeur du mois
                           </h3>
                           <span className="text-[10px] font-semibold text-neutral-400 dark:text-white/40">
-                            Plus gros cumul de dénivelé
+                            Top 3 dénivelé positif
                           </span>
                         </div>
                       </div>
-                      <span className="text-xs font-black text-emerald-500">Max D+</span>
+                      <span className="text-xs font-black text-emerald-500">TOP 3 D+</span>
                     </div>
 
                     {topElevationLeader ? (
@@ -312,16 +310,18 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                     )}
                   </div>
 
-                  {/* Podium Grimpeurs (2e et 3e) */}
+                  {/* 2e et 3e du Podium D+ (Exactement TOP 3) */}
                   {stats.topElevation.length > 1 && (
                     <div className="mt-3 flex flex-col gap-1.5">
-                      {stats.topElevation.slice(1, 4).map((m, idx) => (
+                      {stats.topElevation.slice(1, 3).map((m, idx) => (
                         <div
                           key={m.display}
                           className="flex items-center justify-between rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-[10px] font-black text-neutral-400">#{idx + 2}</span>
+                            <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-neutral-100 text-[10px] font-black text-neutral-600 dark:bg-white/[0.08] dark:text-white/70">
+                              #{idx + 2}
+                            </span>
                             <span className="truncate font-semibold text-neutral-800 dark:text-white/80">
                               {m.display}
                             </span>
@@ -335,7 +335,7 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                   )}
                 </div>
 
-                {/* 3. Rouleur du mois (Plus de Km) */}
+                {/* 3. Rouleur du mois (TOP 3 Km) */}
                 <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
                   <div>
                     <div className="flex items-center justify-between mb-3">
@@ -348,11 +348,11 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                             Rouleur du mois
                           </h3>
                           <span className="text-[10px] font-semibold text-neutral-400 dark:text-white/40">
-                            Plus grande distance cumulée
+                            Top 3 distance cumulée
                           </span>
                         </div>
                       </div>
-                      <span className="text-xs font-black text-blue-500">Max Km</span>
+                      <span className="text-xs font-black text-blue-500">TOP 3 Km</span>
                     </div>
 
                     {topDistanceLeader ? (
@@ -380,90 +380,24 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                     )}
                   </div>
 
-                  {/* Podium Rouleurs (2e et 3e) */}
+                  {/* 2e et 3e du Podium Km (Exactement TOP 3) */}
                   {stats.topDistance.length > 1 && (
                     <div className="mt-3 flex flex-col gap-1.5">
-                      {stats.topDistance.slice(1, 4).map((m, idx) => (
+                      {stats.topDistance.slice(1, 3).map((m, idx) => (
                         <div
                           key={m.display}
                           className="flex items-center justify-between rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-[10px] font-black text-neutral-400">#{idx + 2}</span>
+                            <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-neutral-100 text-[10px] font-black text-neutral-600 dark:bg-white/[0.08] dark:text-white/70">
+                              #{idx + 2}
+                            </span>
                             <span className="truncate font-semibold text-neutral-800 dark:text-white/80">
                               {m.display}
                             </span>
                           </div>
                           <span className="font-extrabold text-neutral-600 dark:text-white/60">
                             {m.totalKm} km
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* 4. Le Plus Réactif (Gâchette express) */}
-                <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-yellow-500/10 text-yellow-500">
-                          ⚡
-                        </span>
-                        <div>
-                          <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-                            Le Plus Réactif
-                          </h3>
-                          <span className="text-[10px] font-semibold text-neutral-400 dark:text-white/40">
-                            Inscription la plus rapide
-                          </span>
-                        </div>
-                      </div>
-                      <span className="text-xs font-black text-yellow-500">Délai express</span>
-                    </div>
-
-                    {mostReactiveLeader ? (
-                      <div className="flex items-center gap-3 rounded-xl border border-yellow-500/20 bg-yellow-500/[0.04] p-3">
-                        <Avatar name={mostReactiveLeader.display} seed={mostReactiveLeader.display} size="md" />
-                        <div className="min-w-0 flex-1">
-                          <span className="block truncate font-display text-base font-black text-neutral-950 dark:text-white">
-                            {mostReactiveLeader.display}
-                          </span>
-                          <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
-                            Record : {formatReactionTime(mostReactiveLeader.fastestReactionMinutes)} après publication
-                          </span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-display text-base font-black text-yellow-600 dark:text-yellow-400">
-                            {formatReactionTime(mostReactiveLeader.avgReactionMinutes)}
-                          </span>
-                          <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                            délai moy.
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-neutral-400">Aucune donnée d&apos;inscription horodatée</p>
-                    )}
-                  </div>
-
-                  {/* Podium Réactifs (2e et 3e) */}
-                  {stats.mostReactive.length > 1 && (
-                    <div className="mt-3 flex flex-col gap-1.5">
-                      {stats.mostReactive.slice(1, 4).map((m, idx) => (
-                        <div
-                          key={m.display}
-                          className="flex items-center justify-between rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-[10px] font-black text-neutral-400">#{idx + 2}</span>
-                            <span className="truncate font-semibold text-neutral-800 dark:text-white/80">
-                              {m.display}
-                            </span>
-                          </div>
-                          <span className="font-extrabold text-neutral-600 dark:text-white/60">
-                            {formatReactionTime(m.avgReactionMinutes)} moy.
                           </span>
                         </div>
                       ))}
