@@ -67,7 +67,7 @@ describe("monthlyStats", () => {
       {
         id: "ride-1",
         title: "Sortie 1",
-        description: "Sortie test\n<!-- captain: Aymeric -->",
+        description: "Sortie test",
         ride_date: "2026-11-01",
         ride_time: "09:00:00",
         place: "Corum",
@@ -85,7 +85,6 @@ describe("monthlyStats", () => {
         id: "ride-2",
         title: "Sortie 2",
         description: "Sortie col",
-        captain_name: "Marion",
         ride_date: "2026-11-08",
         ride_time: "08:45:00",
         place: "Corum",
@@ -154,7 +153,7 @@ describe("monthlyStats", () => {
         id: "p5",
         ride_id: "ride-2",
         participant_name: "Marion",
-        group_level: "rouge", // Change de groupe (Caméléon)
+        group_level: "rouge",
         created_at: "2026-11-05T08:15:00Z",
       },
 
@@ -175,12 +174,13 @@ describe("monthlyStats", () => {
       expect(stats.monthLabel).toBe("Novembre 2026");
       expect(stats.totalRidesInMonth).toBe(2);
       expect(stats.totalParticipationsInMonth).toBe(5);
+      expect(stats.uniqueActiveMembersInMonth).toBe(3); // Aymeric, Marion, Thomas
       expect(stats.groupDistribution.vert).toBe(1);
       expect(stats.groupDistribution.rouge).toBe(2);
       expect(stats.groupDistribution.violet).toBe(2);
     });
 
-    it("ranks top attendance with Top 10", () => {
+    it("ranks top attendance with Top 10 strictly based on ridesCount", () => {
       const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-11");
 
       expect(stats.topAttendance.length).toBe(3);
@@ -218,27 +218,6 @@ describe("monthlyStats", () => {
       expect(stats.mostReactive[0].display).toBe("Aymeric");
       expect(stats.mostReactive[0].avgReactionMinutes).toBe(3.5);
       expect(stats.mostReactive[0].fastestReactionMinutes).toBe(2);
-    });
-
-    it("identifies perfect attendance members (Grand Chelem)", () => {
-      const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-11");
-
-      // Both Aymeric and Marion have 2/2 rides
-      expect(stats.perfectAttendanceMembers.length).toBe(2);
-      const names = stats.perfectAttendanceMembers.map((m) => m.display);
-      expect(names).toContain("Aymeric");
-      expect(names).toContain("Marion");
-    });
-
-    it("identifies leaders and caméléon members", () => {
-      const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-11");
-
-      // Leaders: Aymeric (ride 1) and Marion (ride 2)
-      expect(stats.topLeaders.length).toBe(2);
-
-      // Marion rode in vert (ride 1) and rouge (ride 2) -> cameleon
-      expect(stats.cameleon.length).toBeGreaterThanOrEqual(1);
-      expect(stats.cameleon.map((m) => m.display)).toContain("Marion");
     });
   });
 });

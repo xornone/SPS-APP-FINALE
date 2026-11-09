@@ -1,6 +1,5 @@
 import type { GroupLevel, Participation, Ride } from "./types";
 import { findOfficialMember } from "./members";
-import { extractCaptainFromDescription } from "./captain";
 
 const FRENCH_MONTHS = [
   "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
@@ -16,15 +15,14 @@ export interface MonthlyMemberStats {
   avgReactionMinutes: number | null;
   fastestReactionMinutes: number | null;
   reactionCount: number;
-  leaderCount: number;
-  distinctGroupsCount: number;
 }
 
 export interface MonthlySummary {
   monthKey: string; // "2026-11"
   monthLabel: string; // "Novembre 2026"
   totalRidesInMonth: number;
-  totalParticipationsInMonth: number;
+  totalParticipationsInMonth: number; // Total cumulé de toutes les participations
+  uniqueActiveMembersInMonth: number; // Nombre de membres distincts ayant roulé
   totalKmInMonth: number;
   totalElevationInMonth: number;
   // Classements & Podiums demandés
@@ -32,10 +30,6 @@ export interface MonthlySummary {
   topElevation: MonthlyMemberStats[]; // Membre qui a fait le plus de D+ (Top 5)
   topDistance: MonthlyMemberStats[]; // Membre qui a fait le plus de km (Top 5)
   mostReactive: MonthlyMemberStats[]; // Membre le plus réactif à s'inscrire (Top 5)
-  // Idées complémentaires
-  topLeaders: MonthlyMemberStats[]; // Leaders / Capitaines du mois 🧭
-  cameleon: MonthlyMemberStats[]; // Polyvalents (plusieurs pelotons Vert/Rouge/Violet)
-  perfectAttendanceMembers: MonthlyMemberStats[]; // Grand Chelem (100% de présence)
   groupDistribution: Record<GroupLevel, number>;
 }
 
@@ -123,7 +117,6 @@ export function computeMonthlyStats(
       totalElevation: number;
       groups: Record<GroupLevel, number>;
       reactionMinutesList: number[];
-      leaderCount: number;
     }
   >();
 
@@ -137,24 +130,10 @@ export function computeMonthlyStats(
         totalElevation: 0,
         groups: { vert: 0, rouge: 0, violet: 0 },
         reactionMinutesList: [],
-        leaderCount: 0,
       });
     }
     return memberStatsMap.get(officialName)!;
   };
-
-  // Traiter les leaders des sorties du mois
-  for (const r of monthRides) {
-    const capName = r.captain_name || extractCaptainFromDescription(r.description || "");
-    if (capName) {
-      // Un capitaine peut avoir été noté "Aymeric" ou "Marion & Aymeric"
-      const parts = capName.split(/[,&/]/).map((s) => s.trim()).filter(Boolean);
-      for (const p of parts) {
-        const entry = getOrCreateMember(p);
-        entry.leaderCount += 1;
-      }
-    }
-  }
 
   // Traiter les participations
   for (const p of monthParticipations) {
@@ -189,6 +168,11 @@ export function computeMonthlyStats(
     }
   }
 
+  // Membres uniques actifs ayant au moins 1 participation ce mois-ci
+  const uniqueActiveMembersInMonth = Array.from(memberStatsMap.values()).filter(
+    (m) => m.ridesCount > 0
+  ).length;
+
   // Transformer en tableau de statistiques
   const memberStatsList: MonthlyMemberStats[] = Array.from(memberStatsMap.values()).map(
     (entry) => {
@@ -199,10 +183,6 @@ export function computeMonthlyStats(
           : null;
       const fastestReactionMinutes =
         reactionCount > 0 ? Math.min(...entry.reactionMinutesList) : null;
-
-      const distinctGroupsCount = (
-        ["vert", "rouge", "violet"] as GroupLevel[]
-      ).filter((g) => entry.groups[g] > 0).length;
 
       return {
         display: entry.display,
@@ -215,16 +195,14 @@ export function computeMonthlyStats(
         fastestReactionMinutes:
           fastestReactionMinutes !== null ? Math.round(fastestReactionMinutes * 10) / 10 : null,
         reactionCount,
-        leaderCount: entry.leaderCount,
-        distinctGroupsCount,
       };
     }
   );
 
-  // A. Top Participation / Assiduité (TOP 10)
+  // A. Top Participation / Assiduité (TOP 10) : STRICTEMENT basé sur le nombre de sorties
   const topAttendance = [...memberStatsList]
     .filter((m) => m.ridesCount > 0)
-    .sort((a, b) => b.ridesCount - a.ridesCount || b.totalKm - a.totalKm || a.display.localeCompare(b.display, "fr"))
+    .sort((a, b) => b.ridesCount - a.ridesCount || a.display.localeCompare(b.display, "fr"))
     .slice(0, 10);
 
   // B. Top D+ (Roi de la montagne / Grimpeur)
@@ -245,38 +223,18 @@ export function computeMonthlyStats(
     .sort((a, b) => (a.avgReactionMinutes! - b.avgReactionMinutes!) || (a.fastestReactionMinutes! - b.fastestReactionMinutes!))
     .slice(0, 5);
 
-  // E. 100% de présence (Grand Chelem : a fait toutes les sorties du mois si au moins 2 sorties organisées)
-  const perfectAttendanceMembers =
-    totalRidesInMonth >= 2
-      ? memberStatsList.filter((m) => m.ridesCount === totalRidesInMonth)
-      : [];
-
-  // F. Leaders / Capitaines du mois
-  const topLeaders = [...memberStatsList]
-    .filter((m) => m.leaderCount > 0)
-    .sort((a, b) => b.leaderCount - a.leaderCount || b.ridesCount - a.ridesCount)
-    .slice(0, 5);
-
-  // G. Caméléon / Polyvalents (au moins 2 groupes de couleurs différentes)
-  const cameleon = [...memberStatsList]
-    .filter((m) => m.distinctGroupsCount >= 2)
-    .sort((a, b) => b.distinctGroupsCount - a.distinctGroupsCount || b.ridesCount - a.ridesCount)
-    .slice(0, 5);
-
   return {
     monthKey,
     monthLabel,
     totalRidesInMonth,
     totalParticipationsInMonth,
+    uniqueActiveMembersInMonth,
     totalKmInMonth: Math.round(totalKmInMonth),
     totalElevationInMonth: Math.round(totalElevationInMonth),
     topAttendance,
     topElevation,
     topDistance,
     mostReactive,
-    topLeaders,
-    cameleon,
-    perfectAttendanceMembers,
     groupDistribution,
   };
 }
