@@ -31,6 +31,7 @@ export interface Ride {
   created_at: string;
   updated_at: string;
   ride_groups?: RideGroup[];
+  captain_name?: string | null;
 }
 
 // Une inscription = juste un nom + un groupe, sans compte. `id` sert de

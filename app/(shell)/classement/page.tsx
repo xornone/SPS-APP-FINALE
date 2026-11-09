@@ -4,6 +4,7 @@ import { fetchAllParticipations, fetchRides } from "@/lib/queries";
 import { Icon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MemberAssiduityRanking } from "@/components/MemberAssiduityRanking";
+import { MonthlyStatsSection } from "@/components/MonthlyStatsSection";
 import { buildAssiduityRankingFromParticipations, normalizeMemberName } from "@/lib/assiduity";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
@@ -456,6 +457,9 @@ export default async function ClassementPage() {
           )}
         </div>
       </section>
+
+      {/* Trophées & Statistiques du mois (Réservé aux admins) */}
+      <MonthlyStatsSection rides={rides} participations={participations} />
 
       {/* Assiduity Ranking (Admin only section inside) */}
       <section>
