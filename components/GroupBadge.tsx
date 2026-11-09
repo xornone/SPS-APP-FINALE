@@ -54,7 +54,7 @@ export function GroupBadge({
 
   return (
     <span
-      className={`inline-flex items-center rounded-full tracking-normal flex-shrink-0 leading-tight ${sizeClasses} ${
+      className={`inline-flex items-center rounded-full tracking-normal flex-shrink-0 whitespace-nowrap leading-tight ${sizeClasses} ${
         onDark ? STYLES_ON_DARK[group] : STYLES[group]
       } ${className}`}
     >

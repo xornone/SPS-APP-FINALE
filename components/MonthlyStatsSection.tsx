@@ -326,7 +326,7 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                               {m.display}
                             </span>
                           </div>
-                          <span className="font-extrabold text-neutral-600 dark:text-white/60">
+                          <span className="font-extrabold text-neutral-600 dark:text-white/60 whitespace-nowrap flex-shrink-0">
                             {fmtM(m.totalElevation)}
                           </span>
                         </div>
@@ -396,8 +396,8 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                               {m.display}
                             </span>
                           </div>
-                          <span className="font-extrabold text-neutral-600 dark:text-white/60">
-                            {m.totalKm} km
+                          <span className="font-extrabold text-neutral-600 dark:text-white/60 whitespace-nowrap flex-shrink-0">
+                            {fmtKm(m.totalKm)}
                           </span>
                         </div>
                       ))}
@@ -417,7 +417,7 @@ function GroupPills({ groups }: { groups?: Record<GroupLevel, number> }) {
   if (!groups || (groups.vert === 0 && groups.rouge === 0 && groups.violet === 0)) return null;
 
   return (
-    <span className="flex items-center gap-1 text-[11px] font-black tracking-tight">
+    <span className="flex items-center gap-1 text-[11px] font-black tracking-tight whitespace-nowrap flex-shrink-0">
       {groups.vert > 0 && (
         <span className="text-emerald-600 dark:text-emerald-400" title={`${groups.vert} en Vert`}>
           ({groups.vert})

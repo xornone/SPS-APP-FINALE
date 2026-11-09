@@ -38,7 +38,7 @@ export function PlaceLink({
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") openMap(e);
       }}
-      className={`inline-flex items-center gap-1 underline decoration-dotted underline-offset-2 ${className}`}
+      className={`inline-flex items-center gap-1 underline decoration-dotted underline-offset-2 whitespace-nowrap flex-shrink-0 ${className}`}
     >
       {place}
       <Icon name="external" size={11} />

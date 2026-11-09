@@ -79,9 +79,10 @@ export function RideParticipationSection({
             href={gpxUrl}
             download
             onClick={() => hapticTap(12)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-[13px] font-bold transition-all duration-150 active:scale-[0.98] hover:border-sps-violet500/40 hover:bg-black/[0.02] dark:border-white/15 dark:bg-[#1A1422] dark:hover:bg-white/[0.03]"
+            className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-black/10 bg-white py-3 px-2 text-[12px] sm:text-[13px] font-bold transition-all duration-150 active:scale-[0.98] hover:border-sps-violet500/40 hover:bg-black/[0.02] dark:border-white/15 dark:bg-[#1A1422] dark:hover:bg-white/[0.03] whitespace-nowrap"
           >
-            <Icon name="download" size={15} /> Télécharger GPX
+            <Icon name="download" size={14} className="flex-shrink-0" />
+            <span className="truncate sm:overflow-visible">Trace GPX</span>
           </a>
         )}
         {stravaUrl && (
@@ -90,9 +91,10 @@ export function RideParticipationSection({
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => hapticTap(10)}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white py-3 text-[13px] font-bold transition-all duration-150 active:scale-[0.98] hover:border-[#FC4C02]/40 hover:bg-[#FC4C02]/5 dark:border-white/15 dark:bg-[#1A1422] dark:hover:bg-[#FC4C02]/10"
+            className="flex flex-1 items-center justify-center gap-1.5 sm:gap-2 rounded-xl border border-black/10 bg-white py-3 px-2 text-[12px] sm:text-[13px] font-bold transition-all duration-150 active:scale-[0.98] hover:border-[#FC4C02]/40 hover:bg-[#FC4C02]/5 dark:border-white/15 dark:bg-[#1A1422] dark:hover:bg-[#FC4C02]/10 whitespace-nowrap"
           >
-            <Icon name="external" size={15} /> Ouvrir sur Strava
+            <Icon name="external" size={14} className="flex-shrink-0" />
+            <span className="truncate sm:overflow-visible">Lien Strava</span>
           </a>
         )}
       </div>

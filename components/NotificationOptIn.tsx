@@ -126,7 +126,7 @@ export function NotificationOptIn() {
         type="button"
         disabled={busy}
         onClick={enable}
-        className="flex-none rounded-xl bg-sps-violet600 px-3 py-2 text-[12px] font-extrabold text-white disabled:opacity-50"
+        className="flex-none rounded-xl bg-sps-violet600 px-3 py-2 text-[12px] font-extrabold text-white disabled:opacity-50 whitespace-nowrap"
       >
         Activer
       </button>

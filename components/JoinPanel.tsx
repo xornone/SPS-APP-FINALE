@@ -220,7 +220,7 @@ export function JoinPanel({
           <p className="mb-2 text-[11px] font-black uppercase tracking-wider text-black/60 dark:text-white/60">
             Je roulerai avec :
           </p>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-3 gap-1.5 sm:flex sm:gap-2">
             {availableGroups.map((g) => {
               const info = GROUP_INFO[g];
               const selected = mine.group_level === g;
@@ -229,7 +229,7 @@ export function JoinPanel({
                   key={g}
                   disabled={pending}
                   onClick={() => handleChangeGroup(g)}
-                  className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border-2 px-3 py-2.5 text-[12.5px] font-extrabold transition active:scale-[0.98] disabled:opacity-60 ${
+                  className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 rounded-xl border-2 px-1.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-[12.5px] font-extrabold transition active:scale-[0.98] disabled:opacity-60 whitespace-nowrap ${
                     selected ? "shadow-sm scale-[1.01]" : "opacity-75 hover:opacity-100"
                   }`}
                   style={{
@@ -238,12 +238,12 @@ export function JoinPanel({
                     background: selected ? `${info.hex}18` : "transparent",
                   }}
                 >
-                  <span className="flex items-center gap-1 font-black">
-                    {selected && <Icon name="check" size={13} />}
+                  <span className="flex items-center gap-0.5 sm:gap-1 font-black">
+                    {selected && <Icon name="check" size={12} />}
                     {info.label}
                   </span>
-                  <span className={`text-[11.5px] font-bold ${selected ? "opacity-100" : "opacity-75"}`}>
-                    · {info.range}
+                  <span className={`text-[10px] sm:text-[11.5px] font-bold ${selected ? "opacity-100" : "opacity-75"}`}>
+                    <span className="hidden sm:inline">· </span>{info.range}
                   </span>
                 </button>
               );
@@ -316,7 +316,7 @@ export function JoinPanel({
           <p className="mb-1.5 text-[11px] font-black uppercase tracking-wider text-black/70 dark:text-white/70">
             Je roulerai avec :
           </p>
-          <div className="flex gap-2">
+          <div className="grid grid-cols-3 gap-1.5 sm:flex sm:gap-2">
             {availableGroups.map((g) => {
               const info = GROUP_INFO[g];
               const selected = group === g;
@@ -325,7 +325,7 @@ export function JoinPanel({
                   type="button"
                   key={g}
                   onClick={() => setGroup(g)}
-                  className={`flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border-2 px-3 py-2.5 text-[13px] font-extrabold transition-all active:scale-[0.98] ${
+                  className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 rounded-xl border-2 px-1.5 sm:px-3 py-2 sm:py-2.5 text-[11px] sm:text-[13px] font-extrabold transition-all active:scale-[0.98] whitespace-nowrap ${
                     selected
                       ? "shadow-sm scale-[1.01]"
                       : "border-black/10 bg-black/[0.02] text-black/60 opacity-75 hover:opacity-100 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/60"
@@ -336,12 +336,12 @@ export function JoinPanel({
                     background: selected ? `${info.hex}18` : undefined,
                   }}
                 >
-                  <span className="flex items-center gap-1 font-black">
-                    {selected && <Icon name="check" size={13} />}
+                  <span className="flex items-center gap-0.5 sm:gap-1 font-black">
+                    {selected && <Icon name="check" size={12} />}
                     {info.label}
                   </span>
-                  <span className={`text-[11.5px] font-semibold ${selected ? "opacity-100" : "opacity-70"}`}>
-                    · {info.range}
+                  <span className={`text-[10px] sm:text-[11.5px] font-semibold ${selected ? "opacity-100" : "opacity-70"}`}>
+                    <span className="hidden sm:inline">· </span>{info.range}
                   </span>
                 </button>
               );

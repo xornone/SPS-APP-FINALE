@@ -19,12 +19,13 @@ export function JerseyPreorderBanner() {
         <div className="relative z-10 flex flex-1 flex-col pr-2">
           {/* Badges sur la même ligne */}
           <div className="flex items-center gap-1.5 flex-nowrap overflow-hidden">
-            <div className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-fuchsia-500/20 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-fuchsia-300">
+            <div className="inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-fuchsia-500/20 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-fuchsia-300 flex-shrink-0">
               <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-fuchsia-400" />
               Édition 2027
             </div>
-            <div className="inline-flex items-center whitespace-nowrap rounded-full bg-fuchsia-500/20 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-fuchsia-300">
-              Limite pré-commande : 22/11/26
+            <div className="inline-flex items-center whitespace-nowrap rounded-full bg-fuchsia-500/20 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide text-fuchsia-300 flex-shrink-0">
+              <span className="sm:hidden">Fin 22/11</span>
+              <span className="hidden sm:inline">Limite pré-commande : 22/11/26</span>
             </div>
           </div>
 

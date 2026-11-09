@@ -183,10 +183,10 @@ export function ParticipantsList({
               />
             )}
             <Avatar name={p.participant_name} seed={p.participant_name} />
-            <div className="flex flex-1 items-center gap-1.5 flex-wrap min-w-0">
+            <div className="flex flex-1 items-center gap-1.5 min-w-0">
               <span className="text-[13.5px] font-bold truncate">{p.participant_name}</span>
               {isCaptain(p.participant_name) && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-black text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 flex-shrink-0">
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10.5px] font-black text-amber-800 dark:bg-amber-400/20 dark:text-amber-300 flex-shrink-0 whitespace-nowrap">
                   🧭 Leader
                   {isAdmin && !isAdminName(p.participant_name) && (
                     <button

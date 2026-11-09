@@ -264,13 +264,14 @@ export function PreorderShowcase() {
       {/* En-tête du reveal avec sélecteur d'article */}
       <div className="px-5 pt-6 pb-2 text-center">
         {/* Badges d'information sur la même ligne */}
-        <div className="flex items-center justify-center gap-1.5 flex-nowrap overflow-x-auto text-[10px] sm:text-[11px]">
-          <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2.5 sm:px-3 py-1 font-semibold uppercase tracking-wider text-fuchsia-300 backdrop-blur-md">
+        <div className="flex items-center justify-center gap-1.5 flex-nowrap text-[10px] sm:text-[11px]">
+          <div className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2.5 sm:px-3 py-1 font-semibold uppercase tracking-wider text-fuchsia-300 backdrop-blur-md flex-shrink-0">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-fuchsia-400" />
             Édition 2027
           </div>
-          <div className="inline-flex items-center whitespace-nowrap rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2.5 sm:px-3 py-1 font-semibold uppercase tracking-wider text-fuchsia-300 backdrop-blur-md">
-            Limite pré-commande : 22/11/26
+          <div className="inline-flex items-center whitespace-nowrap rounded-full border border-fuchsia-400/30 bg-fuchsia-500/10 px-2.5 sm:px-3 py-1 font-semibold uppercase tracking-wider text-fuchsia-300 backdrop-blur-md flex-shrink-0">
+            <span className="sm:hidden">Fin : 22/11/26</span>
+            <span className="hidden sm:inline">Limite pré-commande : 22/11/26</span>
           </div>
         </div>
 
