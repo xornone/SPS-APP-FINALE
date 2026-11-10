@@ -152,7 +152,9 @@ export const SPS_ACTIVE_MEMBERS: readonly string[] = [
  */
 export const KNOWN_MEMBER_ALIASES: Record<string, string> = {
   "duc nguyen": "Huu Duc Nguyen",
+  "duc ngn": "Huu Duc Nguyen",
   "charly j": "Charly Jegat",
+  "charly": "Charly Jegat",
   "jb lafon": "Jean-Baptiste Lafon",
   "andrea arcis": "Andrea Arcis-Jobert",
   "louise girot": "Louise Girot Person",
@@ -160,6 +162,19 @@ export const KNOWN_MEMBER_ALIASES: Record<string, string> = {
   "ceric hamonier": "Cédric Hamonier",
   "fred tardivot": "Frederic Tardivot (Fred)",
   "frederic tardivot": "Frederic Tardivot (Fred)",
+  "fred tt": "Frederic Tardivot (Fred)",
+  "chris walton": "Christopher Walton",
+  "elias going crzy": "Elias Khaldi",
+  "raquel cf": "Raquel Cardó Fernández",
+  "fandi sabarila": "Fandy Sabarila",
+  "mathis rblt": "Mathis Roblot",
+  "zoe pqt": "Zoé Paquet",
+  "benjamin e": "Benjamin Embry",
+  "rene e": "René Espinosa Rojas",
+  "lu lu": "Lucille Roux",
+  "papo kano": "Pierrick Pinault",
+  "cam lamenace": "Camille Frairrot",
+  "cam 🌷 lamenace": "Camille Frairrot",
 };
 
 export function tokenizeName(str: string): string[] {
