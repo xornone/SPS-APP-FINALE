@@ -11,7 +11,6 @@ import { Icon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getMyStravaConnection } from "@/lib/strava";
 import { StravaConnectPanel } from "@/components/StravaConnectPanel";
-import { AdminStravaSyncButton } from "@/components/AdminStravaSyncButton";
 import { AdminAutoPushSync } from "@/components/AdminAutoPushSync";
 import { AdminRideReminderCard } from "@/components/AdminRideReminderCard";
 
@@ -94,30 +93,6 @@ export default async function AdminPage() {
         <Suspense fallback={null}>
           <StravaConnectPanel connection={stravaConnection} />
         </Suspense>
-      </div>
-
-      {/* Synchronisation globale du classement Strava SPS */}
-      <div className="px-5 pb-5">
-        <div className="rounded-2xl border border-[#FC5200]/25 bg-gradient-to-r from-[#FC5200]/10 via-[#FC5200]/5 to-transparent p-4 shadow-cardSm dark:border-[#FC5200]/20 dark:from-[#FC5200]/15 dark:via-[#FC5200]/10">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3.5">
-              <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-[#FC5200]/15 text-[#FC5200] dark:bg-[#FC5200]/20 dark:text-[#FC5200]">
-                <Icon name="award" size={20} />
-              </span>
-              <div>
-                <span className="font-display text-[15px] font-bold tracking-wide text-black dark:text-white">
-                  Leaderboard Strava SPS
-                </span>
-                <p className="mt-0.5 text-[12px] text-black/55 dark:text-white/55">
-                  Synchronise les km et D+ des 99 adhérents pour les trophées du mois (rouleur & grimpeur).
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center justify-end sm:justify-start">
-              <AdminStravaSyncButton />
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Synchronisation push silencieuse et automatique pour l'admin connecté */}

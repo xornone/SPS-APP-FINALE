@@ -10,6 +10,7 @@ export interface StravaMonthStats {
   distance_km: number;
   elev_gain_m: number;
   time: string;
+  avg_speed_kmh?: number;
 }
 
 export interface StravaMemberSummary {
@@ -29,6 +30,7 @@ export interface StravaLeaderboardEntry {
   distance_km: number;
   elev_gain_m: number;
   time: string;
+  avg_speed_kmh?: number;
 }
 
 export interface StravaDataStore {
@@ -41,6 +43,7 @@ export interface StravaDataStore {
     {
       topDistance: StravaLeaderboardEntry[];
       topElevation: StravaLeaderboardEntry[];
+      topSpeed?: StravaLeaderboardEntry[];
       totalKm: number;
       totalElevation: number;
       totalActivities: number;
@@ -236,26 +239,23 @@ export async function fetchAthleteCalendarMonth(
     }
 
     const rawHtml = totalsMatch[1].replace(/\\n/g, " ").replace(/\\/g, "");
-    const items = Array.from(
-      rawHtml.matchAll(/<strong>([^<]+)<abbr[^>]*title=['"]([^'"]+)['"][^>]*>([^<]+)<\/abbr><\/strong>/gi)
-    );
 
-    let distanceKm = 0;
-    let timeStr = "0h 0m";
-    let elevGainM = 0;
+    // Distance en kilomètres
+    const distMatch = rawHtml.match(/([0-9,.]+)\s*<abbr[^>]*title=['"]kilometer/i);
+    const distanceKm = distMatch ? parseFloat(distMatch[1].replace(/,/g, "")) || 0 : 0;
 
-    for (const item of items) {
-      const val = item[1].trim();
-      const title = item[2].toLowerCase();
-      const unit = item[3].trim().toLowerCase();
-      if (title.includes("kilometer") || unit === "km") {
-        distanceKm = parseFloat(val.replace(/,/g, "")) || 0;
-      } else if (title.includes("meter") || unit === "m") {
-        elevGainM = parseInt(val.replace(/,/g, ""), 10) || 0;
-      } else if (title.includes("hour") || title.includes("minute") || unit === "h" || unit === "m") {
-        timeStr = val + unit;
-      }
-    }
+    // Dénivelé en mètres
+    const elevMatch = rawHtml.match(/([0-9,.]+)\s*<abbr[^>]*title=['"]meter/i);
+    const elevGainM = elevMatch ? parseInt(elevMatch[1].replace(/,/g, ""), 10) || 0 : 0;
+
+    // Temps en selle (heures et minutes)
+    const hoursMatch = rawHtml.match(/(\d+)\s*<abbr[^>]*title=['"]hour['"][^>]*>h/i);
+    const minsMatch = rawHtml.match(/(\d+)\s*<abbr[^>]*title=['"]minute['"][^>]*>m/i);
+    const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
+    const mins = minsMatch ? parseInt(minsMatch[1], 10) : 0;
+    const timeStr = `${hours}h ${mins}m`;
+    const totalHours = hours + mins / 60;
+    const avgSpeed = totalHours > 0 ? Math.round((distanceKm / totalHours) * 10) / 10 : 0;
 
     // Nombre d'activités trouvées dans le flux du mois
     const matches = text.match(/Activity-\d+/g);
@@ -266,10 +266,11 @@ export async function fetchAthleteCalendarMonth(
       distance_km: distanceKm,
       elev_gain_m: elevGainM,
       time: timeStr,
+      avg_speed_kmh: avgSpeed,
     };
   } catch (err) {
     console.error(`[fetchAthleteCalendarMonth] Erreur athlete ${athleteId} ${monthKey}:`, err);
-    return { activities: 0, distance_km: 0, elev_gain_m: 0, time: "0h 0m" };
+    return { activities: 0, distance_km: 0, elev_gain_m: 0, time: "0h 0m", avg_speed_kmh: 0 };
   }
 }
 
@@ -406,11 +407,28 @@ export async function syncAllMembersStravaStats(
         distance_km: m.distance_km,
         elev_gain_m: m.elev_gain_m,
         time: m.time,
+        avg_speed_kmh: m.avg_speed_kmh,
+      }));
+
+    const topSpeedSorted = [...listWithStats]
+      .filter((m) => (m.distance_km || 0) >= 30 && (m.avg_speed_kmh || 0) > 0)
+      .sort((a, b) => (b.avg_speed_kmh || 0) - (a.avg_speed_kmh || 0))
+      .map((m, idx) => ({
+        rank: idx + 1,
+        officialName: m.officialName,
+        stravaName: m.stravaName,
+        athleteId: m.athleteId,
+        activities: m.activities,
+        distance_km: m.distance_km,
+        elev_gain_m: m.elev_gain_m,
+        time: m.time,
+        avg_speed_kmh: m.avg_speed_kmh,
       }));
 
     monthlyLeaders[ym] = {
       topDistance: topDistSorted,
       topElevation: topElevSorted,
+      topSpeed: topSpeedSorted,
       totalKm: Math.round(totalKm),
       totalElevation,
       totalActivities,
