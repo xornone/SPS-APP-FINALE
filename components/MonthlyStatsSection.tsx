@@ -4,28 +4,53 @@ import { useMemo, useState } from "react";
 import { AdminOnly } from "./AdminOnly";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icons";
+import { AdminStravaSyncButton } from "./AdminStravaSyncButton";
 import {
   computeMonthlyStats,
+  formatMonthLabel,
   getAvailableMonths,
 } from "@/lib/monthlyStats";
 import { type GroupLevel, type Participation, type Ride } from "@/lib/types";
 import { fmtKm, fmtM } from "@/lib/format";
+import type { StravaDataStore } from "@/lib/stravaScraper";
 
 interface MonthlyStatsSectionProps {
   rides: Ride[];
   participations: Participation[];
+  stravaData?: StravaDataStore | null;
 }
 
-export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSectionProps) {
-  const months = useMemo(() => getAvailableMonths(rides), [rides]);
-  const [selectedMonth, setSelectedMonth] = useState<string>(months[0]?.key || "");
+export function MonthlyStatsSection({ rides, participations, stravaData }: MonthlyStatsSectionProps) {
+  // Fusionne les mois disponibles des sorties app et les mois présents dans Strava
+  const months = useMemo(() => {
+    const baseMonths = getAvailableMonths(rides);
+    const existingKeys = new Set(baseMonths.map((m) => m.key));
+
+    if (stravaData?.monthlyLeaders) {
+      for (const key of Object.keys(stravaData.monthlyLeaders)) {
+        if (!existingKeys.has(key)) {
+          baseMonths.push({ key, label: formatMonthLabel(key) });
+          existingKeys.add(key);
+        }
+      }
+    }
+
+    return baseMonths.sort((a, b) => b.key.localeCompare(a.key));
+  }, [rides, stravaData]);
+
+  const [selectedMonth, setSelectedMonth] = useState<string>(months[0]?.key || "2026-11");
   const [showTop10, setShowTop10] = useState(false);
 
+  // Statistiques calculées depuis l'app SPS (pour le Plus Assidu et les chiffres de participations sorties)
   const stats = useMemo(() => {
     return computeMonthlyStats(rides, participations, selectedMonth);
   }, [rides, participations, selectedMonth]);
 
-  // Gestion des ex æquo pour le plus assidu du mois
+  // Données Strava pour le mois calendaire sélectionné
+  const stravaMonthLeaders = stravaData?.monthlyLeaders?.[selectedMonth];
+  const hasStravaMonthData = !!stravaMonthLeaders && (stravaMonthLeaders.topDistance.length > 0 || stravaMonthLeaders.topElevation.length > 0);
+
+  // 1. Plus assidu du mois : RESTE STRICTEMENT BASÉ SUR L'APP SPS
   const maxRides = stats.topAttendance[0]?.ridesCount || 0;
   const topAttendanceLeaders = useMemo(() => {
     if (maxRides <= 0) return [];
@@ -34,7 +59,7 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
 
   const isAttendanceTie = topAttendanceLeaders.length > 1;
 
-  // Calcul des rangs avec ex æquo pour le TOP 10
+  // Calcul des rangs avec ex æquo pour le TOP 10 Assiduité (App SPS)
   const rankedTopAttendance = useMemo(() => {
     let rank = 1;
     return stats.topAttendance.map((m, idx, arr) => {
@@ -45,18 +70,82 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
     });
   }, [stats.topAttendance]);
 
+  // 2. Grimpeur du mois : Données Strava si dispo, sinon fallback App SPS
+  const topElevationLeader = useMemo(() => {
+    if (hasStravaMonthData && stravaMonthLeaders?.topElevation?.[0]) {
+      const top = stravaMonthLeaders.topElevation[0];
+      return {
+        display: top.officialName,
+        ridesCount: top.activities,
+        totalElevation: top.elev_gain_m,
+        isStrava: true,
+      };
+    }
+    if (stats.topElevation[0]) {
+      return {
+        ...stats.topElevation[0],
+        isStrava: false,
+      };
+    }
+    return null;
+  }, [hasStravaMonthData, stravaMonthLeaders, stats.topElevation]);
+
+  const elevationPodium = useMemo(() => {
+    if (hasStravaMonthData && stravaMonthLeaders?.topElevation) {
+      return stravaMonthLeaders.topElevation.slice(1, 3).map((m) => ({
+        display: m.officialName,
+        ridesCount: m.activities,
+        totalElevation: m.elev_gain_m,
+        isStrava: true,
+      }));
+    }
+    return stats.topElevation.slice(1, 3).map((m) => ({ ...m, isStrava: false }));
+  }, [hasStravaMonthData, stravaMonthLeaders, stats.topElevation]);
+
+  // 3. Rouleur du mois : Données Strava si dispo, sinon fallback App SPS
+  const topDistanceLeader = useMemo(() => {
+    if (hasStravaMonthData && stravaMonthLeaders?.topDistance?.[0]) {
+      const top = stravaMonthLeaders.topDistance[0];
+      return {
+        display: top.officialName,
+        ridesCount: top.activities,
+        totalKm: top.distance_km,
+        isStrava: true,
+      };
+    }
+    if (stats.topDistance[0]) {
+      return {
+        ...stats.topDistance[0],
+        isStrava: false,
+      };
+    }
+    return null;
+  }, [hasStravaMonthData, stravaMonthLeaders, stats.topDistance]);
+
+  const distancePodium = useMemo(() => {
+    if (hasStravaMonthData && stravaMonthLeaders?.topDistance) {
+      return stravaMonthLeaders.topDistance.slice(1, 3).map((m) => ({
+        display: m.officialName,
+        ridesCount: m.activities,
+        totalKm: m.distance_km,
+        isStrava: true,
+      }));
+    }
+    return stats.topDistance.slice(1, 3).map((m) => ({ ...m, isStrava: false }));
+  }, [hasStravaMonthData, stravaMonthLeaders, stats.topDistance]);
+
   if (!months || months.length === 0) return null;
 
-  const topElevationLeader = stats.topElevation[0];
-  const topDistanceLeader = stats.topDistance[0];
-
-  const hasData = stats.totalParticipationsInMonth > 0 || stats.totalRidesInMonth > 0;
+  const hasData =
+    stats.totalParticipationsInMonth > 0 ||
+    stats.totalRidesInMonth > 0 ||
+    hasStravaMonthData;
 
   return (
     <AdminOnly>
       <section className="px-5">
         <div className="overflow-hidden rounded-[28px] border border-neutral-200/90 bg-white shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/90">
-          {/* Header avec Titre + Badge Admin + Sélecteur de mois */}
+          {/* Header avec Titre + Badge Admin + Bouton Synchro + Sélecteur de mois */}
           <div className="border-b border-neutral-100 p-5 dark:border-white/[0.08]">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -73,50 +162,48 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                     </span>
                   </div>
                   <p className="text-[11px] font-semibold text-neutral-500 dark:text-white/50">
-                    Performances & statistiques nominatives SPS
+                    Grimpeur & Rouleur synchronisés Strava · Assiduité SPS
                   </p>
                 </div>
               </div>
 
-              {/* Sélecteur de mois */}
-              <div className="relative">
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                  className="cursor-pointer appearance-none rounded-xl border border-neutral-200 bg-neutral-50 py-1.5 pl-3.5 pr-8 text-xs font-black text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.06] dark:text-white"
-                >
-                  {months.map((m) => (
-                    <option key={m.key} value={m.key} className="bg-white text-black dark:bg-[#1A1422] dark:text-white">
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-white/40">
-                  <Icon name="chevDown" size={13} />
-                </span>
+              {/* Contrôles : Bouton Synchro Strava + Sélecteur de mois */}
+              <div className="flex flex-wrap items-center gap-2">
+                <AdminStravaSyncButton months={[selectedMonth]} />
+
+                <div className="relative">
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className="cursor-pointer appearance-none rounded-xl border border-neutral-200 bg-neutral-50 py-1.5 pl-3.5 pr-8 text-xs font-black text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.06] dark:text-white"
+                  >
+                    {months.map((m) => (
+                      <option key={m.key} value={m.key} className="bg-white text-black dark:bg-[#1A1422] dark:text-white">
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-white/40">
+                    <Icon name="chevDown" size={13} />
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Chiffres collectifs du mois :
-                1. Sorties en haut pleine largeur
-                2. Membres actifs / 100 en face de Inscriptions
-                3. Cumul Km et Cumul D+ sur la même ligne
-            */}
+            {/* Chiffres collectifs du mois */}
             <div className="mt-4 grid grid-cols-2 gap-2">
-              {/* Ligne 1 : Sorties pleine largeur en haut */}
               <div className="col-span-2 rounded-2xl border border-neutral-100 bg-neutral-50/80 p-3 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Sorties
+                  Sorties SPS officielles
                 </span>
                 <span className="font-display text-lg font-black text-neutral-900 dark:text-white">
                   {stats.totalRidesInMonth} sortie{stats.totalRidesInMonth > 1 ? "s" : ""}
                 </span>
               </div>
 
-              {/* Ligne 2 : Membres actifs / 100 & Inscriptions face à face */}
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Membres actifs
+                  Membres actifs SPS
                 </span>
                 <div className="flex items-baseline justify-center gap-1 font-display text-base font-black text-emerald-600 dark:text-emerald-400">
                   <span>{stats.uniqueActiveMembersInMonth}</span>
@@ -125,30 +212,33 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
               </div>
 
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
-                <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40" title="Total des inscriptions enregistrées toutes sorties confondues">
-                  Inscriptions
+                <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                  Inscriptions SPS
                 </span>
                 <span className="font-display text-base font-black text-sps-violet600 dark:text-sps-violet400">
                   {stats.totalParticipationsInMonth}
                 </span>
               </div>
 
-              {/* Ligne 3 : Cumul Km & Cumul D+ sur la même ligne */}
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Cumul Km
+                  Cumul Km {hasStravaMonthData ? "(Strava)" : "(SPS)"}
                 </span>
                 <span className="font-display text-base font-black text-neutral-900 dark:text-white">
-                  {fmtKm(stats.totalKmInMonth)}
+                  {hasStravaMonthData && stravaMonthLeaders
+                    ? `${stravaMonthLeaders.totalKm.toLocaleString("fr-FR")} km`
+                    : fmtKm(stats.totalKmInMonth)}
                 </span>
               </div>
 
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Cumul D+
+                  Cumul D+ {hasStravaMonthData ? "(Strava)" : "(SPS)"}
                 </span>
                 <span className="font-display text-base font-black text-neutral-900 dark:text-white">
-                  {fmtM(stats.totalElevationInMonth)}
+                  {hasStravaMonthData && stravaMonthLeaders
+                    ? `${stravaMonthLeaders.totalElevation.toLocaleString("fr-FR")} m`
+                    : fmtM(stats.totalElevationInMonth)}
                 </span>
               </div>
             </div>
@@ -156,11 +246,11 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
 
           {!hasData ? (
             <div className="p-8 text-center text-sm font-semibold text-neutral-400 dark:text-white/40">
-              Aucune sortie ni participation enregistrée pour {stats.monthLabel}.
+              Aucune donnée enregistrée pour {formatMonthLabel(selectedMonth)}.
             </div>
           ) : (
             <div className="p-5 flex flex-col gap-4">
-              {/* 1. Assiduité du mois (Full width) + TOP 10 (Gestion des ex æquo) */}
+              {/* 1. Assiduité du mois (Full width) : 100% APP SPS */}
               <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -169,11 +259,16 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                         🥇
                       </span>
                       <div>
-                        <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-                          Plus Assidu du mois
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                            Plus Assidu du mois
+                          </h3>
+                          <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[9px] font-black uppercase text-amber-600 dark:text-amber-400">
+                            App SPS
+                          </span>
+                        </div>
                         <span className="text-[10px] font-semibold text-neutral-400 dark:text-white/40">
-                          Nombre de sorties réalisées
+                          Sorties club réalisées dans l&apos;application
                         </span>
                       </div>
                     </div>
@@ -210,11 +305,11 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                       ))}
                     </div>
                   ) : (
-                    <p className="text-xs text-neutral-400">Aucune donnée</p>
+                    <p className="text-xs text-neutral-400">Aucune participation club enregistrée</p>
                   )}
                 </div>
 
-                {/* Bouton Top 10 Déroulable (uniquement les sorties avec rangs ex æquo) */}
+                {/* Bouton Top 10 Déroulable (Sorties App SPS) */}
                 {rankedTopAttendance.length > 1 && (
                   <div className="mt-3">
                     <button
@@ -263,9 +358,9 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                 )}
               </div>
 
-              {/* 2 & 3. Grimpeur (TOP 3) & Rouleur (TOP 3) côte à côte */}
+              {/* 2 & 3. Grimpeur (TOP 3 Strava) & Rouleur (TOP 3 Strava) côte à côte */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* 2. Roi du D+ (Grimpeur du mois : TOP 3) */}
+                {/* 2. Roi du D+ (Grimpeur du mois : TOP 3 Strava) */}
                 <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
                   <div>
                     <div className="flex items-center justify-between mb-3">
@@ -274,9 +369,16 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                           ⛰️
                         </span>
                         <div>
-                          <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-                            Grimpeur du mois
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                              Grimpeur du mois
+                            </h3>
+                            {topElevationLeader?.isStrava && (
+                              <span className="rounded-full bg-[#FC5200]/15 px-2 py-0.5 text-[9px] font-black uppercase text-[#FC5200]">
+                                Strava
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[10px] font-semibold text-neutral-400 dark:text-white/40">
                             Top 3 dénivelé positif
                           </span>
@@ -293,7 +395,7 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                             {topElevationLeader.display}
                           </span>
                           <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
-                            {topElevationLeader.ridesCount} sortie{topElevationLeader.ridesCount > 1 ? "s" : ""}
+                            {topElevationLeader.ridesCount} sortie{topElevationLeader.ridesCount > 1 ? "s" : ""} à vélo
                           </span>
                         </div>
                         <div className="text-right">
@@ -310,10 +412,10 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                     )}
                   </div>
 
-                  {/* 2e et 3e du Podium D+ (Exactement TOP 3) */}
-                  {stats.topElevation.length > 1 && (
+                  {/* 2e et 3e du Podium D+ */}
+                  {elevationPodium.length > 0 && (
                     <div className="mt-3 flex flex-col gap-1.5">
-                      {stats.topElevation.slice(1, 3).map((m, idx) => (
+                      {elevationPodium.map((m, idx) => (
                         <div
                           key={m.display}
                           className="flex items-center justify-between rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
@@ -335,7 +437,7 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                   )}
                 </div>
 
-                {/* 3. Rouleur du mois (TOP 3 Km) */}
+                {/* 3. Rouleur du mois (TOP 3 Strava Km) */}
                 <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
                   <div>
                     <div className="flex items-center justify-between mb-3">
@@ -344,9 +446,16 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                           🚴
                         </span>
                         <div>
-                          <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-                            Rouleur du mois
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                              Rouleur du mois
+                            </h3>
+                            {topDistanceLeader?.isStrava && (
+                              <span className="rounded-full bg-[#FC5200]/15 px-2 py-0.5 text-[9px] font-black uppercase text-[#FC5200]">
+                                Strava
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[10px] font-semibold text-neutral-400 dark:text-white/40">
                             Top 3 distance cumulée
                           </span>
@@ -363,15 +472,15 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                             {topDistanceLeader.display}
                           </span>
                           <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
-                            {topDistanceLeader.ridesCount} sortie{topDistanceLeader.ridesCount > 1 ? "s" : ""}
+                            {topDistanceLeader.ridesCount} sortie{topDistanceLeader.ridesCount > 1 ? "s" : ""} à vélo
                           </span>
                         </div>
                         <div className="text-right">
                           <span className="font-display text-lg font-black text-blue-600 dark:text-blue-400">
-                            {topDistanceLeader.totalKm}
+                            {fmtKm(topDistanceLeader.totalKm)}
                           </span>
                           <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                            km
+                            distance
                           </span>
                         </div>
                       </div>
@@ -380,10 +489,10 @@ export function MonthlyStatsSection({ rides, participations }: MonthlyStatsSecti
                     )}
                   </div>
 
-                  {/* 2e et 3e du Podium Km (Exactement TOP 3) */}
-                  {stats.topDistance.length > 1 && (
+                  {/* 2e et 3e du Podium Km */}
+                  {distancePodium.length > 0 && (
                     <div className="mt-3 flex flex-col gap-1.5">
-                      {stats.topDistance.slice(1, 3).map((m, idx) => (
+                      {distancePodium.map((m, idx) => (
                         <div
                           key={m.display}
                           className="flex items-center justify-between rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"

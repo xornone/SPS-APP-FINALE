@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/ride-reminders",
+      "schedule": "0 18 * * 4"
+    },
+    {
+      "path": "/api/cron/strava-sync",
+      "schedule": "0 20 * * 0"
+    }
+  ]
+}

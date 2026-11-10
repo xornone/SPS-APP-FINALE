@@ -9,6 +9,7 @@ import { buildAssiduityRankingFromParticipations, normalizeMemberName } from "@/
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import { detectRideGroup } from "@/lib/rideGroup";
+import { getCachedStravaData } from "@/lib/stravaScraper";
 
 // Page volontairement collective : aucun classement nominatif des membres,
 // uniquement des chiffres qui mettent en avant le club dans son ensemble.
@@ -20,6 +21,7 @@ export const dynamic = "force-dynamic";
 export default async function ClassementPage() {
   const supabase = createPublicClient();
   const [rides, participations] = await Promise.all([fetchRides(supabase), fetchAllParticipations(supabase)]);
+  const stravaData = getCachedStravaData();
 
   const ridesById = new Map(rides.map((r) => [r.id, r]));
   const past = participations
@@ -459,7 +461,7 @@ export default async function ClassementPage() {
       </section>
 
       {/* Trophées & Statistiques du mois (Réservé aux admins) */}
-      <MonthlyStatsSection rides={rides} participations={participations} />
+      <MonthlyStatsSection rides={rides} participations={participations} stravaData={stravaData} />
 
       {/* Assiduity Ranking (Admin only section inside) */}
       <section>
