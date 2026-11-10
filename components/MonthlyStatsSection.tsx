@@ -40,11 +40,11 @@ export interface PodiumEntry {
 }
 
 export function MonthlyStatsSection({ rides, participations, stravaData }: MonthlyStatsSectionProps) {
-  // Onglet sélectionné : "trophees" (Trophées du mois) ou "segment" (Le segment SPS du mois)
+  // Onglet principal sélectionné : "trophees" (Trophées du mois) ou "segment" (Le segment SPS du mois)
   const [activeTab, setActiveTab] = useState<"trophees" | "segment">("trophees");
 
-  // Filtre de trophée pour naviguer entre les différents trophées
-  const [trophyFilter, setTrophyFilter] = useState<"all" | "attendance" | "elevation" | "distance" | "speed">("all");
+  // Filtre d'onglet de trophée : commence directement par "attendance" (Plus Assidu)
+  const [trophyFilter, setTrophyFilter] = useState<"attendance" | "elevation" | "distance" | "speed">("attendance");
 
   // Fusionne les mois disponibles des sorties app et les mois présents dans Strava
   const months = useMemo(() => {
@@ -620,24 +620,13 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
               </div>
             )}
 
-            {/* Filtres par trophée (onglets de sélection) */}
+            {/* Onglets des trophées (commence directement par Plus Assidu) */}
             {activeTab === "trophees" && hasData && (
               <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-neutral-100 pt-3 dark:border-white/[0.08]">
                 <button
                   type="button"
-                  onClick={() => setTrophyFilter("all")}
-                  className={`rounded-xl px-2.5 py-1 text-[11px] font-black transition-all ${
-                    trophyFilter === "all"
-                      ? "bg-neutral-900 text-white shadow-xs dark:bg-white dark:text-neutral-950"
-                      : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-white/[0.05] dark:text-white/60 dark:hover:bg-white/[0.08]"
-                  }`}
-                >
-                  Tous les trophées (4)
-                </button>
-                <button
-                  type="button"
                   onClick={() => setTrophyFilter("attendance")}
-                  className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-[11px] font-black transition-all ${
+                  className={`flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-black transition-all ${
                     trophyFilter === "attendance"
                       ? "bg-amber-500 text-white shadow-xs"
                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-white/[0.05] dark:text-white/60 dark:hover:bg-white/[0.08]"
@@ -649,7 +638,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                 <button
                   type="button"
                   onClick={() => setTrophyFilter("elevation")}
-                  className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-[11px] font-black transition-all ${
+                  className={`flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-black transition-all ${
                     trophyFilter === "elevation"
                       ? "bg-rose-500 text-white shadow-xs"
                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-white/[0.05] dark:text-white/60 dark:hover:bg-white/[0.08]"
@@ -661,7 +650,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                 <button
                   type="button"
                   onClick={() => setTrophyFilter("distance")}
-                  className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-[11px] font-black transition-all ${
+                  className={`flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-black transition-all ${
                     trophyFilter === "distance"
                       ? "bg-blue-500 text-white shadow-xs"
                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-white/[0.05] dark:text-white/60 dark:hover:bg-white/[0.08]"
@@ -673,7 +662,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                 <button
                   type="button"
                   onClick={() => setTrophyFilter("speed")}
-                  className={`flex items-center gap-1 rounded-xl px-2.5 py-1 text-[11px] font-black transition-all ${
+                  className={`flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-black transition-all ${
                     trophyFilter === "speed"
                       ? "bg-sps-violet600 text-white shadow-xs"
                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-white/[0.05] dark:text-white/60 dark:hover:bg-white/[0.08]"
@@ -694,15 +683,9 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                   Aucune donnée enregistrée pour {formatMonthLabel(selectedMonth)}.
                 </div>
               ) : (
-                <div
-                  className={`p-5 ${
-                    trophyFilter === "all"
-                      ? "grid grid-cols-1 md:grid-cols-2 gap-4"
-                      : "flex flex-col max-w-xl mx-auto"
-                  }`}
-                >
+                <div className="p-5 flex flex-col max-w-xl mx-auto">
                   {/* 1. Assiduité du mois : 100% APP SPS */}
-                  {(trophyFilter === "all" || trophyFilter === "attendance") && (
+                  {trophyFilter === "attendance" && (
                     <TrophyCard
                       title="Plus Assidu du mois"
                       emoji="🥇"
@@ -721,7 +704,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                   )}
 
                   {/* 2. Maillot à pois du mois (Strava D+) */}
-                  {(trophyFilter === "all" || trophyFilter === "elevation") && (
+                  {trophyFilter === "elevation" && (
                     <TrophyCard
                       title="Maillot à pois du mois"
                       emoji="🔴"
@@ -744,7 +727,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                   )}
 
                   {/* 3. Rouleur du mois (Strava Km) */}
-                  {(trophyFilter === "all" || trophyFilter === "distance") && (
+                  {trophyFilter === "distance" && (
                     <TrophyCard
                       title="Rouleur du mois"
                       emoji="🚴"
@@ -767,7 +750,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                   )}
 
                   {/* 4. Le plus rapide du mois (Strava Vitesse moyenne) */}
-                  {(trophyFilter === "all" || trophyFilter === "speed") && (
+                  {trophyFilter === "speed" && (
                     <TrophyCard
                       title="Le plus rapide du mois"
                       emoji="⚡"
@@ -859,7 +842,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                     </span>
                   </div>
 
-                  {/* Podium Segment */}
+                  {/* Podium Segment : tout blanc pour les chronos */}
                   <TrophyPodium
                     first={segmentPodiumFirst}
                     second={segmentPodiumSecond}
@@ -910,7 +893,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                               <span className="text-[11px] font-semibold text-neutral-400 dark:text-white/40">
                                 {m.speedKmh} km/h
                               </span>
-                              <span className="font-display text-sm font-black text-neutral-900 dark:text-white whitespace-nowrap">
+                              <span className="text-sm font-bold text-neutral-900 dark:text-white whitespace-nowrap">
                                 {formatChrono(m.timeSeconds, m.timeFormatted)}
                               </span>
                             </div>
@@ -930,7 +913,9 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
 }
 
 /**
- * Composant Podium Visuel Top 3 avec socles étagés (2e à gauche, 1er au centre, 3e à droite)
+ * Composant Podium Visuel Top 3 avec socles étagés (2e à gauche en Argent, 1er au centre en Or, 3e à droite en Bronze)
+ * Le suffixe (er, e) est placé à côté du numéro pour éviter tout chevauchement vertical.
+ * Les avatars ne comportent plus de pastille de numéro superflue.
  */
 function TrophyPodium({
   first,
@@ -953,43 +938,28 @@ function TrophyPodium({
     );
   }
 
-  const statColorClass = {
-    amber: "text-amber-600 dark:text-amber-400",
-    rose: "text-rose-600 dark:text-rose-400",
-    blue: "text-blue-600 dark:text-blue-400",
-    violet: "text-sps-violet600 dark:text-sps-violet400",
-    strava: "text-[#FC5200] dark:text-[#FC5200]",
-  }[themeColor];
+  // Pour le segment, le temps est strictement blanc pour tous les coureurs
+  const isSegment = themeColor === "strava";
 
-  const firstPedestalBorder = {
-    amber: "border-amber-400 dark:border-amber-400",
-    rose: "border-rose-400 dark:border-rose-400",
-    blue: "border-blue-400 dark:border-blue-400",
-    violet: "border-[#AA26FF] dark:border-[#C084FC]",
-    strava: "border-[#FC5200] dark:border-[#FC5200]",
-  }[themeColor];
+  const firstStatColor = isSegment
+    ? "text-neutral-950 dark:text-white"
+    : {
+        amber: "text-amber-600 dark:text-amber-400",
+        rose: "text-rose-600 dark:text-rose-400",
+        blue: "text-blue-600 dark:text-blue-400",
+        violet: "text-sps-violet600 dark:text-sps-violet400",
+        strava: "text-neutral-950 dark:text-white",
+      }[themeColor];
 
-  const firstPedestalBg = {
-    amber: "bg-gradient-to-t from-amber-400/25 via-amber-300/15 to-transparent dark:from-amber-500/30 dark:via-amber-500/10 dark:to-transparent",
-    rose: "bg-gradient-to-t from-rose-400/25 via-rose-300/15 to-transparent dark:from-rose-500/30 dark:via-rose-500/10 dark:to-transparent",
-    blue: "bg-gradient-to-t from-blue-400/25 via-blue-300/15 to-transparent dark:from-blue-500/30 dark:via-blue-500/10 dark:to-transparent",
-    violet: "bg-gradient-to-t from-[#AA26FF]/25 via-[#AA26FF]/15 to-transparent dark:from-[#AA26FF]/30 dark:via-[#AA26FF]/10 dark:to-transparent",
-    strava: "bg-gradient-to-t from-[#FC5200]/25 via-[#FC5200]/15 to-transparent dark:from-[#FC5200]/30 dark:via-[#FC5200]/10 dark:to-transparent",
-  }[themeColor];
-
-  const firstPedestalText = {
-    amber: "text-amber-500 dark:text-amber-400",
-    rose: "text-rose-500 dark:text-rose-400",
-    blue: "text-blue-500 dark:text-blue-400",
-    violet: "text-sps-violet600 dark:text-sps-violet400",
-    strava: "text-[#FC5200] dark:text-[#FC5200]",
-  }[themeColor];
+  const restStatColor = isSegment
+    ? "text-neutral-950 dark:text-white"
+    : "text-neutral-800 dark:text-white/90";
 
   return (
     <div className="relative mt-2 pt-1">
       {/* Grille Podium 3 colonnes : 2e (gauche), 1er (centre), 3e (droite) */}
       <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 items-end">
-        {/* --- 2ÈME PLACE (Gauche) --- */}
+        {/* --- 2ÈME PLACE (Gauche) - TOUJOURS ARGENT --- */}
         <div className="flex flex-col items-center justify-end w-full min-w-0 text-center">
           {second ? (
             <>
@@ -998,8 +968,8 @@ function TrophyPodium({
                 {second.isFirstTie ? "🥇" : "🥈"}
               </div>
 
-              {/* Avatar avec anneau */}
-              <div className="relative mb-1">
+              {/* Avatar propre avec anneau Argent (ou Or si ex æquo 1er) */}
+              <div className="mb-1">
                 <Avatar
                   name={second.display}
                   seed={second.avatarSeed || second.display}
@@ -1010,16 +980,9 @@ function TrophyPodium({
                       : "ring-2 ring-slate-300 dark:ring-slate-500 ring-offset-1 ring-offset-white dark:ring-offset-[#130B22]"
                   }
                 />
-                <span
-                  className={`absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-black text-white shadow-xs ${
-                    second.isFirstTie ? "bg-amber-500" : "bg-slate-500 dark:bg-slate-600"
-                  }`}
-                >
-                  {second.isFirstTie ? "1" : "2"}
-                </span>
               </div>
 
-              {/* Nom */}
+              {/* Nom (même police standard) */}
               <span
                 className="w-full truncate px-0.5 text-[11px] sm:text-xs font-bold text-neutral-800 dark:text-white/90 block"
                 title={second.display}
@@ -1035,7 +998,7 @@ function TrophyPodium({
               )}
 
               {/* Stat principale */}
-              <span className="font-display text-[11px] sm:text-xs font-black text-neutral-800 dark:text-white/90 whitespace-nowrap block mt-0.5">
+              <span className={`text-[11px] sm:text-xs font-extrabold whitespace-nowrap block mt-0.5 ${restStatColor}`}>
                 {second.statFormatted}
               </span>
 
@@ -1046,23 +1009,23 @@ function TrophyPodium({
                 </span>
               )}
 
-              {/* Socle 2e */}
+              {/* Socle 2e (Argent) : numéro et suffixe à côté */}
               <div
-                className={`mt-1.5 flex h-11 sm:h-13 w-full flex-col items-center justify-center rounded-t-xl border-t-2 border-x ${
+                className={`mt-1.5 flex h-10 sm:h-12 w-full items-baseline justify-center gap-0.5 rounded-t-xl border-t-2 border-x ${
                   second.isFirstTie
                     ? "border-amber-400 dark:border-amber-400 bg-gradient-to-t from-amber-500/20 via-amber-400/10 to-transparent dark:from-amber-500/30 dark:via-amber-500/10 dark:to-transparent"
                     : "border-slate-300 dark:border-slate-500/80 bg-gradient-to-t from-slate-200/70 via-slate-100/40 to-transparent dark:from-slate-700/30 dark:via-slate-800/20 dark:to-transparent"
-                } shadow-xs`}
+                } pt-2 shadow-xs`}
               >
                 <span
-                  className={`font-display text-lg sm:text-xl font-black ${
+                  className={`text-lg sm:text-xl font-black ${
                     second.isFirstTie ? "text-amber-500 dark:text-amber-400" : "text-slate-400 dark:text-slate-400"
                   }`}
                 >
                   {second.isFirstTie ? "1" : "2"}
                 </span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-slate-400/80 -mt-0.5">
-                  {second.isFirstTie ? "1er ex" : "2e"}
+                <span className="text-[10px] sm:text-[11px] font-black uppercase text-slate-400">
+                  {second.isFirstTie ? "er ex" : "e"}
                 </span>
               </div>
             </>
@@ -1071,34 +1034,31 @@ function TrophyPodium({
               <div className="mb-2 h-6 w-6 rounded-full border border-dashed border-neutral-300 dark:border-white/20 flex items-center justify-center text-[10px] text-neutral-400">
                 -
               </div>
-              <div className="h-9 w-full rounded-t-xl border-t-2 border-dashed border-neutral-300/60 dark:border-white/10 bg-neutral-100/40 dark:bg-white/[0.02]" />
+              <div className="h-8 w-full rounded-t-xl border-t-2 border-dashed border-neutral-300/60 dark:border-white/10 bg-neutral-100/40 dark:bg-white/[0.02]" />
             </div>
           )}
         </div>
 
-        {/* --- 1ÈRE PLACE (Centre) --- */}
+        {/* --- 1ÈRE PLACE (Centre) - TOUJOURS OR --- */}
         <div className="flex flex-col items-center justify-end w-full min-w-0 text-center">
           {/* Badge Couronne */}
           <div className="mb-1 text-base sm:text-lg">
             👑
           </div>
 
-          {/* Avatar avec anneau Or */}
-          <div className="relative mb-1">
+          {/* Avatar propre avec anneau Or */}
+          <div className="mb-1">
             <Avatar
               name={first.display}
               seed={first.avatarSeed || first.display}
               size="md"
               className="ring-2 ring-amber-400 ring-offset-2 ring-offset-white dark:ring-offset-[#130B22] shadow-sm"
             />
-            <span className="absolute -bottom-1 -right-1 flex h-4.5 w-4.5 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-white shadow-xs">
-              1
-            </span>
           </div>
 
-          {/* Nom */}
+          {/* Nom (même police standard que 2e et 3e) */}
           <span
-            className="w-full truncate px-0.5 font-display text-xs sm:text-sm font-black text-neutral-950 dark:text-white block"
+            className="w-full truncate px-0.5 text-xs sm:text-sm font-bold text-neutral-950 dark:text-white block"
             title={first.display}
           >
             {first.display}
@@ -1112,7 +1072,7 @@ function TrophyPodium({
           )}
 
           {/* Stat principale */}
-          <span className={`font-display text-xs sm:text-sm font-black whitespace-nowrap block mt-0.5 ${statColorClass}`}>
+          <span className={`text-xs sm:text-sm font-extrabold whitespace-nowrap block mt-0.5 ${firstStatColor}`}>
             {first.statFormatted}
           </span>
 
@@ -1123,20 +1083,18 @@ function TrophyPodium({
             </span>
           )}
 
-          {/* Socle 1er (Le plus haut) */}
-          <div
-            className={`mt-1.5 flex h-16 sm:h-20 w-full flex-col items-center justify-center rounded-t-xl border-t-2 border-x ${firstPedestalBorder} ${firstPedestalBg} shadow-xs`}
-          >
-            <span className={`font-display text-xl sm:text-2xl font-black ${firstPedestalText}`}>
+          {/* Socle 1er (Or, le plus haut) : numéro et suffixe à côté */}
+          <div className="mt-1.5 flex h-14 sm:h-16 w-full items-baseline justify-center gap-0.5 rounded-t-xl border-t-2 border-x border-amber-400 dark:border-amber-400 bg-gradient-to-t from-amber-400/25 via-amber-300/15 to-transparent dark:from-amber-500/30 dark:via-amber-500/10 dark:to-transparent pt-3 shadow-xs">
+            <span className="text-xl sm:text-2xl font-black text-amber-500 dark:text-amber-400">
               1
             </span>
-            <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-amber-600/80 dark:text-amber-400/80 -mt-0.5">
-              1er
+            <span className="text-[11px] sm:text-xs font-black uppercase text-amber-600/90 dark:text-amber-400/90">
+              er
             </span>
           </div>
         </div>
 
-        {/* --- 3ÈME PLACE (Droite) --- */}
+        {/* --- 3ÈME PLACE (Droite) - TOUJOURS BRONZE --- */}
         <div className="flex flex-col items-center justify-end w-full min-w-0 text-center">
           {third ? (
             <>
@@ -1145,20 +1103,17 @@ function TrophyPodium({
                 🥉
               </div>
 
-              {/* Avatar avec anneau Bronze */}
-              <div className="relative mb-1">
+              {/* Avatar propre avec anneau Bronze */}
+              <div className="mb-1">
                 <Avatar
                   name={third.display}
                   seed={third.avatarSeed || third.display}
                   size="sm"
                   className="ring-2 ring-amber-700/60 dark:ring-amber-600 ring-offset-1 ring-offset-white dark:ring-offset-[#130B22]"
                 />
-                <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-700 text-[9px] font-black text-white shadow-xs">
-                  3
-                </span>
               </div>
 
-              {/* Nom */}
+              {/* Nom (même police standard) */}
               <span
                 className="w-full truncate px-0.5 text-[11px] sm:text-xs font-bold text-neutral-800 dark:text-white/90 block"
                 title={third.display}
@@ -1174,7 +1129,7 @@ function TrophyPodium({
               )}
 
               {/* Stat principale */}
-              <span className="font-display text-[11px] sm:text-xs font-black text-neutral-800 dark:text-white/90 whitespace-nowrap block mt-0.5">
+              <span className={`text-[11px] sm:text-xs font-extrabold whitespace-nowrap block mt-0.5 ${restStatColor}`}>
                 {third.statFormatted}
               </span>
 
@@ -1185,23 +1140,23 @@ function TrophyPodium({
                 </span>
               )}
 
-              {/* Socle 3e (Le plus bas) */}
+              {/* Socle 3e (Bronze) : numéro et suffixe à côté (évite tout chevauchement) */}
               <div
-                className={`mt-1.5 flex h-7 sm:h-9 w-full flex-col items-center justify-center rounded-t-xl border-t-2 border-x ${
+                className={`mt-1.5 flex h-7 sm:h-8 w-full items-baseline justify-center gap-0.5 rounded-t-xl border-t-2 border-x ${
                   third.isFirstTie
                     ? "border-amber-400 dark:border-amber-400 bg-gradient-to-t from-amber-500/20 via-amber-400/10 to-transparent dark:from-amber-500/30 dark:via-amber-500/10 dark:to-transparent"
                     : "border-amber-700/50 dark:border-amber-700/60 bg-gradient-to-t from-amber-800/20 via-amber-900/10 to-transparent dark:from-amber-900/40 dark:to-transparent"
-                } shadow-xs`}
+                } pt-1 shadow-xs`}
               >
                 <span
-                  className={`font-display text-base sm:text-lg font-black ${
-                    third.isFirstTie ? "text-amber-500 dark:text-amber-400" : "text-amber-700/80 dark:text-amber-500/80"
+                  className={`text-base sm:text-lg font-black ${
+                    third.isFirstTie ? "text-amber-500 dark:text-amber-400" : "text-amber-700/90 dark:text-amber-500/90"
                   }`}
                 >
                   {third.isFirstTie ? "1" : "3"}
                 </span>
-                <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-amber-700/60 dark:text-amber-500/60 -mt-0.5">
-                  {third.isFirstTie ? "1er ex" : "3e"}
+                <span className="text-[10px] font-black uppercase text-amber-700/70 dark:text-amber-500/70">
+                  {third.isFirstTie ? "er ex" : "e"}
                 </span>
               </div>
             </>
@@ -1347,7 +1302,7 @@ function TrophyCard({
                         {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
                       </span>
                     )}
-                    <span className="font-extrabold text-neutral-700 dark:text-white/80 whitespace-nowrap">
+                    <span className="font-bold text-neutral-700 dark:text-white/80 whitespace-nowrap">
                       {m.statFormatted}
                     </span>
                   </div>
