@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminGuard";
 import { isSuperAdmin } from "@/lib/notificationAdmins";
-import { getSessionCookie } from "@/lib/stravaScraper";
+import { checkStravaSessionStatus } from "@/lib/stravaScraper";
 
 export const dynamic = "force-dynamic";
 
@@ -24,27 +24,10 @@ export async function GET() {
       );
     }
 
-    const cookie = getSessionCookie();
-
-    // On teste l'accès à la page des paramètres de profil Strava
-    const res = await fetch("https://www.strava.com/settings/profile", {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        Cookie: `_strava4_session=${cookie}`,
-      },
-      redirect: "manual",
-      cache: "no-store",
-    });
-
-    const isConnected = res.status === 200;
-    const location = res.headers.get("location");
+    const result = await checkStravaSessionStatus();
 
     return NextResponse.json({
-      ok: true,
-      connected: isConnected,
-      status: res.status,
-      redirect: location,
+      ...result,
       checkedAt: new Date().toISOString(),
     });
   } catch (err: unknown) {

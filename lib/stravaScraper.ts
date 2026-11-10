@@ -182,6 +182,43 @@ export function getSessionCookie(): string {
   return process.env.STRAVA_SESSION || "fnndo9dsdc8cgsfo9ncj70b13kkip0cn";
 }
 
+/**
+ * Vérifie l'état de connexion de la session Strava auprès des serveurs Strava.
+ */
+export async function checkStravaSessionStatus(customCookie?: string): Promise<{
+  ok: boolean;
+  connected: boolean;
+  status: number;
+  redirect: string | null;
+}> {
+  const cookie = customCookie || getSessionCookie();
+  try {
+    const res = await fetch("https://www.strava.com/settings/profile", {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Cookie: `_strava4_session=${cookie}`,
+      },
+      redirect: "manual",
+      cache: "no-store",
+    });
+
+    return {
+      ok: true,
+      connected: res.status === 200,
+      status: res.status,
+      redirect: res.headers.get("location"),
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      connected: false,
+      status: 500,
+      redirect: null,
+    };
+  }
+}
+
 function getDataFilePath(): string {
   const localData = path.join(process.cwd(), "data/strava_sps_stats.json");
   return localData;
@@ -353,6 +390,16 @@ export async function syncAllMembersStravaStats(
   targetMonths: string[] = ["2026-10", "2026-11"],
   onProgress?: (current: number, total: number) => void
 ): Promise<StravaDataStore> {
+  // Vérification de sécurité préalable : la session doit être active pour éviter d'écraser le cache avec des 0
+  const sessionStatus = await checkStravaSessionStatus();
+  if (!sessionStatus.connected) {
+    throw new Error(
+      `Session Strava déconnectée ou expirée (Code HTTP ${sessionStatus.status}${
+        sessionStatus.redirect ? ` -> ${sessionStatus.redirect}` : ""
+      }). Veuillez renouveler le cookie _strava4_session.`
+    );
+  }
+
   const membersList = Object.entries(SPS_MEMBER_STRAVA_MAPPINGS).map(([officialName, info]) => ({
     officialName,
     athleteId: info.id,
