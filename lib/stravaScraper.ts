@@ -179,7 +179,7 @@ export const SPS_MEMBER_STRAVA_MAPPINGS: Record<string, { id: string; stravaName
 };
 
 function getSessionCookie(): string {
-  return process.env.STRAVA_SESSION || "ftd0ec1r3n6vht0ippj2vnr48e9oplnp";
+  return process.env.STRAVA_SESSION || "fnndo9dsdc8cgsfo9ncj70b13kkip0cn";
 }
 
 function getDataFilePath(): string {

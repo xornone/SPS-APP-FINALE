@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminGuard";
 import { syncAllMembersStravaStats, getCachedStravaData } from "@/lib/stravaScraper";
+import { isSuperAdmin } from "@/lib/notificationAdmins";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60; // 60 secondes max pour Vercel serverless
@@ -10,6 +11,14 @@ export async function POST(request: Request) {
     const guard = await requireAdmin();
     if (!guard.ok) {
       return NextResponse.json({ error: guard.error }, { status: guard.status });
+    }
+
+    // Réservé exclusivement au Super Admin (th.tregaro@gmail.com)
+    if (!isSuperAdmin(guard.user.email)) {
+      return NextResponse.json(
+        { error: "Action réservée à l'administrateur principal (th.tregaro@gmail.com)." },
+        { status: 403 }
+      );
     }
 
     let targetMonths = ["2026-10", "2026-11"];

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminOnly } from "./AdminOnly";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icons";
@@ -12,6 +12,8 @@ import {
 import { type GroupLevel, type Participation, type Ride } from "@/lib/types";
 import { fmtKm, fmtM } from "@/lib/format";
 import type { StravaDataStore, StravaSegmentOfMonth } from "@/lib/stravaScraper";
+import { createClient } from "@/lib/supabase/client";
+import { isSuperAdmin } from "@/lib/notificationAdmins";
 
 interface MonthlyStatsSectionProps {
   rides: Ride[];
@@ -69,6 +71,48 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   const [showDistanceRest, setShowDistanceRest] = useState(false);
   const [showSpeedRest, setShowSpeedRest] = useState(false);
   const [showSegmentRest, setShowSegmentRest] = useState(false);
+
+  // Détection du compte connecté pour autoriser le scraping à la demande (th.tregaro@gmail.com uniquement)
+  const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user?.email) {
+        setCurrentUserEmail(data.user.email);
+      }
+    });
+  }, []);
+
+  const canManualScrape = isSuperAdmin(currentUserEmail);
+
+  async function handleManualSync() {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    setSyncFeedback(null);
+    try {
+      const res = await fetch("/api/admin/strava/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ months: [selectedMonth] }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Erreur de synchronisation");
+      }
+      setSyncFeedback("Données Strava synchronisées avec succès ! Rechargement...");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setSyncFeedback(`Erreur : ${msg}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  }
 
   function handleSelectMonth(monthKey: string) {
     setSelectedMonth(monthKey);
@@ -544,26 +588,55 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                 </button>
               </div>
 
-              {/* Sélecteur de mois (visible pour l'onglet Trophées) */}
-              {activeTab === "trophees" && (
-                <div className="relative">
-                  <select
-                    value={selectedMonth}
-                    onChange={(e) => handleSelectMonth(e.target.value)}
-                    className="cursor-pointer appearance-none rounded-xl border border-neutral-200 bg-neutral-50 py-1.5 pl-3.5 pr-8 text-xs font-black text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.06] dark:text-white"
+              {/* Sélecteur de mois + Bouton Scraper Strava (visible uniquement pour th.tregaro@gmail.com) */}
+              <div className="flex flex-wrap items-center gap-2">
+                {canManualScrape && (
+                  <button
+                    type="button"
+                    disabled={isSyncing}
+                    onClick={handleManualSync}
+                    className="flex items-center gap-1.5 rounded-xl border border-[#FC5200]/30 bg-[#FC5200]/10 px-3 py-1.5 text-xs font-black text-[#FC5200] transition hover:bg-[#FC5200]/20 active:scale-[0.98] disabled:opacity-50 dark:border-[#FC5200]/40 dark:bg-[#FC5200]/15"
+                    title="Actualiser les données Strava immédiatement (réservé à th.tregaro@gmail.com)"
                   >
-                    {months.map((m) => (
-                      <option key={m.key} value={m.key} className="bg-white text-black dark:bg-[#1A1422] dark:text-white">
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
-                  <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-white/40">
-                    <Icon name="chevDown" size={13} />
-                  </span>
-                </div>
-              )}
+                    <span className={isSyncing ? "animate-spin inline-block" : ""}>🔄</span>
+                    <span>{isSyncing ? "Scraping en cours..." : "Scraper Strava"}</span>
+                  </button>
+                )}
+
+                {/* Sélecteur de mois (visible pour l'onglet Trophées) */}
+                {activeTab === "trophees" && (
+                  <div className="relative">
+                    <select
+                      value={selectedMonth}
+                      onChange={(e) => handleSelectMonth(e.target.value)}
+                      className="cursor-pointer appearance-none rounded-xl border border-neutral-200 bg-neutral-50 py-1.5 pl-3.5 pr-8 text-xs font-black text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.06] dark:text-white"
+                    >
+                      {months.map((m) => (
+                        <option key={m.key} value={m.key} className="bg-white text-black dark:bg-[#1A1422] dark:text-white">
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                    <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-white/40">
+                      <Icon name="chevDown" size={13} />
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Notification retour de scraping manuel */}
+            {syncFeedback && (
+              <div
+                className={`mt-3 rounded-xl px-3 py-1.5 text-xs font-bold ${
+                  syncFeedback.startsWith("Erreur")
+                    ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                    : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                }`}
+              >
+                {syncFeedback}
+              </div>
+            )}
 
             {/* Chiffres collectifs du mois (visible pour l'onglet Trophées) */}
             {activeTab === "trophees" && (

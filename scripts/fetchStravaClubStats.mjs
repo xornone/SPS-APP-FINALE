@@ -10,7 +10,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, "..");
 
-const STRAVA_SESSION_COOKIE = process.env.STRAVA_SESSION || "ftd0ec1r3n6vht0ippj2vnr48e9oplnp";
+const STRAVA_SESSION_COOKIE = process.env.STRAVA_SESSION || "fnndo9dsdc8cgsfo9ncj70b13kkip0cn";
 
 // 99 membres officiels SPS avec leurs correspondances Strava validées
 import { SPS_MEMBER_STRAVA_MAPPINGS } from "../lib/stravaScraper.ts";
