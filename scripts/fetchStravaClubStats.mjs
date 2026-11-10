@@ -10,7 +10,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, "..");
 
-const STRAVA_SESSION_COOKIE = process.env.STRAVA_SESSION || "fnndo9dsdc8cgsfo9ncj70b13kkip0cn";
+const STRAVA_SESSION_COOKIE = process.env.STRAVA_SESSION || "s2cpdjqaerpj4o880jq7697femp65p0u";
 
 // 99 membres officiels SPS avec leurs correspondances Strava validées
 import { SPS_MEMBER_STRAVA_MAPPINGS } from "../lib/stravaScraper.ts";
@@ -126,6 +126,54 @@ async function fetchAthleteAnnualStats(athleteId) {
     };
   } catch (err) {
     return { activities: 0, distance_km: 0, elev_gain_m: 0, time: "0h 0m" };
+  }
+}
+
+// Récupérer le classement d'un segment Strava spécifique (ex: segment du mois SPS)
+async function fetchSegmentLeaderboard(segmentId = "42510565") {
+  try {
+    const res = await fetchStrava(`https://www.strava.com/segments/${segmentId}`);
+    if (!res.ok) return null;
+    const text = await res.text();
+    const nextDataMatch = text.match(/<script id=\"__NEXT_DATA__\" type=\"application\/json\">([\s\S]*?)<\/script>/);
+    if (!nextDataMatch) return null;
+    const data = JSON.parse(nextDataMatch[1]);
+    const p = data.props?.pageProps;
+    if (!p) return null;
+
+    const lb = (p.initialLeaderboard?.leaderboard || []).map((e, idx) => {
+      const timeSec = e.elapsedTime || 0;
+      const h = Math.floor(timeSec / 3600);
+      const m = Math.floor((timeSec % 3600) / 60);
+      const s = timeSec % 60;
+      const sStr = s < 10 ? `0${s}` : `${s}`;
+      const timeFormatted = h > 0 ? `${h}:${m < 10 ? `0${m}` : `${m}`}:${sStr}` : `${m}:${sStr}`;
+      return {
+        rank: e.rank || idx + 1,
+        officialName: e.displayName,
+        stravaName: e.displayName,
+        athleteId: String(e.athleteId || ""),
+        avatar: e.avatarUrl || null,
+        timeSeconds: timeSec,
+        timeFormatted,
+        speedKmh: Math.round((((e.speed || 0) * 3.6) * 10)) / 10,
+        date: e.startDateLocal || "",
+      };
+    });
+
+    return {
+      segmentId: String(p.segmentId || segmentId),
+      name: p.metadata?.name || "SPS - Corum to Combaillaux",
+      distance_km: Math.round(((p.measurements?.distance || 0) / 1000) * 10) / 10,
+      elev_gain_m: Math.round(p.measurements?.elevGain || 0),
+      avg_grade: Math.round((p.measurements?.avgGrade || 0) * 10) / 10,
+      stravaUrl: `https://www.strava.com/segments/${segmentId}`,
+      appUrl: "https://strava.app.link/APRoWoo5W7b",
+      leaderboard: lb,
+    };
+  } catch (err) {
+    console.error(`[fetchSegmentLeaderboard] Erreur segment ${segmentId}:`, err);
+    return null;
   }
 }
 
@@ -245,6 +293,13 @@ async function main() {
     };
   }
 
+  // Récupération automatique du segment du mois SPS
+  console.log("🚴 Récupération du segment du mois SPS (42510565)...");
+  const segment = await fetchSegmentLeaderboard("42510565");
+  if (segment) {
+    console.log(`✅ Segment récupéré : ${segment.name} (${segment.leaderboard.length} coureurs classés)`);
+  }
+
   // Sauvegarde des données
   const store = {
     extractedAt: new Date().toISOString(),
@@ -252,6 +307,7 @@ async function main() {
     totalMatched: membersResults.length,
     members: membersResults,
     monthlyLeaders,
+    segmentOfMonth: segment || existingStore?.segmentOfMonth,
   };
 
   const outPath = path.join(ROOT_DIR, "data/strava_sps_stats.json");
