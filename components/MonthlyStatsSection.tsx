@@ -19,6 +19,16 @@ interface MonthlyStatsSectionProps {
   stravaData?: StravaDataStore | null;
 }
 
+interface LeaderDisplayItem {
+  rank: number;
+  display: string;
+  ridesCount: number;
+  statFormatted: string;
+  statLabel: string;
+  isStrava?: boolean;
+  groups?: Record<GroupLevel, number>;
+}
+
 export function MonthlyStatsSection({ rides, participations, stravaData }: MonthlyStatsSectionProps) {
   // Fusionne les mois disponibles des sorties app et les mois présents dans Strava
   const months = useMemo(() => {
@@ -38,9 +48,18 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   }, [rides, stravaData]);
 
   const [selectedMonth, setSelectedMonth] = useState<string>(months[0]?.key || "2026-11");
-  const [showTop10, setShowTop10] = useState(false);
-  const [showElevationTop10, setShowElevationTop10] = useState(false);
-  const [showDistanceTop10, setShowDistanceTop10] = useState(false);
+  const [showAttendanceRest, setShowAttendanceRest] = useState(false);
+  const [showElevationRest, setShowElevationRest] = useState(false);
+  const [showDistanceRest, setShowDistanceRest] = useState(false);
+  const [showSpeedRest, setShowSpeedRest] = useState(false);
+
+  function handleSelectMonth(monthKey: string) {
+    setSelectedMonth(monthKey);
+    setShowAttendanceRest(false);
+    setShowElevationRest(false);
+    setShowDistanceRest(false);
+    setShowSpeedRest(false);
+  }
 
   // Statistiques calculées depuis l'app SPS (pour le Plus Assidu et les chiffres de participations sorties)
   const stats = useMemo(() => {
@@ -63,18 +82,36 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   const isAttendanceTie = topAttendanceLeaders.length > 1;
 
   // Calcul des rangs avec ex æquo pour le TOP 10 Assiduité (App SPS)
-  const rankedTopAttendance = useMemo(() => {
+  const rankedTopAttendance = useMemo<LeaderDisplayItem[]>(() => {
     let rank = 1;
     return stats.topAttendance.map((m, idx, arr) => {
       if (idx > 0 && m.ridesCount < arr[idx - 1].ridesCount) {
         rank = idx + 1;
       }
-      return { ...m, rank };
+      return {
+        rank,
+        display: m.display,
+        ridesCount: m.ridesCount,
+        statFormatted: `${m.ridesCount} sortie${m.ridesCount > 1 ? "s" : ""}`,
+        statLabel: "sorties",
+        isStrava: false,
+        groups: m.groups,
+      };
     });
   }, [stats.topAttendance]);
 
+  const attendancePodiumRest = useMemo(() => {
+    // Membres du podium au-delà du/des leader(s) jusqu'au rang 3 inclus
+    return rankedTopAttendance.slice(topAttendanceLeaders.length, 3);
+  }, [rankedTopAttendance, topAttendanceLeaders.length]);
+
+  const attendanceRestTop10 = useMemo(() => {
+    // Reste du TOP 10 (du rang 4 au rang 10)
+    return rankedTopAttendance.slice(Math.max(3, topAttendanceLeaders.length), 10);
+  }, [rankedTopAttendance, topAttendanceLeaders.length]);
+
   // 2. Maillot à pois du mois (TOP 10 D+) : Strava si dispo, sinon fallback App SPS
-  const top10Elevation = useMemo(() => {
+  const top10Elevation = useMemo<LeaderDisplayItem[]>(() => {
     if (hasStravaMonthData && stravaMonthLeaders?.topElevation) {
       return stravaMonthLeaders.topElevation
         .filter((m) => m.elev_gain_m > 0)
@@ -83,7 +120,8 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           rank: idx + 1,
           display: m.officialName,
           ridesCount: m.activities,
-          totalElevation: m.elev_gain_m,
+          statFormatted: fmtM(m.elev_gain_m),
+          statLabel: "D+ cumulé",
           isStrava: true,
         }));
     }
@@ -91,15 +129,18 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
       rank: idx + 1,
       display: m.display,
       ridesCount: m.ridesCount,
-      totalElevation: m.totalElevation,
+      statFormatted: fmtM(m.totalElevation),
+      statLabel: "D+ cumulé",
       isStrava: false,
     }));
   }, [hasStravaMonthData, stravaMonthLeaders, stats.topElevation]);
 
   const topElevationLeader = top10Elevation[0] || null;
+  const elevationPodiumRest = top10Elevation.slice(1, 3);
+  const elevationRestTop10 = top10Elevation.slice(3, 10);
 
   // 3. Rouleur du mois (TOP 10 Km) : Strava si dispo, sinon fallback App SPS
-  const top10Distance = useMemo(() => {
+  const top10Distance = useMemo<LeaderDisplayItem[]>(() => {
     if (hasStravaMonthData && stravaMonthLeaders?.topDistance) {
       return stravaMonthLeaders.topDistance
         .filter((m) => m.distance_km > 0)
@@ -108,7 +149,8 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           rank: idx + 1,
           display: m.officialName,
           ridesCount: m.activities,
-          totalKm: m.distance_km,
+          statFormatted: fmtKm(m.distance_km),
+          statLabel: "distance",
           isStrava: true,
         }));
     }
@@ -116,12 +158,76 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
       rank: idx + 1,
       display: m.display,
       ridesCount: m.ridesCount,
-      totalKm: m.totalKm,
+      statFormatted: fmtKm(m.totalKm),
+      statLabel: "distance",
       isStrava: false,
     }));
   }, [hasStravaMonthData, stravaMonthLeaders, stats.topDistance]);
 
   const topDistanceLeader = top10Distance[0] || null;
+  const distancePodiumRest = top10Distance.slice(1, 3);
+  const distanceRestTop10 = top10Distance.slice(3, 10);
+
+  // 4. Le plus rapide du mois (TOP 10 Vitesse moyenne) : Strava (min. 30 km)
+  const top10Speed = useMemo<LeaderDisplayItem[]>(() => {
+    if (hasStravaMonthData && stravaMonthLeaders) {
+      // Priorité à topSpeed si présent
+      if (stravaMonthLeaders.topSpeed && stravaMonthLeaders.topSpeed.length > 0) {
+        return stravaMonthLeaders.topSpeed
+          .filter((m) => (m.avg_speed_kmh || 0) > 0)
+          .slice(0, 10)
+          .map((m, idx) => ({
+            rank: idx + 1,
+            display: m.officialName,
+            ridesCount: m.activities,
+            statFormatted: `${(m.avg_speed_kmh || 0).toLocaleString("fr-FR", {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1,
+            })} km/h`,
+            statLabel: "vitesse moy.",
+            isStrava: true,
+          }));
+      }
+
+      // Fallback calcul dynamique depuis distance / time
+      const items = (stravaMonthLeaders.topDistance || [])
+        .map((m) => {
+          const hMatch = (m.time || "").match(/(\d+)\s*h/i);
+          const mMatch = (m.time || "").match(/(\d+)\s*m/i);
+          const h = hMatch ? parseInt(hMatch[1], 10) : 0;
+          const mins = mMatch ? parseInt(mMatch[1], 10) : 0;
+          const totalHours = h + mins / 60;
+          const speed = totalHours > 0 ? Math.round((m.distance_km / totalHours) * 10) / 10 : 0;
+          return {
+            officialName: m.officialName,
+            activities: m.activities,
+            distance_km: m.distance_km,
+            speed,
+          };
+        })
+        .filter((m) => m.distance_km >= 30 && m.speed > 0)
+        .sort((a, b) => b.speed - a.speed)
+        .slice(0, 10)
+        .map((m, idx) => ({
+          rank: idx + 1,
+          display: m.officialName,
+          ridesCount: m.activities,
+          statFormatted: `${m.speed.toLocaleString("fr-FR", {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          })} km/h`,
+          statLabel: "vitesse moy.",
+          isStrava: true,
+        }));
+
+      return items;
+    }
+    return [];
+  }, [hasStravaMonthData, stravaMonthLeaders]);
+
+  const topSpeedLeader = top10Speed[0] || null;
+  const speedPodiumRest = top10Speed.slice(1, 3);
+  const speedRestTop10 = top10Speed.slice(3, 10);
 
   if (!months || months.length === 0) return null;
 
@@ -151,7 +257,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                     </span>
                   </div>
                   <p className="text-[11px] font-semibold text-neutral-500 dark:text-white/50">
-                    Maillot à pois & Rouleur synchronisés Strava · Assiduité SPS
+                    Maillot à pois, Rouleur & Vitesse synchronisés Strava · Assiduité SPS
                   </p>
                 </div>
               </div>
@@ -161,7 +267,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                 <div className="relative">
                   <select
                     value={selectedMonth}
-                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    onChange={(e) => handleSelectMonth(e.target.value)}
                     className="cursor-pointer appearance-none rounded-xl border border-neutral-200 bg-neutral-50 py-1.5 pl-3.5 pr-8 text-xs font-black text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.06] dark:text-white"
                   >
                     {months.map((m) => (
@@ -178,19 +284,19 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
             </div>
 
             {/* Chiffres collectifs du mois */}
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <div className="col-span-2 rounded-2xl border border-neutral-100 bg-neutral-50/80 p-3 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
+            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+              <div className="col-span-2 sm:col-span-1 rounded-2xl border border-neutral-100 bg-neutral-50/80 p-3 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Sorties SPS officielles
+                  Sorties SPS
                 </span>
                 <span className="font-display text-lg font-black text-neutral-900 dark:text-white">
-                  {stats.totalRidesInMonth} sortie{stats.totalRidesInMonth > 1 ? "s" : ""}
+                  {stats.totalRidesInMonth}
                 </span>
               </div>
 
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Membres actifs SPS
+                  Membres actifs
                 </span>
                 <div className="flex items-baseline justify-center gap-1 font-display text-base font-black text-emerald-600 dark:text-emerald-400">
                   <span>{stats.uniqueActiveMembersInMonth}</span>
@@ -200,7 +306,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
 
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Inscriptions SPS
+                  Inscriptions
                 </span>
                 <span className="font-display text-base font-black text-sps-violet600 dark:text-sps-violet400">
                   {stats.totalParticipationsInMonth}
@@ -209,7 +315,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
 
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Cumul Km {hasStravaMonthData ? "(Strava)" : "(SPS)"}
+                  Cumul Km
                 </span>
                 <span className="font-display text-base font-black text-neutral-900 dark:text-white">
                   {hasStravaMonthData && stravaMonthLeaders
@@ -220,7 +326,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
 
               <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
                 <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Cumul D+ {hasStravaMonthData ? "(Strava)" : "(SPS)"}
+                  Cumul D+
                 </span>
                 <span className="font-display text-base font-black text-neutral-900 dark:text-white">
                   {hasStravaMonthData && stravaMonthLeaders
@@ -236,8 +342,8 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
               Aucune donnée enregistrée pour {formatMonthLabel(selectedMonth)}.
             </div>
           ) : (
-            <div className="p-5 flex flex-col gap-4">
-              {/* 1. Assiduité du mois (Full width) : 100% APP SPS */}
+            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* 1. Assiduité du mois : 100% APP SPS */}
               <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
                 <div>
                   <div className="mb-3">
@@ -254,7 +360,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                         </span>
                       </div>
                       <span className="flex-none whitespace-nowrap text-[11px] font-black text-amber-600 dark:text-amber-400">
-                        {isAttendanceTie ? `${topAttendanceLeaders.length} ex æquo` : "#1 Sorties"}
+                        {isAttendanceTie ? `${topAttendanceLeaders.length} ex æquo` : "TOP 3"}
                       </span>
                     </div>
                     <p className="mt-1 text-[10px] font-semibold text-neutral-400 dark:text-white/40">
@@ -262,6 +368,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                     </p>
                   </div>
 
+                  {/* N°1 (Leader ou ex æquo) */}
                   {topAttendanceLeaders.length > 0 ? (
                     <div className="flex flex-col divide-y divide-amber-500/20 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
                       {topAttendanceLeaders.map((leader) => (
@@ -292,48 +399,80 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                   ) : (
                     <p className="text-xs text-neutral-400">Aucune participation club enregistrée</p>
                   )}
-                </div>
 
-                {/* Bouton Top 10 Déroulable (Sorties App SPS) */}
-                {rankedTopAttendance.length > 1 && (
-                  <div className="mt-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowTop10((v) => !v)}
-                      className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-2 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
-                    >
-                      <span>{showTop10 ? "Masquer le TOP 10" : `Voir le TOP 10 du mois (${rankedTopAttendance.length})`}</span>
-                      <Icon name="chevDown" size={13} className={showTop10 ? "rotate-180 transition-transform" : "transition-transform"} />
-                    </button>
-
-                    {showTop10 && (
-                      <div className="mt-2.5 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
-                        {rankedTopAttendance.map((m) => (
-                          <div key={m.display} className="flex items-center gap-2.5 px-3 py-2 text-xs">
+                  {/* 2e et 3e du Podium Assiduité (Toujours visibles) */}
+                  {attendancePodiumRest.length > 0 && (
+                    <div className="mt-2.5 flex flex-col gap-1.5">
+                      {attendancePodiumRest.map((m) => (
+                        <div
+                          key={m.display}
+                          className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
                             <span
                               className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
-                                m.rank === 1
-                                  ? "bg-amber-500/20 text-amber-600 dark:text-amber-300"
-                                  : m.rank === 2
+                                m.rank === 2
                                   ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
-                                  : m.rank === 3
-                                  ? "bg-amber-700/20 text-amber-800 dark:text-amber-400"
-                                  : "bg-neutral-100 text-neutral-500 dark:bg-white/[0.05] dark:text-white/40"
+                                  : "bg-amber-700/20 text-amber-800 dark:text-amber-400"
                               }`}
                             >
-                              {m.rank}
+                              #{m.rank}
                             </span>
                             <Avatar name={m.display} seed={m.display} size="sm" />
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-1 min-w-0">
-                                <span className="truncate font-bold text-neutral-900 dark:text-white">
+                                <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
                                   {m.display}
                                 </span>
                                 <GroupPills groups={m.groups} />
                               </div>
                             </div>
-                            <span className="font-extrabold text-neutral-700 dark:text-white/80 whitespace-nowrap flex-none">
-                              {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
+                          </div>
+                          <span className="font-extrabold text-neutral-700 dark:text-white/80 whitespace-nowrap flex-none">
+                            {m.statFormatted}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Bouton Top 10 Déroulable (#4 à #10) */}
+                {attendanceRestTop10.length > 0 && (
+                  <div className="mt-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowAttendanceRest((v) => !v)}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-1.5 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
+                    >
+                      <span>{showAttendanceRest ? "Réduire" : `Afficher plus (TOP 10)`}</span>
+                      <Icon
+                        name="chevDown"
+                        size={12}
+                        className={showAttendanceRest ? "rotate-180 transition-transform" : "transition-transform"}
+                      />
+                    </button>
+
+                    {showAttendanceRest && (
+                      <div className="mt-2 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
+                        {attendanceRestTop10.map((m) => (
+                          <div key={m.display} className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-neutral-100 text-[10px] font-black text-neutral-500 dark:bg-white/[0.05] dark:text-white/40">
+                                #{m.rank}
+                              </span>
+                              <Avatar name={m.display} seed={m.display} size="sm" />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1 min-w-0">
+                                  <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
+                                    {m.display}
+                                  </span>
+                                  <GroupPills groups={m.groups} />
+                                </div>
+                              </div>
+                            </div>
+                            <span className="font-extrabold text-neutral-600 dark:text-white/60 whitespace-nowrap flex-none">
+                              {m.statFormatted}
                             </span>
                           </div>
                         ))}
@@ -343,209 +482,418 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                 )}
               </div>
 
-              {/* 2 & 3. Maillot à pois (TOP 10 Strava D+) & Rouleur (TOP 10 Strava Km) côte à côte */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {/* 2. Maillot à pois du mois (TOP 10 Strava D+) */}
-                <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
-                  <div>
-                    <div className="mb-3">
-                      <div className="flex items-center justify-between gap-1.5 min-w-0">
-                        <div className="flex min-w-0 items-center gap-1.5 flex-1">
-                          <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-rose-500/10 text-xs">
-                            🔴
-                          </span>
-                          <h3 className="truncate text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-                            Maillot à pois du mois
-                          </h3>
-                          {topElevationLeader?.isStrava && (
-                            <span className="flex-none rounded-full bg-[#FC5200]/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-[#FC5200]">
-                              Strava
-                            </span>
-                          )}
-                        </div>
-                        <span className="flex-none whitespace-nowrap text-[11px] font-black text-rose-600 dark:text-rose-400">
-                          TOP 10 D+
+              {/* 2. Maillot à pois du mois (Strava D+) */}
+              <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                <div>
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between gap-1.5 min-w-0">
+                      <div className="flex min-w-0 items-center gap-1.5 flex-1">
+                        <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-rose-500/10 text-xs">
+                          🔴
                         </span>
+                        <h3 className="truncate text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                          Maillot à pois du mois
+                        </h3>
+                        {topElevationLeader?.isStrava && (
+                          <span className="flex-none rounded-full bg-[#FC5200]/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-[#FC5200]">
+                            Strava
+                          </span>
+                        )}
                       </div>
-                      <p className="mt-1 text-[10px] font-semibold text-neutral-400 dark:text-white/40">
-                        Top dénivelé positif cumulé du mois
-                      </p>
+                      <span className="flex-none whitespace-nowrap text-[11px] font-black text-rose-600 dark:text-rose-400">
+                        TOP 3 D+
+                      </span>
                     </div>
-
-                    {topElevationLeader ? (
-                      <div className="flex items-center gap-3 rounded-xl border border-rose-500/25 bg-rose-500/[0.04] p-3">
-                        <Avatar name={topElevationLeader.display} seed={topElevationLeader.display} size="md" />
-                        <div className="min-w-0 flex-1">
-                          <span className="block truncate font-display text-base font-black text-neutral-950 dark:text-white">
-                            {topElevationLeader.display}
-                          </span>
-                          <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
-                            {topElevationLeader.ridesCount} sortie{topElevationLeader.ridesCount > 1 ? "s" : ""} à vélo
-                          </span>
-                        </div>
-                        <div className="text-right flex-none pl-2">
-                          <span className="font-display text-lg font-black text-rose-600 dark:text-rose-400">
-                            {fmtM(topElevationLeader.totalElevation)}
-                          </span>
-                          <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                            D+ cumulé
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-neutral-400">Aucune donnée</p>
-                    )}
+                    <p className="mt-1 text-[10px] font-semibold text-neutral-400 dark:text-white/40">
+                      Top dénivelé positif cumulé du mois
+                    </p>
                   </div>
 
-                  {/* Bouton Top 10 Déroulable D+ */}
-                  {top10Elevation.length > 1 && (
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        onClick={() => setShowElevationTop10((v) => !v)}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-2 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
-                      >
-                        <span>{showElevationTop10 ? "Masquer le TOP 10" : `Voir le TOP 10 D+ (${top10Elevation.length})`}</span>
-                        <Icon name="chevDown" size={13} className={showElevationTop10 ? "rotate-180 transition-transform" : "transition-transform"} />
-                      </button>
+                  {/* N°1 Maillot à pois */}
+                  {topElevationLeader ? (
+                    <div className="flex items-center gap-3 rounded-xl border border-rose-500/25 bg-rose-500/[0.04] p-3">
+                      <Avatar name={topElevationLeader.display} seed={topElevationLeader.display} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <span className="block truncate font-display text-base font-black text-neutral-950 dark:text-white">
+                          {topElevationLeader.display}
+                        </span>
+                        <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
+                          {topElevationLeader.ridesCount} sortie{topElevationLeader.ridesCount > 1 ? "s" : ""} à vélo
+                        </span>
+                      </div>
+                      <div className="text-right flex-none pl-2">
+                        <span className="font-display text-lg font-black text-rose-600 dark:text-rose-400">
+                          {topElevationLeader.statFormatted}
+                        </span>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                          {topElevationLeader.statLabel}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-neutral-400">Aucune donnée</p>
+                  )}
 
-                      {showElevationTop10 && (
-                        <div className="mt-2.5 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
-                          {top10Elevation.map((m) => (
-                            <div key={m.display} className="flex items-center gap-2.5 px-3 py-2 text-xs">
-                              <span
-                                className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
-                                  m.rank === 1
-                                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-300"
-                                    : m.rank === 2
-                                    ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
-                                    : m.rank === 3
-                                    ? "bg-amber-700/20 text-amber-800 dark:text-amber-400"
-                                    : "bg-neutral-100 text-neutral-500 dark:bg-white/[0.05] dark:text-white/40"
-                                }`}
-                              >
-                                {m.rank}
-                              </span>
-                              <Avatar name={m.display} seed={m.display} size="sm" />
-                              <div className="min-w-0 flex-1">
-                                <span className="truncate font-bold text-neutral-900 dark:text-white block">
-                                  {m.display}
-                                </span>
-                                <span className="text-[10px] text-neutral-400 dark:text-white/40">
-                                  {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
-                                </span>
-                              </div>
-                              <span className="font-extrabold text-rose-600 dark:text-rose-400 whitespace-nowrap flex-none">
-                                {fmtM(m.totalElevation)}
+                  {/* 2e et 3e du Podium D+ (Toujours visibles) */}
+                  {elevationPodiumRest.length > 0 && (
+                    <div className="mt-2.5 flex flex-col gap-1.5">
+                      {elevationPodiumRest.map((m) => (
+                        <div
+                          key={m.display}
+                          className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
+                                m.rank === 2
+                                  ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
+                                  : "bg-amber-700/20 text-amber-800 dark:text-amber-400"
+                              }`}
+                            >
+                              #{m.rank}
+                            </span>
+                            <Avatar name={m.display} seed={m.display} size="sm" />
+                            <div className="min-w-0 flex-1">
+                              <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
+                                {m.display}
                               </span>
                             </div>
-                          ))}
+                          </div>
+                          <div className="flex items-center gap-2 flex-none pl-1">
+                            <span className="text-[10px] text-neutral-400 dark:text-white/40">
+                              {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
+                            </span>
+                            <span className="font-extrabold text-rose-600 dark:text-rose-400 whitespace-nowrap">
+                              {m.statFormatted}
+                            </span>
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
                   )}
                 </div>
 
-                {/* 3. Rouleur du mois (TOP 10 Strava Km) */}
-                <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
-                  <div>
-                    <div className="mb-3">
-                      <div className="flex items-center justify-between gap-1.5 min-w-0">
-                        <div className="flex min-w-0 items-center gap-1.5 flex-1">
-                          <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-blue-500/10 text-xs">
-                            🚴
-                          </span>
-                          <h3 className="truncate text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-                            Rouleur du mois
-                          </h3>
-                          {topDistanceLeader?.isStrava && (
-                            <span className="flex-none rounded-full bg-[#FC5200]/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-[#FC5200]">
-                              Strava
-                            </span>
-                          )}
-                        </div>
-                        <span className="flex-none whitespace-nowrap text-[11px] font-black text-blue-600 dark:text-blue-400">
-                          TOP 10 Km
-                        </span>
-                      </div>
-                      <p className="mt-1 text-[10px] font-semibold text-neutral-400 dark:text-white/40">
-                        Top distance cumulée du mois
-                      </p>
-                    </div>
+                {/* Bouton Top 10 Déroulable (#4 à #10) */}
+                {elevationRestTop10.length > 0 && (
+                  <div className="mt-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowElevationRest((v) => !v)}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-1.5 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
+                    >
+                      <span>{showElevationRest ? "Réduire" : `Afficher plus (TOP 10)`}</span>
+                      <Icon
+                        name="chevDown"
+                        size={12}
+                        className={showElevationRest ? "rotate-180 transition-transform" : "transition-transform"}
+                      />
+                    </button>
 
-                    {topDistanceLeader ? (
-                      <div className="flex items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-3">
-                        <Avatar name={topDistanceLeader.display} seed={topDistanceLeader.display} size="md" />
-                        <div className="min-w-0 flex-1">
-                          <span className="block truncate font-display text-base font-black text-neutral-950 dark:text-white">
-                            {topDistanceLeader.display}
-                          </span>
-                          <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
-                            {topDistanceLeader.ridesCount} sortie{topDistanceLeader.ridesCount > 1 ? "s" : ""} à vélo
-                          </span>
-                        </div>
-                        <div className="text-right flex-none pl-2">
-                          <span className="font-display text-lg font-black text-blue-600 dark:text-blue-400">
-                            {fmtKm(topDistanceLeader.totalKm)}
-                          </span>
-                          <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                            distance
-                          </span>
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="text-xs text-neutral-400">Aucune donnée</p>
-                    )}
-                  </div>
-
-                  {/* Bouton Top 10 Déroulable Km */}
-                  {top10Distance.length > 1 && (
-                    <div className="mt-3">
-                      <button
-                        type="button"
-                        onClick={() => setShowDistanceTop10((v) => !v)}
-                        className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-2 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
-                      >
-                        <span>{showDistanceTop10 ? "Masquer le TOP 10" : `Voir le TOP 10 Km (${top10Distance.length})`}</span>
-                        <Icon name="chevDown" size={13} className={showDistanceTop10 ? "rotate-180 transition-transform" : "transition-transform"} />
-                      </button>
-
-                      {showDistanceTop10 && (
-                        <div className="mt-2.5 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
-                          {top10Distance.map((m) => (
-                            <div key={m.display} className="flex items-center gap-2.5 px-3 py-2 text-xs">
-                              <span
-                                className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
-                                  m.rank === 1
-                                    ? "bg-amber-500/20 text-amber-600 dark:text-amber-300"
-                                    : m.rank === 2
-                                    ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
-                                    : m.rank === 3
-                                    ? "bg-amber-700/20 text-amber-800 dark:text-amber-400"
-                                    : "bg-neutral-100 text-neutral-500 dark:bg-white/[0.05] dark:text-white/40"
-                                }`}
-                              >
-                                {m.rank}
+                    {showElevationRest && (
+                      <div className="mt-2 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
+                        {elevationRestTop10.map((m) => (
+                          <div key={m.display} className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-neutral-100 text-[10px] font-black text-neutral-500 dark:bg-white/[0.05] dark:text-white/40">
+                                #{m.rank}
                               </span>
                               <Avatar name={m.display} seed={m.display} size="sm" />
                               <div className="min-w-0 flex-1">
-                                <span className="truncate font-bold text-neutral-900 dark:text-white block">
+                                <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
                                   {m.display}
                                 </span>
-                                <span className="text-[10px] text-neutral-400 dark:text-white/40">
-                                  {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
-                                </span>
                               </div>
-                              <span className="font-extrabold text-blue-600 dark:text-blue-400 whitespace-nowrap flex-none">
-                                {fmtKm(m.totalKm)}
+                            </div>
+                            <div className="flex items-center gap-2 flex-none pl-1">
+                              <span className="text-[10px] text-neutral-400 dark:text-white/40">
+                                {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
+                              </span>
+                              <span className="font-extrabold text-neutral-600 dark:text-white/60 whitespace-nowrap">
+                                {m.statFormatted}
                               </span>
                             </div>
-                          ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Rouleur du mois (Strava Km) */}
+              <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                <div>
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between gap-1.5 min-w-0">
+                      <div className="flex min-w-0 items-center gap-1.5 flex-1">
+                        <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-blue-500/10 text-xs">
+                          🚴
+                        </span>
+                        <h3 className="truncate text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                          Rouleur du mois
+                        </h3>
+                        {topDistanceLeader?.isStrava && (
+                          <span className="flex-none rounded-full bg-[#FC5200]/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-[#FC5200]">
+                            Strava
+                          </span>
+                        )}
+                      </div>
+                      <span className="flex-none whitespace-nowrap text-[11px] font-black text-blue-600 dark:text-blue-400">
+                        TOP 3 Km
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[10px] font-semibold text-neutral-400 dark:text-white/40">
+                      Top distance cumulée du mois
+                    </p>
+                  </div>
+
+                  {/* N°1 Rouleur */}
+                  {topDistanceLeader ? (
+                    <div className="flex items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-3">
+                      <Avatar name={topDistanceLeader.display} seed={topDistanceLeader.display} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <span className="block truncate font-display text-base font-black text-neutral-950 dark:text-white">
+                          {topDistanceLeader.display}
+                        </span>
+                        <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
+                          {topDistanceLeader.ridesCount} sortie{topDistanceLeader.ridesCount > 1 ? "s" : ""} à vélo
+                        </span>
+                      </div>
+                      <div className="text-right flex-none pl-2">
+                        <span className="font-display text-lg font-black text-blue-600 dark:text-blue-400">
+                          {topDistanceLeader.statFormatted}
+                        </span>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                          {topDistanceLeader.statLabel}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-neutral-400">Aucune donnée</p>
+                  )}
+
+                  {/* 2e et 3e du Podium Km (Toujours visibles) */}
+                  {distancePodiumRest.length > 0 && (
+                    <div className="mt-2.5 flex flex-col gap-1.5">
+                      {distancePodiumRest.map((m) => (
+                        <div
+                          key={m.display}
+                          className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
+                                m.rank === 2
+                                  ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
+                                  : "bg-amber-700/20 text-amber-800 dark:text-amber-400"
+                              }`}
+                            >
+                              #{m.rank}
+                            </span>
+                            <Avatar name={m.display} seed={m.display} size="sm" />
+                            <div className="min-w-0 flex-1">
+                              <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
+                                {m.display}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-none pl-1">
+                            <span className="text-[10px] text-neutral-400 dark:text-white/40">
+                              {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
+                            </span>
+                            <span className="font-extrabold text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                              {m.statFormatted}
+                            </span>
+                          </div>
                         </div>
-                      )}
+                      ))}
                     </div>
                   )}
                 </div>
+
+                {/* Bouton Top 10 Déroulable (#4 à #10) */}
+                {distanceRestTop10.length > 0 && (
+                  <div className="mt-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowDistanceRest((v) => !v)}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-1.5 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
+                    >
+                      <span>{showDistanceRest ? "Réduire" : `Afficher plus (TOP 10)`}</span>
+                      <Icon
+                        name="chevDown"
+                        size={12}
+                        className={showDistanceRest ? "rotate-180 transition-transform" : "transition-transform"}
+                      />
+                    </button>
+
+                    {showDistanceRest && (
+                      <div className="mt-2 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
+                        {distanceRestTop10.map((m) => (
+                          <div key={m.display} className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-neutral-100 text-[10px] font-black text-neutral-500 dark:bg-white/[0.05] dark:text-white/40">
+                                #{m.rank}
+                              </span>
+                              <Avatar name={m.display} seed={m.display} size="sm" />
+                              <div className="min-w-0 flex-1">
+                                <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
+                                  {m.display}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 flex-none pl-1">
+                              <span className="text-[10px] text-neutral-400 dark:text-white/40">
+                                {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
+                              </span>
+                              <span className="font-extrabold text-neutral-600 dark:text-white/60 whitespace-nowrap">
+                                {m.statFormatted}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* 4. Le plus rapide du mois (Strava Vitesse moyenne) */}
+              <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                <div>
+                  <div className="mb-3">
+                    <div className="flex items-center justify-between gap-1.5 min-w-0">
+                      <div className="flex min-w-0 items-center gap-1.5 flex-1">
+                        <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-sps-violet600/10 text-xs text-sps-violet600 dark:text-sps-violet300">
+                          ⚡
+                        </span>
+                        <h3 className="truncate text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                          Le plus rapide du mois
+                        </h3>
+                        {topSpeedLeader?.isStrava && (
+                          <span className="flex-none rounded-full bg-[#FC5200]/15 px-1.5 py-0.5 text-[9px] font-black uppercase text-[#FC5200]">
+                            Strava
+                          </span>
+                        )}
+                      </div>
+                      <span className="flex-none whitespace-nowrap text-[11px] font-black text-sps-violet600 dark:text-sps-violet400">
+                        TOP 3 Vitesse
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[10px] font-semibold text-neutral-400 dark:text-white/40">
+                      Top vitesse moyenne du mois (min. 30 km)
+                    </p>
+                  </div>
+
+                  {/* N°1 Vitesse */}
+                  {topSpeedLeader ? (
+                    <div className="flex items-center gap-3 rounded-xl border border-sps-violet600/25 bg-sps-violet600/[0.04] p-3">
+                      <Avatar name={topSpeedLeader.display} seed={topSpeedLeader.display} size="md" />
+                      <div className="min-w-0 flex-1">
+                        <span className="block truncate font-display text-base font-black text-neutral-950 dark:text-white">
+                          {topSpeedLeader.display}
+                        </span>
+                        <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">
+                          {topSpeedLeader.ridesCount} sortie{topSpeedLeader.ridesCount > 1 ? "s" : ""} à vélo
+                        </span>
+                      </div>
+                      <div className="text-right flex-none pl-2">
+                        <span className="font-display text-lg font-black text-sps-violet600 dark:text-sps-violet400">
+                          {topSpeedLeader.statFormatted}
+                        </span>
+                        <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                          {topSpeedLeader.statLabel}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-neutral-400">Aucune donnée</p>
+                  )}
+
+                  {/* 2e et 3e du Podium Vitesse (Toujours visibles) */}
+                  {speedPodiumRest.length > 0 && (
+                    <div className="mt-2.5 flex flex-col gap-1.5">
+                      {speedPodiumRest.map((m) => (
+                        <div
+                          key={m.display}
+                          className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
+                                m.rank === 2
+                                  ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
+                                  : "bg-amber-700/20 text-amber-800 dark:text-amber-400"
+                              }`}
+                            >
+                              #{m.rank}
+                            </span>
+                            <Avatar name={m.display} seed={m.display} size="sm" />
+                            <div className="min-w-0 flex-1">
+                              <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
+                                {m.display}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-none pl-1">
+                            <span className="text-[10px] text-neutral-400 dark:text-white/40">
+                              {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
+                            </span>
+                            <span className="font-extrabold text-sps-violet600 dark:text-sps-violet400 whitespace-nowrap">
+                              {m.statFormatted}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Bouton Top 10 Déroulable (#4 à #10) */}
+                {speedRestTop10.length > 0 && (
+                  <div className="mt-2.5">
+                    <button
+                      type="button"
+                      onClick={() => setShowSpeedRest((v) => !v)}
+                      className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-1.5 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
+                    >
+                      <span>{showSpeedRest ? "Réduire" : `Afficher plus (TOP 10)`}</span>
+                      <Icon
+                        name="chevDown"
+                        size={12}
+                        className={showSpeedRest ? "rotate-180 transition-transform" : "transition-transform"}
+                      />
+                    </button>
+
+                    {showSpeedRest && (
+                      <div className="mt-2 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
+                        {speedRestTop10.map((m) => (
+                          <div key={m.display} className="flex items-center justify-between gap-2 px-3 py-1.5 text-xs">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-neutral-100 text-[10px] font-black text-neutral-500 dark:bg-white/[0.05] dark:text-white/40">
+                                #{m.rank}
+                              </span>
+                              <Avatar name={m.display} seed={m.display} size="sm" />
+                              <div className="min-w-0 flex-1">
+                                <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
+                                  {m.display}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 flex-none pl-1">
+                              <span className="text-[10px] text-neutral-400 dark:text-white/40">
+                                {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
+                              </span>
+                              <span className="font-extrabold text-neutral-600 dark:text-white/60 whitespace-nowrap">
+                                {m.statFormatted}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
