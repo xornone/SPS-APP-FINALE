@@ -11,7 +11,7 @@ import {
 } from "@/lib/monthlyStats";
 import { type GroupLevel, type Participation, type Ride } from "@/lib/types";
 import { fmtKm, fmtM } from "@/lib/format";
-import type { StravaDataStore } from "@/lib/stravaScraper";
+import type { StravaDataStore, StravaSegmentOfMonth } from "@/lib/stravaScraper";
 
 interface MonthlyStatsSectionProps {
   rides: Ride[];
@@ -30,6 +30,9 @@ interface LeaderDisplayItem {
 }
 
 export function MonthlyStatsSection({ rides, participations, stravaData }: MonthlyStatsSectionProps) {
+  // Onglet sélectionné : "trophees" (Trophées du mois) ou "segment" (Le segment SPS du mois)
+  const [activeTab, setActiveTab] = useState<"trophees" | "segment">("trophees");
+
   // Fusionne les mois disponibles des sorties app et les mois présents dans Strava
   const months = useMemo(() => {
     const baseMonths = getAvailableMonths(rides);
@@ -52,6 +55,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   const [showElevationRest, setShowElevationRest] = useState(false);
   const [showDistanceRest, setShowDistanceRest] = useState(false);
   const [showSpeedRest, setShowSpeedRest] = useState(false);
+  const [showSegmentRest, setShowSegmentRest] = useState(false);
 
   function handleSelectMonth(monthKey: string) {
     setSelectedMonth(monthKey);
@@ -101,12 +105,10 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   }, [stats.topAttendance]);
 
   const attendancePodiumRest = useMemo(() => {
-    // Membres du podium au-delà du/des leader(s) jusqu'au rang 3 inclus
     return rankedTopAttendance.slice(topAttendanceLeaders.length, 3);
   }, [rankedTopAttendance, topAttendanceLeaders.length]);
 
   const attendanceRestTop10 = useMemo(() => {
-    // Reste du TOP 10 (du rang 4 au rang 10)
     return rankedTopAttendance.slice(Math.max(3, topAttendanceLeaders.length), 10);
   }, [rankedTopAttendance, topAttendanceLeaders.length]);
 
@@ -171,7 +173,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   // 4. Le plus rapide du mois (TOP 10 Vitesse moyenne) : Strava (min. 30 km)
   const top10Speed = useMemo<LeaderDisplayItem[]>(() => {
     if (hasStravaMonthData && stravaMonthLeaders) {
-      // Priorité à topSpeed si présent
       if (stravaMonthLeaders.topSpeed && stravaMonthLeaders.topSpeed.length > 0) {
         return stravaMonthLeaders.topSpeed
           .filter((m) => (m.avg_speed_kmh || 0) > 0)
@@ -189,8 +190,8 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           }));
       }
 
-      // Fallback calcul dynamique depuis distance / time
-      const items = (stravaMonthLeaders.topDistance || [])
+      // Fallback dynamique
+      return (stravaMonthLeaders.topDistance || [])
         .map((m) => {
           const hMatch = (m.time || "").match(/(\d+)\s*h/i);
           const mMatch = (m.time || "").match(/(\d+)\s*m/i);
@@ -219,8 +220,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           statLabel: "vitesse moy.",
           isStrava: true,
         }));
-
-      return items;
     }
     return [];
   }, [hasStravaMonthData, stravaMonthLeaders]);
@@ -228,6 +227,92 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   const topSpeedLeader = top10Speed[0] || null;
   const speedPodiumRest = top10Speed.slice(1, 3);
   const speedRestTop10 = top10Speed.slice(3, 10);
+
+  // 5. Segment SPS du mois
+  const segmentOfMonth: StravaSegmentOfMonth = useMemo(() => {
+    if (stravaData?.segmentOfMonth) return stravaData.segmentOfMonth;
+    return {
+      segmentId: "42510565",
+      name: "SPS - Corum to Combaillaux",
+      distance_km: 14.2,
+      elev_gain_m: 271,
+      avg_grade: 1.1,
+      stravaUrl: "https://www.strava.com/segments/42510565",
+      appUrl: "https://strava.app.link/APRoWoo5W7b",
+      leaderboard: [
+        {
+          rank: 1,
+          officialName: "Aymeric Closier",
+          stravaName: "Aymeric Closier",
+          athleteId: "3717532",
+          avatar: "https://dgalywyr863hv.cloudfront.net/pictures/athletes/3717532/1327472/5/large.jpg",
+          timeSeconds: 2074,
+          timeFormatted: "34m 34s",
+          speedKmh: 24.6,
+          date: "2026-11-08",
+        },
+        {
+          rank: 2,
+          officialName: "Lucas Nesta",
+          stravaName: "Lucas Nesta",
+          athleteId: "101371287",
+          avatar: null,
+          timeSeconds: 2097,
+          timeFormatted: "34m 57s",
+          speedKmh: 24.4,
+          date: "2026-11-08",
+        },
+        {
+          rank: 3,
+          officialName: "Pierrick Pinault",
+          stravaName: "Papo Kano",
+          athleteId: "58548359",
+          avatar: null,
+          timeSeconds: 2109,
+          timeFormatted: "35m 09s",
+          speedKmh: 24.2,
+          date: "2026-11-08",
+        },
+        {
+          rank: 4,
+          officialName: "Nicholas Sydenham",
+          stravaName: "Nicholas Sydenham",
+          athleteId: "40596719",
+          avatar: null,
+          timeSeconds: 2115,
+          timeFormatted: "35m 15s",
+          speedKmh: 24.2,
+          date: "2026-11-08",
+        },
+        {
+          rank: 5,
+          officialName: "Audrey Mignon",
+          stravaName: "Audrey Mignon",
+          athleteId: "122755976",
+          avatar: null,
+          timeSeconds: 2128,
+          timeFormatted: "35m 28s",
+          speedKmh: 24.0,
+          date: "2026-11-08",
+        },
+        {
+          rank: 6,
+          officialName: "Cédric Baudinet",
+          stravaName: "Cédric Baudinet",
+          athleteId: "23843091",
+          avatar: null,
+          timeSeconds: 2145,
+          timeFormatted: "35m 45s",
+          speedKmh: 23.8,
+          date: "2026-11-08",
+        },
+      ],
+    };
+  }, [stravaData?.segmentOfMonth]);
+
+  const segmentLeader = segmentOfMonth.leaderboard[0] || null;
+  const segmentPodiumRest = segmentOfMonth.leaderboard.slice(1, 3);
+  const segmentRestTop10 = segmentOfMonth.leaderboard.slice(3, 10);
 
   if (!months || months.length === 0) return null;
 
@@ -240,30 +325,39 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
     <AdminOnly>
       <section className="px-5">
         <div className="overflow-hidden rounded-[28px] border border-neutral-200/90 bg-white shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/90">
-          {/* Header avec Titre + Badge Admin + Sélecteur de mois */}
+          {/* Header avec Onglets de navigation + Sélecteur de mois */}
           <div className="border-b border-neutral-100 p-5 dark:border-white/[0.08]">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-sps-violet600 to-fuchsia-500 text-white shadow-md shadow-sps-violet600/25">
-                  <Icon name="trophy" size={18} />
-                </span>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="font-display text-xl uppercase tracking-wide text-neutral-950 dark:text-white font-black">
-                      Trophées du mois
-                    </h2>
-                    <span className="rounded-full border border-sps-violet600/30 bg-sps-violet600/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-sps-violet600 dark:border-sps-violet400/30 dark:bg-sps-violet400/10 dark:text-sps-violet300">
-                      Admin Only
-                    </span>
-                  </div>
-                  <p className="text-[11px] font-semibold text-neutral-500 dark:text-white/50">
-                    Maillot à pois, Rouleur & Vitesse synchronisés Strava · Assiduité SPS
-                  </p>
-                </div>
+              {/* Onglets principaux */}
+              <div className="flex items-center gap-1.5 rounded-2xl bg-neutral-100/90 p-1 dark:bg-white/[0.06]">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("trophees")}
+                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black transition-all ${
+                    activeTab === "trophees"
+                      ? "bg-white text-neutral-950 shadow-xs dark:bg-[#1A1422] dark:text-white"
+                      : "text-neutral-500 hover:text-neutral-900 dark:text-white/60 dark:hover:text-white"
+                  }`}
+                >
+                  <span className="text-sm">🏆</span>
+                  <span>Trophées du mois</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("segment")}
+                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black transition-all ${
+                    activeTab === "segment"
+                      ? "bg-white text-neutral-950 shadow-xs dark:bg-[#1A1422] dark:text-white"
+                      : "text-neutral-500 hover:text-neutral-900 dark:text-white/60 dark:hover:text-white"
+                  }`}
+                >
+                  <span className="text-sm">⏱️</span>
+                  <span>Le segment SPS du mois</span>
+                </button>
               </div>
 
-              {/* Contrôles : Sélecteur de mois */}
-              <div className="flex items-center gap-2">
+              {/* Sélecteur de mois (visible pour l'onglet Trophées) */}
+              {activeTab === "trophees" && (
                 <div className="relative">
                   <select
                     value={selectedMonth}
@@ -280,165 +374,170 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                     <Icon name="chevDown" size={13} />
                   </span>
                 </div>
-              </div>
+              )}
             </div>
 
-            {/* Chiffres collectifs du mois */}
-            <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
-              <div className="col-span-2 sm:col-span-1 rounded-2xl border border-neutral-100 bg-neutral-50/80 p-3 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
-                <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Sorties SPS
-                </span>
-                <span className="font-display text-lg font-black text-neutral-900 dark:text-white">
-                  {stats.totalRidesInMonth}
-                </span>
-              </div>
+            {/* Chiffres collectifs du mois (visible pour l'onglet Trophées) */}
+            {activeTab === "trophees" && (
+              <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                <div className="col-span-2 sm:col-span-1 rounded-2xl border border-neutral-100 bg-neutral-50/80 p-3 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                    Sorties SPS
+                  </span>
+                  <span className="font-display text-lg font-black text-neutral-900 dark:text-white">
+                    {stats.totalRidesInMonth}
+                  </span>
+                </div>
 
-              <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
-                <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Membres actifs
-                </span>
-                <div className="flex items-baseline justify-center gap-1 font-display text-base font-black text-emerald-600 dark:text-emerald-400">
-                  <span>{stats.uniqueActiveMembersInMonth}</span>
-                  <span className="text-xs font-bold text-neutral-400 dark:text-white/40">/ 100</span>
+                <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                    Membres actifs
+                  </span>
+                  <div className="flex items-baseline justify-center gap-1 font-display text-base font-black text-emerald-600 dark:text-emerald-400">
+                    <span>{stats.uniqueActiveMembersInMonth}</span>
+                    <span className="text-xs font-bold text-neutral-400 dark:text-white/40">/ 100</span>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                    Inscriptions
+                  </span>
+                  <span className="font-display text-base font-black text-sps-violet600 dark:text-sps-violet400">
+                    {stats.totalParticipationsInMonth}
+                  </span>
+                </div>
+
+                <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                    Cumul Km
+                  </span>
+                  <span className="font-display text-base font-black text-neutral-900 dark:text-white">
+                    {hasStravaMonthData && stravaMonthLeaders
+                      ? `${stravaMonthLeaders.totalKm.toLocaleString("fr-FR")} km`
+                      : fmtKm(stats.totalKmInMonth)}
+                  </span>
+                </div>
+
+                <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
+                  <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                    Cumul D+
+                  </span>
+                  <span className="font-display text-base font-black text-neutral-900 dark:text-white">
+                    {hasStravaMonthData && stravaMonthLeaders
+                      ? `${stravaMonthLeaders.totalElevation.toLocaleString("fr-FR")} m`
+                      : fmtM(stats.totalElevationInMonth)}
+                  </span>
                 </div>
               </div>
-
-              <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
-                <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Inscriptions
-                </span>
-                <span className="font-display text-base font-black text-sps-violet600 dark:text-sps-violet400">
-                  {stats.totalParticipationsInMonth}
-                </span>
-              </div>
-
-              <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
-                <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Cumul Km
-                </span>
-                <span className="font-display text-base font-black text-neutral-900 dark:text-white">
-                  {hasStravaMonthData && stravaMonthLeaders
-                    ? `${stravaMonthLeaders.totalKm.toLocaleString("fr-FR")} km`
-                    : fmtKm(stats.totalKmInMonth)}
-                </span>
-              </div>
-
-              <div className="rounded-2xl border border-neutral-100 bg-neutral-50/80 p-2.5 text-center dark:border-white/[0.06] dark:bg-white/[0.03]">
-                <span className="block text-[10px] font-black uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                  Cumul D+
-                </span>
-                <span className="font-display text-base font-black text-neutral-900 dark:text-white">
-                  {hasStravaMonthData && stravaMonthLeaders
-                    ? `${stravaMonthLeaders.totalElevation.toLocaleString("fr-FR")} m`
-                    : fmtM(stats.totalElevationInMonth)}
-                </span>
-              </div>
-            </div>
+            )}
           </div>
 
-          {!hasData ? (
-            <div className="p-8 text-center text-sm font-semibold text-neutral-400 dark:text-white/40">
-              Aucune donnée enregistrée pour {formatMonthLabel(selectedMonth)}.
-            </div>
-          ) : (
-            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* 1. Assiduité du mois : 100% APP SPS */}
-              <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
-                <div>
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between gap-1.5 min-w-0">
-                      <div className="flex min-w-0 items-center gap-1.5 flex-1">
-                        <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-amber-500/10 text-xs">
-                          🥇
-                        </span>
-                        <h3 className="truncate text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
-                          Plus Assidu du mois
-                        </h3>
-                        <span className="flex-none rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-black uppercase text-amber-600 dark:text-amber-400">
-                          App SPS
-                        </span>
-                      </div>
-                      <span className="flex-none whitespace-nowrap text-[11px] font-black text-amber-600 dark:text-amber-400">
-                        {isAttendanceTie ? `${topAttendanceLeaders.length} ex æquo` : "TOP 3"}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-[10px] font-semibold text-neutral-400 dark:text-white/40">
-                      Sorties club réalisées dans l&apos;application
-                    </p>
-                  </div>
-
-                  {/* N°1 (Leader ou ex æquo) */}
-                  {topAttendanceLeaders.length > 0 ? (
-                    <div className="flex flex-col divide-y divide-amber-500/20 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
-                      {topAttendanceLeaders.map((leader) => (
-                        <div key={leader.display} className="flex items-center gap-2.5 p-3 min-w-0">
-                          <Avatar name={leader.display} seed={leader.display} size="md" />
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-1 min-w-0">
-                              <span className="truncate font-display text-sm sm:text-base font-black text-neutral-950 dark:text-white">
-                                {leader.display}
-                              </span>
-                              <GroupPills groups={leader.groups} />
-                            </div>
-                            <span className="block truncate text-[11px] font-medium text-neutral-500 dark:text-white/50">
-                              {leader.ridesCount} participation{leader.ridesCount > 1 ? "s" : ""} officielle{leader.ridesCount > 1 ? "s" : ""}
+          {/* VUE 1 : TROPHÉES DU MOIS */}
+          {activeTab === "trophees" && (
+            <>
+              {!hasData ? (
+                <div className="p-8 text-center text-sm font-semibold text-neutral-400 dark:text-white/40">
+                  Aucune donnée enregistrée pour {formatMonthLabel(selectedMonth)}.
+                </div>
+              ) : (
+                <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* 1. Assiduité du mois : 100% APP SPS */}
+                  <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+                    <div>
+                      <div className="mb-3">
+                        <div className="flex items-center justify-between gap-1.5 min-w-0">
+                          <div className="flex min-w-0 items-center gap-1.5 flex-1">
+                            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-amber-500/10 text-xs">
+                              🥇
+                            </span>
+                            <h3 className="truncate text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                              Plus Assidu du mois
+                            </h3>
+                            <span className="flex-none rounded-full bg-amber-500/10 px-1.5 py-0.5 text-[9px] font-black uppercase text-amber-600 dark:text-amber-400">
+                              App SPS
                             </span>
                           </div>
-                          <div className="flex-none text-right pl-2">
-                            <span className="font-display text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">
-                              {leader.ridesCount}
-                            </span>
-                            <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
-                              sortie{leader.ridesCount > 1 ? "s" : ""}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-neutral-400">Aucune participation club enregistrée</p>
-                  )}
-
-                  {/* 2e et 3e du Podium Assiduité (Toujours visibles) */}
-                  {attendancePodiumRest.length > 0 && (
-                    <div className="mt-2.5 flex flex-col gap-1.5">
-                      {attendancePodiumRest.map((m) => (
-                        <div
-                          key={m.display}
-                          className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
-                        >
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span
-                              className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
-                                m.rank === 2
-                                  ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
-                                  : "bg-amber-700/20 text-amber-800 dark:text-amber-400"
-                              }`}
-                            >
-                              #{m.rank}
-                            </span>
-                            <Avatar name={m.display} seed={m.display} size="sm" />
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1 min-w-0">
-                                <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
-                                  {m.display}
-                                </span>
-                                <GroupPills groups={m.groups} />
-                              </div>
-                            </div>
-                          </div>
-                          <span className="font-extrabold text-neutral-700 dark:text-white/80 whitespace-nowrap flex-none">
-                            {m.statFormatted}
+                          <span className="flex-none whitespace-nowrap text-[11px] font-black text-amber-600 dark:text-amber-400">
+                            {isAttendanceTie ? `${topAttendanceLeaders.length} ex æquo` : "TOP 3"}
                           </span>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                        <p className="mt-1 text-[10px] font-semibold text-neutral-400 dark:text-white/40">
+                          Sorties club réalisées dans l&apos;application
+                        </p>
+                      </div>
 
-                {/* Bouton Top 10 Déroulable (#4 à #10) */}
-                {attendanceRestTop10.length > 0 && (
+                      {/* N°1 (Leader ou ex æquo) */}
+                      {topAttendanceLeaders.length > 0 ? (
+                        <div className="flex flex-col divide-y divide-amber-500/20 rounded-xl border border-amber-500/20 bg-amber-500/[0.04]">
+                          {topAttendanceLeaders.map((leader) => (
+                            <div key={leader.display} className="flex items-center gap-2.5 p-3 min-w-0">
+                              <Avatar name={leader.display} seed={leader.display} size="md" />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1 min-w-0">
+                                  <span className="truncate font-display text-sm sm:text-base font-black text-neutral-950 dark:text-white">
+                                    {leader.display}
+                                  </span>
+                                  <GroupPills groups={leader.groups} />
+                                </div>
+                                <span className="block truncate text-[11px] font-medium text-neutral-500 dark:text-white/50">
+                                  {leader.ridesCount} participation{leader.ridesCount > 1 ? "s" : ""} officielle{leader.ridesCount > 1 ? "s" : ""}
+                                </span>
+                              </div>
+                              <div className="flex-none text-right pl-2">
+                                <span className="font-display text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">
+                                  {leader.ridesCount}
+                                </span>
+                                <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                                  sortie{leader.ridesCount > 1 ? "s" : ""}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-xs text-neutral-400">Aucune participation club enregistrée</p>
+                      )}
+
+                      {/* 2e et 3e du Podium Assiduité (Toujours visibles) */}
+                      {attendancePodiumRest.length > 0 && (
+                        <div className="mt-2.5 flex flex-col gap-1.5">
+                          {attendancePodiumRest.map((m) => (
+                            <div
+                              key={m.display}
+                              className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-1.5 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span
+                                  className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
+                                    m.rank === 2
+                                      ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
+                                      : "bg-amber-700/20 text-amber-800 dark:text-amber-400"
+                                  }`}
+                                >
+                                  #{m.rank}
+                                </span>
+                                <Avatar name={m.display} seed={m.display} size="sm" />
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1 min-w-0">
+                                    <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
+                                      {m.display}
+                                    </span>
+                                    <GroupPills groups={m.groups} />
+                                  </div>
+                                </div>
+                              </div>
+                              <span className="font-extrabold text-neutral-700 dark:text-white/80 whitespace-nowrap flex-none">
+                                {m.statFormatted}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bouton Top 10 Déroulable (#4 à #10) */}
+                    {attendanceRestTop10.length > 0 && (
                   <div className="mt-2.5">
                     <button
                       type="button"
@@ -897,10 +996,196 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
               </div>
             </div>
           )}
+        </>
+      )}
+
+      {/* VUE 2 : LE SEGMENT SPS DU MOIS */}
+      {activeTab === "segment" && (
+        <div className="p-5 flex flex-col gap-4">
+          {/* Fiche d'identité du segment */}
+          <div className="relative overflow-hidden rounded-2xl border border-[#FC5200]/25 bg-gradient-to-br from-[#FC5200]/10 via-[#FC5200]/5 to-transparent p-5 dark:border-[#FC5200]/20 dark:from-[#FC5200]/15 dark:via-[#FC5200]/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FC5200]/20 text-xs">
+                    ⏱️
+                  </span>
+                  <span className="text-[11px] font-black uppercase tracking-wider text-[#FC5200]">
+                    Segment officiel SPS · Novembre
+                  </span>
+                </div>
+                <h3 className="mt-1 font-display text-xl font-black text-neutral-950 dark:text-white">
+                  {segmentOfMonth.name}
+                </h3>
+                <p className="mt-0.5 text-xs text-neutral-500 dark:text-white/50">
+                  Du Corum (Montpellier) jusqu&apos;à l&apos;entrée de Combaillaux
+                </p>
+
+                {/* Métriques du segment */}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center gap-1 rounded-xl bg-white px-2.5 py-1 text-xs font-black text-neutral-900 shadow-xs dark:bg-white/10 dark:text-white">
+                    <span>📏</span> {segmentOfMonth.distance_km} km
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-xl bg-white px-2.5 py-1 text-xs font-black text-neutral-900 shadow-xs dark:bg-white/10 dark:text-white">
+                    <span>⛰️</span> +{segmentOfMonth.elev_gain_m} m D+
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-xl bg-white px-2.5 py-1 text-xs font-black text-neutral-900 shadow-xs dark:bg-white/10 dark:text-white">
+                    <span>📈</span> {segmentOfMonth.avg_grade} % moy.
+                  </span>
+                </div>
+              </div>
+
+              {/* Bouton Lien Strava */}
+              <a
+                href={segmentOfMonth.appUrl || segmentOfMonth.stravaUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#FC5200] px-4 py-2.5 text-xs font-black text-white shadow-md shadow-[#FC5200]/20 transition hover:bg-[#E04900] active:scale-95"
+              >
+                <span>Ouvrir sur Strava</span>
+                <span className="text-sm">↗</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Classement du Segment : Top 3 + développé TOP 10 */}
+          <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-neutral-200/80 bg-neutral-50/60 p-4 dark:border-white/10 dark:bg-white/[0.03]">
+            <div>
+              <div className="mb-3 flex items-center justify-between gap-1.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="flex h-6 w-6 flex-none items-center justify-center rounded-lg bg-[#FC5200]/15 text-xs">
+                    🏆
+                  </span>
+                  <h4 className="text-xs font-black uppercase tracking-wider text-neutral-900 dark:text-white">
+                    Classement adhérents SPS
+                  </h4>
+                </div>
+                <span className="text-[11px] font-black text-[#FC5200]">
+                  TOP 3 PODIUM
+                </span>
+              </div>
+
+              {/* N°1 Segment */}
+              {segmentLeader ? (
+                <div className="flex items-center gap-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.05] p-3.5 shadow-xs">
+                  <div className="relative">
+                    <Avatar name={segmentLeader.officialName} seed={segmentLeader.officialName} size="md" />
+                    <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[11px] font-black text-white shadow-xs">
+                      1
+                    </span>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="block truncate font-display text-base font-black text-neutral-950 dark:text-white">
+                      {segmentLeader.officialName}
+                    </span>
+                    <span className="text-[11px] font-semibold text-neutral-500 dark:text-white/50">
+                      {segmentLeader.speedKmh} km/h de moyenne · {segmentLeader.date ? new Date(segmentLeader.date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" }) : "Ce mois"}
+                    </span>
+                  </div>
+                  <div className="text-right flex-none pl-2">
+                    <span className="font-display text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">
+                      {segmentLeader.timeFormatted}
+                    </span>
+                    <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
+                      chrono
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-neutral-400">Aucun chrono enregistré sur le segment pour l&apos;instant</p>
+              )}
+
+              {/* 2e et 3e du Podium Segment (Toujours visibles) */}
+              {segmentPodiumRest.length > 0 && (
+                <div className="mt-2.5 flex flex-col gap-1.5">
+                  {segmentPodiumRest.map((m) => (
+                    <div
+                      key={m.officialName}
+                      className="flex items-center justify-between gap-2 rounded-xl bg-white px-3 py-2 text-xs border border-neutral-100 dark:border-white/[0.05] dark:bg-white/[0.02]"
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className={`flex h-5 w-5 flex-none items-center justify-center rounded-full text-[10px] font-black ${
+                            m.rank === 2
+                              ? "bg-slate-300/30 text-slate-700 dark:text-slate-200"
+                              : "bg-amber-700/20 text-amber-800 dark:text-amber-400"
+                          }`}
+                        >
+                          #{m.rank}
+                        </span>
+                        <Avatar name={m.officialName} seed={m.officialName} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
+                            {m.officialName}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2.5 flex-none pl-1">
+                        <span className="text-[11px] font-semibold text-neutral-400 dark:text-white/40">
+                          {m.speedKmh} km/h
+                        </span>
+                        <span className="font-display text-sm font-black text-neutral-900 dark:text-white whitespace-nowrap">
+                          {m.timeFormatted}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Bouton Top 10 Déroulable Segment (#4 à #10) */}
+            {segmentRestTop10.length > 0 && (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => setShowSegmentRest((v) => !v)}
+                  className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white py-2 text-xs font-bold text-neutral-800 transition hover:bg-neutral-100 dark:border-white/10 dark:bg-white/[0.05] dark:text-white dark:hover:bg-white/[0.08]"
+                >
+                  <span>{showSegmentRest ? "Réduire" : `Afficher plus (TOP 10) (${segmentOfMonth.leaderboard.length})`}</span>
+                  <Icon
+                    name="chevDown"
+                    size={12}
+                    className={showSegmentRest ? "rotate-180 transition-transform" : "transition-transform"}
+                  />
+                </button>
+
+                {showSegmentRest && (
+                  <div className="mt-2 flex flex-col divide-y divide-neutral-100 rounded-xl border border-neutral-200/60 bg-white p-1 dark:divide-white/[0.05] dark:border-white/10 dark:bg-[#1A1422]">
+                    {segmentRestTop10.map((m) => (
+                      <div key={m.officialName} className="flex items-center justify-between gap-2 px-3 py-2 text-xs">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full bg-neutral-100 text-[10px] font-black text-neutral-500 dark:bg-white/[0.05] dark:text-white/40">
+                            #{m.rank}
+                          </span>
+                          <Avatar name={m.officialName} seed={m.officialName} size="sm" />
+                          <div className="min-w-0 flex-1">
+                            <span className="truncate font-semibold text-neutral-800 dark:text-white/80 block">
+                              {m.officialName}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2.5 flex-none pl-1">
+                          <span className="text-[11px] font-semibold text-neutral-400 dark:text-white/40">
+                            {m.speedKmh} km/h
+                          </span>
+                          <span className="font-display text-sm font-black text-neutral-900 dark:text-white whitespace-nowrap">
+                            {m.timeFormatted}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </section>
-    </AdminOnly>
-  );
+      )}
+    </div>
+  </section>
+</AdminOnly>
+);
 }
 
 function GroupPills({ groups }: { groups?: Record<GroupLevel, number> }) {

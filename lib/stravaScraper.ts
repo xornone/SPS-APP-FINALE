@@ -33,6 +33,29 @@ export interface StravaLeaderboardEntry {
   avg_speed_kmh?: number;
 }
 
+export interface StravaSegmentLeaderboardEntry {
+  rank: number;
+  officialName: string;
+  stravaName: string;
+  athleteId: string;
+  avatar: string | null;
+  timeSeconds: number;
+  timeFormatted: string;
+  speedKmh: number;
+  date: string;
+}
+
+export interface StravaSegmentOfMonth {
+  segmentId: string;
+  name: string;
+  distance_km: number;
+  elev_gain_m: number;
+  avg_grade: number;
+  stravaUrl: string;
+  appUrl: string;
+  leaderboard: StravaSegmentLeaderboardEntry[];
+}
+
 export interface StravaDataStore {
   extractedAt: string;
   totalOfficialMembers: number;
@@ -49,6 +72,7 @@ export interface StravaDataStore {
       totalActivities: number;
     }
   >;
+  segmentOfMonth?: StravaSegmentOfMonth;
 }
 
 // 99 membres officiels SPS avec leurs correspondances Strava validées
@@ -335,6 +359,7 @@ export async function syncAllMembersStravaStats(
     stravaName: info.stravaName,
   }));
 
+  const existingStore = getCachedStravaData();
   const membersResults: StravaMemberSummary[] = [];
   const BATCH_SIZE = 5;
 
@@ -343,7 +368,8 @@ export async function syncAllMembersStravaStats(
     await Promise.all(
       batch.map(async (m) => {
         const annual = await fetchAthleteAnnualStats(m.athleteId);
-        const monthsData: Record<string, StravaMonthStats> = {};
+        const prevMonths = existingStore?.members?.find((em) => em.athleteId === m.athleteId)?.months || {};
+        const monthsData: Record<string, StravaMonthStats> = { ...prevMonths };
 
         for (const ym of targetMonths) {
           monthsData[ym] = await fetchAthleteCalendarMonth(m.athleteId, ym);
@@ -364,8 +390,10 @@ export async function syncAllMembersStravaStats(
     await new Promise((r) => setTimeout(r, 100));
   }
 
-  // Calcul des classements mensuels
-  const monthlyLeaders: StravaDataStore["monthlyLeaders"] = {};
+  // Calcul des classements mensuels (fusionné avec les mois existants)
+  const monthlyLeaders: StravaDataStore["monthlyLeaders"] = existingStore?.monthlyLeaders
+    ? { ...existingStore.monthlyLeaders }
+    : {};
 
   for (const ym of targetMonths) {
     let totalKm = 0;
@@ -435,14 +463,73 @@ export async function syncAllMembersStravaStats(
     };
   }
 
+  // Récupération automatique du segment du mois SPS
+  const segment = await fetchSegmentLeaderboard("42510565");
+
   const store: StravaDataStore = {
     extractedAt: new Date().toISOString(),
     totalOfficialMembers: membersList.length,
     totalMatched: membersResults.length,
     members: membersResults,
     monthlyLeaders,
+    segmentOfMonth: segment || existingStore?.segmentOfMonth,
   };
 
   saveStravaData(store);
   return store;
+}
+
+/**
+ * Récupère le classement d'un segment Strava spécifique (ex: segment du mois SPS)
+ */
+export async function fetchSegmentLeaderboard(
+  segmentId: string = "42510565"
+): Promise<StravaSegmentOfMonth | null> {
+  const cookie = getSessionCookie();
+  try {
+    const res = await fetch(`https://www.strava.com/segments/${segmentId}`, {
+      headers: {
+        Cookie: `_strava4_session=${cookie}`,
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      },
+    });
+    if (!res.ok) return null;
+    const text = await res.text();
+    const nextDataMatch = text.match(/<script id=\"__NEXT_DATA__\" type=\"application\/json\">([\s\S]*?)<\/script>/);
+    if (!nextDataMatch) return null;
+    const json = JSON.parse(nextDataMatch[1]);
+    const p = json.props.pageProps;
+
+    const lb: StravaSegmentLeaderboardEntry[] = (p.initialLeaderboard?.leaderboard || []).map((e: any, idx: number) => {
+      const timeSec = e.elapsedTime || 0;
+      const m = Math.floor(timeSec / 60);
+      const s = timeSec % 60;
+      return {
+        rank: e.rank || idx + 1,
+        officialName: e.displayName,
+        stravaName: e.displayName,
+        athleteId: String(e.athleteId),
+        avatar: e.avatar || null,
+        timeSeconds: timeSec,
+        timeFormatted: `${m}m ${s < 10 ? "0" : ""}${s}s`,
+        speedKmh: Math.round(e.avgSpeed * 3.6 * 10) / 10,
+        date: e.startDateLocal ? e.startDateLocal.slice(0, 10) : "",
+      };
+    });
+
+    return {
+      segmentId: String(p.segmentId || segmentId),
+      name: p.metadata?.name || "SPS - Corum to Combaillaux",
+      distance_km: Math.round(((p.measurements?.distance || 0) / 1000) * 10) / 10,
+      elev_gain_m: Math.round(p.measurements?.elevGain || 0),
+      avg_grade: Math.round((p.measurements?.avgGrade || 0) * 10) / 10,
+      stravaUrl: `https://www.strava.com/segments/${segmentId}`,
+      appUrl: "https://strava.app.link/APRoWoo5W7b",
+      leaderboard: lb,
+    };
+  } catch (err) {
+    console.error(`[fetchSegmentLeaderboard] Erreur segment ${segmentId}:`, err);
+    return null;
+  }
 }
