@@ -88,6 +88,30 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
 
   const canManualScrape = isSuperAdmin(currentUserEmail);
 
+  // Voyant de validité du token Strava (réservé à th.tregaro@gmail.com)
+  const [tokenStatus, setTokenStatus] = useState<"idle" | "checking" | "valid" | "invalid">("checking");
+
+  const checkTokenStatus = async () => {
+    setTokenStatus("checking");
+    try {
+      const res = await fetch("/api/admin/strava/status", { cache: "no-store" });
+      const data = await res.json();
+      if (res.ok && data.connected) {
+        setTokenStatus("valid");
+      } else {
+        setTokenStatus("invalid");
+      }
+    } catch {
+      setTokenStatus("invalid");
+    }
+  };
+
+  useEffect(() => {
+    if (canManualScrape) {
+      checkTokenStatus();
+    }
+  }, [canManualScrape]);
+
   async function handleManualSync() {
     if (isSyncing) return;
     setIsSyncing(true);
@@ -588,19 +612,65 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                 </button>
               </div>
 
-              {/* Sélecteur de mois + Bouton Scraper Strava (visible uniquement pour th.tregaro@gmail.com) */}
+              {/* Sélecteur de mois + Bouton Scraper Strava + Voyant d'état (visibles uniquement pour th.tregaro@gmail.com) */}
               <div className="flex flex-wrap items-center gap-2">
                 {canManualScrape && (
-                  <button
-                    type="button"
-                    disabled={isSyncing}
-                    onClick={handleManualSync}
-                    className="flex items-center gap-1.5 rounded-xl border border-[#FC5200]/30 bg-[#FC5200]/10 px-3 py-1.5 text-xs font-black text-[#FC5200] transition hover:bg-[#FC5200]/20 active:scale-[0.98] disabled:opacity-50 dark:border-[#FC5200]/40 dark:bg-[#FC5200]/15"
-                    title="Actualiser les données Strava immédiatement (réservé à th.tregaro@gmail.com)"
-                  >
-                    <span className={isSyncing ? "animate-spin inline-block" : ""}>🔄</span>
-                    <span>{isSyncing ? "Scraping en cours..." : "Scraper Strava"}</span>
-                  </button>
+                  <div className="flex items-center gap-1.5">
+                    {/* Bouton Scraper Strava */}
+                    <button
+                      type="button"
+                      disabled={isSyncing}
+                      onClick={handleManualSync}
+                      className="flex items-center gap-1.5 rounded-xl border border-[#FC5200]/30 bg-[#FC5200]/10 px-3 py-1.5 text-xs font-black text-[#FC5200] transition hover:bg-[#FC5200]/20 active:scale-[0.98] disabled:opacity-50 dark:border-[#FC5200]/40 dark:bg-[#FC5200]/15"
+                      title="Actualiser les données Strava immédiatement (réservé à th.tregaro@gmail.com)"
+                    >
+                      <span className={isSyncing ? "animate-spin inline-block" : ""}>🔄</span>
+                      <span>{isSyncing ? "Scraping en cours..." : "Scraper Strava"}</span>
+                    </button>
+
+                    {/* Voyant de validité de la session Strava (cliquable pour re-tester) */}
+                    <button
+                      type="button"
+                      onClick={checkTokenStatus}
+                      className="flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white px-2.5 py-1.5 text-xs font-bold text-neutral-700 shadow-xs transition hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/[0.1]"
+                      title={
+                        tokenStatus === "valid"
+                          ? "Session Strava active et connectée (cliquer pour revérifier)"
+                          : tokenStatus === "invalid"
+                          ? "Session Strava déconnectée ou expirée (cliquer pour revérifier)"
+                          : "Test de la session en cours..."
+                      }
+                    >
+                      {tokenStatus === "checking" && (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                          <span className="text-[11px] font-semibold text-neutral-400">Test session...</span>
+                        </>
+                      )}
+                      {tokenStatus === "valid" && (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]" />
+                          <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400">
+                            Session active
+                          </span>
+                        </>
+                      )}
+                      {tokenStatus === "invalid" && (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)] animate-pulse" />
+                          <span className="text-[11px] font-black text-red-600 dark:text-red-400">
+                            Session expirée
+                          </span>
+                        </>
+                      )}
+                      {tokenStatus === "idle" && (
+                        <>
+                          <span className="h-2 w-2 rounded-full bg-neutral-300 dark:bg-white/20" />
+                          <span className="text-[11px] font-semibold text-neutral-400">Strava</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 )}
 
                 {/* Sélecteur de mois (visible pour l'onglet Trophées) */}

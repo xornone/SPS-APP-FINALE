@@ -178,7 +178,7 @@ export const SPS_MEMBER_STRAVA_MAPPINGS: Record<string, { id: string; stravaName
   "Lou Serrig": { id: "167885991", stravaName: "Lou Serrig" },
 };
 
-function getSessionCookie(): string {
+export function getSessionCookie(): string {
   return process.env.STRAVA_SESSION || "fnndo9dsdc8cgsfo9ncj70b13kkip0cn";
 }
 
