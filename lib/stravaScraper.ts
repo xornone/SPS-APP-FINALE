@@ -178,8 +178,17 @@ export const SPS_MEMBER_STRAVA_MAPPINGS: Record<string, { id: string; stravaName
   "Lou Serrig": { id: "167885991", stravaName: "Lou Serrig" },
 };
 
+// Liste ordonnée des tokens de session Strava (Principal + Backups automatiques)
+export const STRAVA_SESSION_CANDIDATES: { label: string; token: string }[] = [
+  { label: "Principal", token: process.env.STRAVA_SESSION || "s2cpdjqaerpj4o880jq7697femp65p0u" },
+  { label: "Backup 1", token: "mscphl7t9e71csf54e0j4hs1m9o746lr" },
+  { label: "Backup 2", token: "ftd0ec1r3n6vht0ippj2vnr48e9oplnp" },
+];
+
+let cachedWorkingCookie: string | null = null;
+
 export function getSessionCookie(): string {
-  return process.env.STRAVA_SESSION || "s2cpdjqaerpj4o880jq7697femp65p0u";
+  return cachedWorkingCookie || STRAVA_SESSION_CANDIDATES[0].token;
 }
 
 /**
@@ -217,6 +226,41 @@ export async function checkStravaSessionStatus(customCookie?: string): Promise<{
       redirect: null,
     };
   }
+}
+
+/**
+ * Vérifie l'ensemble des sessions (Principal + Backups) et sélectionne la première active.
+ */
+export async function checkAllStravaSessions(): Promise<{
+  connected: boolean;
+  activeLabel: string | null;
+  activeToken: string | null;
+  details: { label: string; connected: boolean; status: number }[];
+}> {
+  const details: { label: string; connected: boolean; status: number }[] = [];
+  let firstConnectedLabel: string | null = null;
+  let firstConnectedToken: string | null = null;
+
+  for (const candidate of STRAVA_SESSION_CANDIDATES) {
+    const status = await checkStravaSessionStatus(candidate.token);
+    details.push({
+      label: candidate.label,
+      connected: status.connected,
+      status: status.status,
+    });
+    if (status.connected && !firstConnectedToken) {
+      firstConnectedToken = candidate.token;
+      firstConnectedLabel = candidate.label;
+      cachedWorkingCookie = candidate.token;
+    }
+  }
+
+  return {
+    connected: !!firstConnectedToken,
+    activeLabel: firstConnectedLabel,
+    activeToken: firstConnectedToken,
+    details,
+  };
 }
 
 function getDataFilePath(): string {
@@ -271,10 +315,11 @@ export function saveStravaData(data: StravaDataStore): void {
  */
 export async function fetchAthleteCalendarMonth(
   athleteId: string,
-  monthKey: string // "YYYY-MM", ex: "2026-10"
+  monthKey: string, // "YYYY-MM", ex: "2026-10"
+  customCookie?: string
 ): Promise<StravaMonthStats> {
   const ym = monthKey.replace("-", ""); // "202610"
-  const cookie = getSessionCookie();
+  const cookie = customCookie || getSessionCookie();
 
   try {
     const res = await fetch(
@@ -338,8 +383,11 @@ export async function fetchAthleteCalendarMonth(
 /**
  * Récupère les stats annuelles YTD globales
  */
-export async function fetchAthleteAnnualStats(athleteId: string): Promise<StravaMonthStats> {
-  const cookie = getSessionCookie();
+export async function fetchAthleteAnnualStats(
+  athleteId: string,
+  customCookie?: string
+): Promise<StravaMonthStats> {
+  const cookie = customCookie || getSessionCookie();
   try {
     const res = await fetch(`https://www.strava.com/athletes/${athleteId}/profile_sidebar_comparison?hl=en-US`, {
       headers: {
@@ -390,15 +438,16 @@ export async function syncAllMembersStravaStats(
   targetMonths: string[] = ["2026-10", "2026-11"],
   onProgress?: (current: number, total: number) => void
 ): Promise<StravaDataStore> {
-  // Vérification de sécurité préalable : la session doit être active pour éviter d'écraser le cache avec des 0
-  const sessionStatus = await checkStravaSessionStatus();
-  if (!sessionStatus.connected) {
+  // Vérification de sécurité avec bascule automatique sur les backups
+  const sessionCheck = await checkAllStravaSessions();
+  if (!sessionCheck.connected || !sessionCheck.activeToken) {
     throw new Error(
-      `Session Strava déconnectée ou expirée (Code HTTP ${sessionStatus.status}${
-        sessionStatus.redirect ? ` -> ${sessionStatus.redirect}` : ""
-      }). Veuillez renouveler le cookie _strava4_session.`
+      "Toutes les sessions Strava (Principal, Backup 1, Backup 2) sont déconnectées ou expirées. Veuillez renouveler le cookie _strava4_session."
     );
   }
+
+  const cookie = sessionCheck.activeToken;
+  console.log(`[syncAllMembersStravaStats] Synchronisation via la session Strava : ${sessionCheck.activeLabel}`);
 
   const membersList = Object.entries(SPS_MEMBER_STRAVA_MAPPINGS).map(([officialName, info]) => ({
     officialName,
@@ -414,12 +463,12 @@ export async function syncAllMembersStravaStats(
     const batch = membersList.slice(i, i + BATCH_SIZE);
     await Promise.all(
       batch.map(async (m) => {
-        const annual = await fetchAthleteAnnualStats(m.athleteId);
+        const annual = await fetchAthleteAnnualStats(m.athleteId, cookie);
         const prevMonths = existingStore?.members?.find((em) => em.athleteId === m.athleteId)?.months || {};
         const monthsData: Record<string, StravaMonthStats> = { ...prevMonths };
 
         for (const ym of targetMonths) {
-          monthsData[ym] = await fetchAthleteCalendarMonth(m.athleteId, ym);
+          monthsData[ym] = await fetchAthleteCalendarMonth(m.athleteId, ym, cookie);
         }
 
         membersResults.push({
@@ -511,7 +560,7 @@ export async function syncAllMembersStravaStats(
   }
 
   // Récupération automatique du segment du mois SPS
-  const segment = await fetchSegmentLeaderboard("42510565");
+  const segment = await fetchSegmentLeaderboard("42510565", cookie);
 
   const store: StravaDataStore = {
     extractedAt: new Date().toISOString(),
@@ -530,9 +579,10 @@ export async function syncAllMembersStravaStats(
  * Récupère le classement d'un segment Strava spécifique (ex: segment du mois SPS)
  */
 export async function fetchSegmentLeaderboard(
-  segmentId: string = "42510565"
+  segmentId: string = "42510565",
+  customCookie?: string
 ): Promise<StravaSegmentOfMonth | null> {
-  const cookie = getSessionCookie();
+  const cookie = customCookie || getSessionCookie();
   try {
     const res = await fetch(`https://www.strava.com/segments/${segmentId}`, {
       headers: {

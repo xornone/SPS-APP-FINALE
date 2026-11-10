@@ -10,7 +10,34 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, "..");
 
-const STRAVA_SESSION_COOKIE = process.env.STRAVA_SESSION || "s2cpdjqaerpj4o880jq7697femp65p0u";
+const STRAVA_SESSION_CANDIDATES = [
+  { label: "Principal", token: process.env.STRAVA_SESSION || "s2cpdjqaerpj4o880jq7697femp65p0u" },
+  { label: "Backup 1", token: "mscphl7t9e71csf54e0j4hs1m9o746lr" },
+  { label: "Backup 2", token: "ftd0ec1r3n6vht0ippj2vnr48e9oplnp" },
+];
+
+let ACTIVE_COOKIE = STRAVA_SESSION_CANDIDATES[0].token;
+
+async function resolveActiveCookie() {
+  for (const c of STRAVA_SESSION_CANDIDATES) {
+    try {
+      const res = await fetch("https://www.strava.com/settings/profile", {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          Cookie: `_strava4_session=${c.token}`,
+        },
+        redirect: "manual",
+      });
+      if (res.status === 200) {
+        console.log(`🔑 Session Strava active sélectionnée : ${c.label}`);
+        ACTIVE_COOKIE = c.token;
+        return c.token;
+      }
+    } catch {}
+  }
+  throw new Error("Toutes les sessions Strava configurées sont expirées.");
+}
 
 // 99 membres officiels SPS avec leurs correspondances Strava validées
 import { SPS_MEMBER_STRAVA_MAPPINGS } from "../lib/stravaScraper.ts";
@@ -22,7 +49,7 @@ function sleep(ms) {
 async function fetchStrava(url, options = {}) {
   const res = await fetch(url, {
     headers: {
-      Cookie: `_strava4_session=${STRAVA_SESSION_COOKIE}`,
+      Cookie: `_strava4_session=${ACTIVE_COOKIE}`,
       "User-Agent":
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       ...options.headers,
@@ -184,6 +211,9 @@ async function main() {
   console.log("=========================================================");
   console.log("       STATISTIQUES OFFICIELLES STRAVA - CLUB SPS       ");
   console.log("=========================================================");
+
+  // Sélection automatique du token actif (failover transparent)
+  await resolveActiveCookie();
 
   const membersList = Object.entries(SPS_MEMBER_STRAVA_MAPPINGS).map(([officialName, info]) => ({
     officialName,

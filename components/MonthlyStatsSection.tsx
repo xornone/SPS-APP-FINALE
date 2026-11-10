@@ -90,6 +90,10 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
 
   // Voyant de validité du token Strava (réservé à th.tregaro@gmail.com)
   const [tokenStatus, setTokenStatus] = useState<"idle" | "checking" | "valid" | "invalid">("checking");
+  const [tokenInfo, setTokenInfo] = useState<{
+    activeLabel?: string;
+    details?: { label: string; connected: boolean; status: number }[];
+  } | null>(null);
 
   const checkTokenStatus = async () => {
     setTokenStatus("checking");
@@ -98,11 +102,17 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
       const data = await res.json();
       if (res.ok && data.connected) {
         setTokenStatus("valid");
+        setTokenInfo({
+          activeLabel: data.activeLabel,
+          details: data.details,
+        });
       } else {
         setTokenStatus("invalid");
+        setTokenInfo(null);
       }
     } catch {
       setTokenStatus("invalid");
+      setTokenInfo(null);
     }
   };
 
@@ -635,10 +645,12 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                       className="flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white px-2.5 py-1.5 text-xs font-bold text-neutral-700 shadow-xs transition hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/[0.1]"
                       title={
                         tokenStatus === "valid"
-                          ? "Session Strava active et connectée (cliquer pour revérifier)"
+                          ? `Session active via ${tokenInfo?.activeLabel || "Principal"} (${
+                              tokenInfo?.details?.filter((d) => d.connected).length || 1
+                            }/3 comptes opérationnels) - Cliquer pour revérifier`
                           : tokenStatus === "invalid"
-                          ? "Session Strava déconnectée ou expirée (cliquer pour revérifier)"
-                          : "Test de la session en cours..."
+                          ? "Toutes les sessions Strava sont déconnectées ou expirées (cliquer pour revérifier)"
+                          : "Test des sessions en cours..."
                       }
                     >
                       {tokenStatus === "checking" && (
@@ -652,6 +664,9 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                           <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]" />
                           <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400">
                             Session active
+                            {tokenInfo?.activeLabel && tokenInfo.activeLabel !== "Principal"
+                              ? ` (${tokenInfo.activeLabel})`
+                              : ""}
                           </span>
                         </>
                       )}
@@ -659,7 +674,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                         <>
                           <span className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)] animate-pulse" />
                           <span className="text-[11px] font-black text-red-600 dark:text-red-400">
-                            Session expirée
+                            Sessions expirées
                           </span>
                         </>
                       )}

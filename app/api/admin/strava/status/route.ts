@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminGuard";
 import { isSuperAdmin } from "@/lib/notificationAdmins";
-import { checkStravaSessionStatus } from "@/lib/stravaScraper";
+import { checkAllStravaSessions } from "@/lib/stravaScraper";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Route GET /api/admin/strava/status
- * Vérifie si le cookie _strava4_session configuré est actuellement authentifié sur Strava.
+ * Vérifie l'état de l'ensemble des sessions Strava (Principal + Backups).
  * Réservé exclusivement au Super Admin (th.tregaro@gmail.com).
  */
 export async function GET() {
@@ -24,9 +24,10 @@ export async function GET() {
       );
     }
 
-    const result = await checkStravaSessionStatus();
+    const result = await checkAllStravaSessions();
 
     return NextResponse.json({
+      ok: true,
       ...result,
       checkedAt: new Date().toISOString(),
     });
