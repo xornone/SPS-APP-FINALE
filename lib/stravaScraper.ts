@@ -503,8 +503,11 @@ export async function fetchSegmentLeaderboard(
 
     const lb: StravaSegmentLeaderboardEntry[] = (p.initialLeaderboard?.leaderboard || []).map((e: any, idx: number) => {
       const timeSec = e.elapsedTime || 0;
-      const m = Math.floor(timeSec / 60);
+      const h = Math.floor(timeSec / 3600);
+      const m = Math.floor((timeSec % 3600) / 60);
       const s = timeSec % 60;
+      const sStr = s < 10 ? `0${s}` : `${s}`;
+      const timeFormatted = h > 0 ? `${h}:${m < 10 ? `0${m}` : `${m}`}:${sStr}` : `${m}:${sStr}`;
       return {
         rank: e.rank || idx + 1,
         officialName: e.displayName,
@@ -512,7 +515,7 @@ export async function fetchSegmentLeaderboard(
         athleteId: String(e.athleteId),
         avatar: e.avatar || null,
         timeSeconds: timeSec,
-        timeFormatted: `${m}m ${s < 10 ? "0" : ""}${s}s`,
+        timeFormatted,
         speedKmh: Math.round(e.avgSpeed * 3.6 * 10) / 10,
         date: e.startDateLocal ? e.startDateLocal.slice(0, 10) : "",
       };

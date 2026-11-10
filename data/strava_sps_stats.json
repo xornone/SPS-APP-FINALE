@@ -11054,7 +11054,7 @@
         "athleteId": "3717532",
         "avatar": "https://dgalywyr863hv.cloudfront.net/pictures/athletes/3717532/1327472/5/large.jpg",
         "timeSeconds": 2074,
-        "timeFormatted": "34m 34s",
+        "timeFormatted": "34:34",
         "speedKmh": 24.6,
         "date": "2026-11-08"
       },
@@ -11065,7 +11065,7 @@
         "athleteId": "101371287",
         "avatar": null,
         "timeSeconds": 2097,
-        "timeFormatted": "34m 57s",
+        "timeFormatted": "34:57",
         "speedKmh": 24.4,
         "date": "2026-11-08"
       },
@@ -11076,7 +11076,7 @@
         "athleteId": "58548359",
         "avatar": null,
         "timeSeconds": 2109,
-        "timeFormatted": "35m 09s",
+        "timeFormatted": "35:09",
         "speedKmh": 24.2,
         "date": "2026-11-08"
       },
@@ -11087,7 +11087,7 @@
         "athleteId": "40596719",
         "avatar": null,
         "timeSeconds": 2115,
-        "timeFormatted": "35m 15s",
+        "timeFormatted": "35:15",
         "speedKmh": 24.2,
         "date": "2026-11-08"
       },
@@ -11098,7 +11098,7 @@
         "athleteId": "122755976",
         "avatar": null,
         "timeSeconds": 2128,
-        "timeFormatted": "35m 28s",
+        "timeFormatted": "35:28",
         "speedKmh": 24,
         "date": "2026-11-08"
       },
@@ -11109,7 +11109,7 @@
         "athleteId": "23843091",
         "avatar": null,
         "timeSeconds": 2145,
-        "timeFormatted": "35m 45s",
+        "timeFormatted": "35:45",
         "speedKmh": 23.8,
         "date": "2026-11-08"
       }

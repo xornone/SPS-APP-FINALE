@@ -247,7 +247,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           athleteId: "3717532",
           avatar: "https://dgalywyr863hv.cloudfront.net/pictures/athletes/3717532/1327472/5/large.jpg",
           timeSeconds: 2074,
-          timeFormatted: "34m 34s",
+          timeFormatted: "34:34",
           speedKmh: 24.6,
           date: "2026-11-08",
         },
@@ -258,7 +258,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           athleteId: "101371287",
           avatar: null,
           timeSeconds: 2097,
-          timeFormatted: "34m 57s",
+          timeFormatted: "34:57",
           speedKmh: 24.4,
           date: "2026-11-08",
         },
@@ -269,7 +269,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           athleteId: "58548359",
           avatar: null,
           timeSeconds: 2109,
-          timeFormatted: "35m 09s",
+          timeFormatted: "35:09",
           speedKmh: 24.2,
           date: "2026-11-08",
         },
@@ -280,7 +280,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           athleteId: "40596719",
           avatar: null,
           timeSeconds: 2115,
-          timeFormatted: "35m 15s",
+          timeFormatted: "35:15",
           speedKmh: 24.2,
           date: "2026-11-08",
         },
@@ -291,7 +291,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           athleteId: "122755976",
           avatar: null,
           timeSeconds: 2128,
-          timeFormatted: "35m 28s",
+          timeFormatted: "35:28",
           speedKmh: 24.0,
           date: "2026-11-08",
         },
@@ -302,7 +302,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           athleteId: "23843091",
           avatar: null,
           timeSeconds: 2145,
-          timeFormatted: "35m 45s",
+          timeFormatted: "35:45",
           speedKmh: 23.8,
           date: "2026-11-08",
         },
@@ -1084,7 +1084,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                   </div>
                   <div className="text-right flex-none pl-2">
                     <span className="font-display text-xl sm:text-2xl font-black text-amber-600 dark:text-amber-400">
-                      {segmentLeader.timeFormatted}
+                      {formatChrono(segmentLeader.timeSeconds, segmentLeader.timeFormatted)}
                     </span>
                     <span className="block text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-white/40">
                       chrono
@@ -1125,7 +1125,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                           {m.speedKmh} km/h
                         </span>
                         <span className="font-display text-sm font-black text-neutral-900 dark:text-white whitespace-nowrap">
-                          {m.timeFormatted}
+                          {formatChrono(m.timeSeconds, m.timeFormatted)}
                         </span>
                       </div>
                     </div>
@@ -1170,7 +1170,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                             {m.speedKmh} km/h
                           </span>
                           <span className="font-display text-sm font-black text-neutral-900 dark:text-white whitespace-nowrap">
-                            {m.timeFormatted}
+                            {formatChrono(m.timeSeconds, m.timeFormatted)}
                           </span>
                         </div>
                       </div>
@@ -1186,6 +1186,26 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   </section>
 </AdminOnly>
 );
+}
+
+function formatChrono(seconds?: number, rawStr?: string): string {
+  if (typeof seconds === "number" && seconds > 0) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    const sStr = s < 10 ? `0${s}` : `${s}`;
+    if (h > 0) {
+      const mStr = m < 10 ? `0${m}` : `${m}`;
+      return `${h}:${mStr}:${sStr}`;
+    }
+    return `${m}:${sStr}`;
+  }
+  if (rawStr) {
+    if (/^\d+:\d{2}$/.test(rawStr.trim())) return rawStr.trim();
+    const cleaned = rawStr.replace(/m\s*/gi, ":").replace(/s/gi, "").trim();
+    if (cleaned.includes(":")) return cleaned;
+  }
+  return rawStr || "0:00";
 }
 
 function GroupPills({ groups }: { groups?: Record<GroupLevel, number> }) {
