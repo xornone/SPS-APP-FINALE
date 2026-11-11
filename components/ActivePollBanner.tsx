@@ -9,7 +9,7 @@ import { useIsAdmin } from "@/lib/useIsAdmin";
 
 export function ActivePollBanner() {
   const isAdmin = useIsAdmin();
-  const [activeUnvotedPoll, setActiveUnvotedPoll] = useState<Poll | null>(null);
+  const [activePoll, setActivePoll] = useState<Poll | null>(null);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -29,11 +29,13 @@ export function ActivePollBanner() {
         if (cancelled) return;
 
         if (Array.isArray(data.polls)) {
-          // Trouver le premier sondage en cours auquel le membre n'a pas encore répondu
+          // 1. Chercher en priorité un sondage en cours auquel le membre n'a pas encore voté
           const unvoted = data.polls.find(
             (p: Poll) => !p.is_closed && (!p.user_voted_options || p.user_voted_options.length === 0)
           );
-          setActiveUnvotedPoll(unvoted || null);
+          // 2. Sinon, afficher le premier sondage en cours (même si déjà voté)
+          const anyActive = data.polls.find((p: Poll) => !p.is_closed);
+          setActivePoll(unvoted || anyActive || null);
         }
       } catch {
         // Silencieux
@@ -46,31 +48,64 @@ export function ActivePollBanner() {
     };
   }, [isAdmin]);
 
-  if (!isAdmin || !activeUnvotedPoll) return null;
+  if (!isAdmin || !activePoll) return null;
+
+  const hasVoted = Boolean(activePoll.user_voted_options && activePoll.user_voted_options.length > 0);
 
   return (
     <div className="px-5 mb-3">
       <Link
         href="/sondages"
-        className="group relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-sps-violet600/30 bg-gradient-to-r from-sps-violet600/10 via-[#AA26FF]/10 to-sps-violet600/10 p-3 shadow-cardSm transition-all duration-200 hover:border-sps-violet600/50 hover:bg-sps-violet600/15 active:scale-[0.99] dark:border-sps-violet500/30 dark:from-sps-violet600/20 dark:via-[#AA26FF]/15 dark:to-sps-violet600/20"
+        className={`group relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border p-3 shadow-cardSm transition-all duration-200 active:scale-[0.99] ${
+          hasVoted
+            ? "border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-emerald-400/5 to-emerald-500/10 hover:border-emerald-500/50 hover:bg-emerald-500/15 dark:border-emerald-500/30 dark:from-emerald-500/15 dark:via-emerald-400/10 dark:to-emerald-500/15"
+            : "border-sps-violet600/30 bg-gradient-to-r from-sps-violet600/10 via-[#AA26FF]/10 to-sps-violet600/10 hover:border-sps-violet600/50 hover:bg-sps-violet600/15 dark:border-sps-violet500/30 dark:from-sps-violet600/20 dark:via-[#AA26FF]/15 dark:to-sps-violet600/20"
+        }`}
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-sps-violet600 text-white shadow-sm shadow-violet-600/30">
-            <Icon name="poll" size={16} />
+          <span
+            className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${
+              hasVoted
+                ? "bg-emerald-600 shadow-emerald-600/30"
+                : "bg-sps-violet600 shadow-violet-600/30"
+            }`}
+          >
+            <Icon name={hasVoted ? "check" : "poll"} size={16} />
           </span>
           <div className="min-w-0">
-            <span className="inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider text-sps-violet600 dark:text-sps-violet400">
-              <span className="h-1.5 w-1.5 rounded-full bg-sps-violet600 animate-pulse" />
-              Sondage en cours
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-wider ${
+                  hasVoted
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-sps-violet600 dark:text-sps-violet400"
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    hasVoted ? "bg-emerald-500" : "bg-sps-violet600 animate-pulse"
+                  }`}
+                />
+                {hasVoted ? "Sondage en cours • A voté" : "Sondage en cours"}
+              </span>
+              <span className="text-[10px] font-bold text-neutral-400 dark:text-white/40">
+                ({activePoll.total_voters} votant{activePoll.total_voters > 1 ? "s" : ""})
+              </span>
+            </div>
             <p className="truncate text-xs font-bold text-neutral-900 dark:text-white">
-              {activeUnvotedPoll.question}
+              {activePoll.question}
             </p>
           </div>
         </div>
 
-        <span className="flex h-7 items-center gap-1 rounded-xl bg-white/80 px-2.5 text-[11px] font-bold text-sps-violet700 shadow-xs group-hover:bg-white transition flex-shrink-0 dark:bg-white/10 dark:text-white">
-          <span>Voter</span>
+        <span
+          className={`flex h-7 items-center gap-1 rounded-xl px-2.5 text-[11px] font-bold shadow-xs transition flex-shrink-0 ${
+            hasVoted
+              ? "bg-white/80 text-emerald-700 group-hover:bg-white dark:bg-white/10 dark:text-emerald-300"
+              : "bg-white/80 text-sps-violet700 group-hover:bg-white dark:bg-white/10 dark:text-white"
+          }`}
+        >
+          <span>{hasVoted ? "Résultats" : "Voter"}</span>
           <Icon name="chevR" size={12} />
         </span>
       </Link>

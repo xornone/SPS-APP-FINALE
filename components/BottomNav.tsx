@@ -10,9 +10,9 @@ import { hapticTap } from "@/lib/haptics";
 
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
-  { href: "/sondages", label: "Sondages", icon: "poll" as const },
   { href: "/precommandes", label: "Pré-commandes", icon: "shirt" as const, preorderTab: true },
   { href: "/classement", label: "Stats SPS", icon: "trophy" as const },
+  { href: "/sondages", label: "Sondages", icon: "poll" as const },
   { href: "/admin", label: "Admin", icon: "gear" as const },
 ];
 
