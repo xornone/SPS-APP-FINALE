@@ -25,6 +25,9 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  // État de dépliage du contexte / description
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+
   // Accordéon pour voir les votants par option (réservé admin)
   const [expandedOptionVoters, setExpandedOptionVoters] = useState<Record<string, boolean>>({});
 
@@ -149,11 +152,51 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
         {poll.question}
       </h3>
 
-      {/* Description */}
+      {/* Description / Contexte dépliable */}
       {poll.description && (
-        <p className="mt-1 text-xs text-neutral-600 dark:text-white/70 whitespace-pre-line">
-          {poll.description}
-        </p>
+        <div className="mt-2.5">
+          <button
+            type="button"
+            onClick={() => {
+              hapticTap();
+              setIsDescriptionOpen((prev) => !prev);
+            }}
+            className="group/desc inline-flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-700 transition-all hover:border-sps-violet600/40 hover:bg-sps-violet600/5 hover:text-sps-violet700 active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.04] dark:text-white/80 dark:hover:border-sps-violet400/40 dark:hover:bg-sps-violet600/10 dark:hover:text-sps-violet300"
+            aria-expanded={isDescriptionOpen}
+          >
+            <span className="flex h-4 w-4 items-center justify-center rounded-md bg-sps-violet600/10 text-sps-violet600 dark:bg-sps-violet600/20 dark:text-sps-violet400">
+              <Icon name="chat" size={10} />
+            </span>
+            <span>{isDescriptionOpen ? "Masquer le contexte" : "Lire le contexte & explications"}</span>
+            <Icon
+              name="chevDown"
+              size={12}
+              className={`transition-transform duration-200 text-neutral-400 group-hover/desc:text-sps-violet600 dark:text-white/40 dark:group-hover/desc:text-sps-violet300 ${
+                isDescriptionOpen ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          {isDescriptionOpen && (
+            <div className="mt-2.5 rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-3.5 text-xs font-medium leading-relaxed text-neutral-700 shadow-xs dark:border-white/10 dark:bg-white/[0.03] dark:text-white/85 whitespace-pre-line">
+              <div className="space-y-1">
+                {poll.description}
+              </div>
+              <div className="mt-2.5 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    hapticTap();
+                    setIsDescriptionOpen(false);
+                  }}
+                  className="text-[11px] font-bold text-sps-violet600 hover:underline dark:text-sps-violet400"
+                >
+                  ▲ Replier le contexte
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
 
       {/* Messages */}
