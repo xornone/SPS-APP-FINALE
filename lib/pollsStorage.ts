@@ -3,7 +3,7 @@ import path from "path";
 import crypto from "crypto";
 import { createPublicClient } from "./supabase/publicClient";
 import { createAdminClient } from "./supabase/admin";
-import { sendPushToAdmins } from "./webpush";
+import { sendPushToAll } from "./webpush";
 import { getCanonicalVoterKey, getCanonicalDisplayName } from "./voterCanonical";
 
 export interface VoterDetail {
@@ -356,10 +356,10 @@ export async function createPoll({
   store.options.push(...newOptions);
   writeLocalStore(store);
 
-  // 3. Envoi de la notification push (restreinte aux admins pendant la phase de test)
+  // 3. Envoi de la notification push à tous les adhérents abonnés
   try {
-    await sendPushToAdmins({
-      title: "📊 [Admin Test] Nouveau sondage SPS",
+    await sendPushToAll({
+      title: "📊 Nouveau sondage SPS",
       body: newPoll.question,
       url: "/sondages",
     });

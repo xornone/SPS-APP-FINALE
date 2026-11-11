@@ -6,11 +6,8 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   // /admin exige une session en permanence.
   // /precommandes exige une session admin avant la date d'ouverture publique officielle.
-  // /sondages est en test privé réservé aux admins pour le moment (sauf si NEXT_PUBLIC_POLLS_LIVE=true).
-  const isPollsLive = process.env.NEXT_PUBLIC_POLLS_LIVE === "true";
   const isPreorderProtected = !isPreorderOpenToPublic() && path.startsWith("/precommandes");
-  const isSondagesProtected = !isPollsLive && path.startsWith("/sondages");
-  const isProtected = path.startsWith("/admin") || isPreorderProtected || isSondagesProtected;
+  const isProtected = path.startsWith("/admin") || isPreorderProtected;
   const isLogin = path === "/login";
   // Une route API (retrait d'un participant ou d'un commentaire, gestion
   // des sorties depuis /api/admin/*...) peut verifier elle-meme une session

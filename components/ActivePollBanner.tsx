@@ -5,19 +5,13 @@ import Link from "next/link";
 import { Icon } from "./Icons";
 import { Poll } from "@/lib/pollsStorage";
 import { getOrCreateVoterToken, getInitialVoterName, isPollVotedLocally } from "@/lib/pollClient";
-import { useIsAdmin } from "@/lib/useIsAdmin";
 
 interface ActivePollBannerProps {
   initialPoll?: Poll | null;
   initialIsAdmin?: boolean;
 }
 
-export function ActivePollBanner({ initialPoll = null, initialIsAdmin = false }: ActivePollBannerProps) {
-  const clientIsAdmin = useIsAdmin();
-  const isAdmin = initialIsAdmin || clientIsAdmin;
-  const isPollsLive = process.env.NEXT_PUBLIC_POLLS_LIVE === "true";
-  const isVisible = isPollsLive || isAdmin;
-
+export function ActivePollBanner({ initialPoll = null }: ActivePollBannerProps) {
   const [activePoll, setActivePoll] = useState<Poll | null>(initialPoll);
   const [hasVotedLocally, setHasVotedLocally] = useState<boolean>(() => {
     return initialPoll ? isPollVotedLocally(initialPoll.id) : false;
@@ -30,7 +24,6 @@ export function ActivePollBanner({ initialPoll = null, initialIsAdmin = false }:
   }, [activePoll]);
 
   useEffect(() => {
-    if (!isVisible) return;
     let cancelled = false;
 
     async function checkPolls() {
@@ -71,9 +64,9 @@ export function ActivePollBanner({ initialPoll = null, initialIsAdmin = false }:
     return () => {
       cancelled = true;
     };
-  }, [isVisible]);
+  }, []);
 
-  if (!isVisible || !activePoll) return null;
+  if (!activePoll) return null;
 
   const hasVoted = Boolean(
     (activePoll.user_voted_options && activePoll.user_voted_options.length > 0) || hasVotedLocally

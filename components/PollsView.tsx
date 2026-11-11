@@ -10,7 +10,6 @@ import { getOrCreateVoterToken, getInitialVoterName } from "@/lib/pollClient";
 
 export function PollsView() {
   const isAdmin = useIsAdmin();
-  const isPollsLive = process.env.NEXT_PUBLIC_POLLS_LIVE === "true";
   const [polls, setPolls] = useState<Poll[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,16 +76,6 @@ export function PollsView() {
           </button>
         )}
       </div>
-
-      {/* Badge Phase de Test Admin (masqué lorsque les sondages sont en ligne) */}
-      {!isPollsLive && (
-        <div className="mt-3 flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-900 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-200">
-          <span className="text-base flex-shrink-0">🛡️</span>
-          <span>
-            <strong>Mode Test Admin :</strong> cette page et ses sondages sont visibles uniquement par les administrateurs connectés.
-          </span>
-        </div>
-      )}
 
       {/* Onglets En cours / Terminés */}
       <div className="mt-5 flex items-center gap-2 border-b border-neutral-200/80 pb-3 dark:border-white/10">

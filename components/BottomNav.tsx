@@ -171,10 +171,7 @@ export function BottomNav() {
   if (modalOpen) return null;
 
   const isPreorderOpen = isPreorderOpenToPublic();
-  const isPollsLive = process.env.NEXT_PUBLIC_POLLS_LIVE === "true";
   const visibleTabs = TABS.filter((t) => {
-    // Sondages restreints aux admins pour le moment (ou si NEXT_PUBLIC_POLLS_LIVE=true)
-    if (t.href === "/sondages" && !isAdmin && !isPollsLive) return false;
     if (t.preorderTab && !isAdmin && !isPreorderOpen) return false;
     return true;
   });
