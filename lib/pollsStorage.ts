@@ -283,6 +283,15 @@ function assemblePolls(
 }
 
 /**
+ * Récupère le premier sondage en cours pour affichage direct côté serveur (SSR) sur l'accueil.
+ * Évite tout clignotement ou retard d'affichage au premier rendu.
+ */
+export async function getActivePollForHome(): Promise<Poll | null> {
+  const polls = await getAllPolls(false);
+  return polls.find((p) => !p.is_closed) || null;
+}
+
+/**
  * Créer un nouveau sondage et envoie une notification push à tous les utilisateurs.
  */
 export async function createPoll({

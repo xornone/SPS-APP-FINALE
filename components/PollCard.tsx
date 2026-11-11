@@ -4,7 +4,13 @@ import { useState, useEffect } from "react";
 import { Poll, PollOption } from "@/lib/pollsStorage";
 import { Icon } from "./Icons";
 import { hapticTap } from "@/lib/haptics";
-import { getInitialVoterName, saveVoterName, getOrCreateVoterToken } from "@/lib/pollClient";
+import {
+  getInitialVoterName,
+  saveVoterName,
+  getOrCreateVoterToken,
+  markPollVotedLocally,
+  clearPollVotedLocally,
+} from "@/lib/pollClient";
 
 interface PollCardProps {
   poll: Poll;
@@ -97,6 +103,7 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
       }
 
       setSuccessMsg("Vote enregistré avec succès !");
+      markPollVotedLocally(poll.id, selectedOptions);
       setShowResults(true);
       onRefresh();
     } catch (err: unknown) {
@@ -134,6 +141,7 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
       }
 
       setSuccessMsg("Votre vote a bien été supprimé.");
+      clearPollVotedLocally(poll.id);
       setSelectedOptions([]);
       setShowResults(false);
       onRefresh();

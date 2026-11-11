@@ -41,3 +41,26 @@ export function saveVoterName(name: string): void {
     } catch {}
   }
 }
+
+export function markPollVotedLocally(pollId: string, optionIds: string[]): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(`sps_voted_${pollId}`, JSON.stringify(optionIds));
+  } catch {}
+}
+
+export function clearPollVotedLocally(pollId: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(`sps_voted_${pollId}`);
+  } catch {}
+}
+
+export function isPollVotedLocally(pollId: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return Boolean(localStorage.getItem(`sps_voted_${pollId}`));
+  } catch {
+    return false;
+  }
+}

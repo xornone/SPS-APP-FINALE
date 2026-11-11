@@ -4,12 +4,28 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Icon } from "./Icons";
 import { Poll } from "@/lib/pollsStorage";
-import { getOrCreateVoterToken, getInitialVoterName } from "@/lib/pollClient";
+import { getOrCreateVoterToken, getInitialVoterName, isPollVotedLocally } from "@/lib/pollClient";
 import { useIsAdmin } from "@/lib/useIsAdmin";
 
-export function ActivePollBanner() {
-  const isAdmin = useIsAdmin();
-  const [activePoll, setActivePoll] = useState<Poll | null>(null);
+interface ActivePollBannerProps {
+  initialPoll?: Poll | null;
+  initialIsAdmin?: boolean;
+}
+
+export function ActivePollBanner({ initialPoll = null, initialIsAdmin = false }: ActivePollBannerProps) {
+  const clientIsAdmin = useIsAdmin();
+  const isAdmin = initialIsAdmin || clientIsAdmin;
+
+  const [activePoll, setActivePoll] = useState<Poll | null>(initialPoll);
+  const [hasVotedLocally, setHasVotedLocally] = useState<boolean>(() => {
+    return initialPoll ? isPollVotedLocally(initialPoll.id) : false;
+  });
+
+  useEffect(() => {
+    if (activePoll) {
+      setHasVotedLocally(isPollVotedLocally(activePoll.id));
+    }
+  }, [activePoll]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -35,7 +51,14 @@ export function ActivePollBanner() {
           );
           // 2. Sinon, afficher le premier sondage en cours (même si déjà voté)
           const anyActive = data.polls.find((p: Poll) => !p.is_closed);
-          setActivePoll(unvoted || anyActive || null);
+          const found = unvoted || anyActive || null;
+          setActivePoll(found);
+          if (found) {
+            setHasVotedLocally(
+              isPollVotedLocally(found.id) ||
+                Boolean(found.user_voted_options && found.user_voted_options.length > 0)
+            );
+          }
         }
       } catch {
         // Silencieux
@@ -50,7 +73,9 @@ export function ActivePollBanner() {
 
   if (!isAdmin || !activePoll) return null;
 
-  const hasVoted = Boolean(activePoll.user_voted_options && activePoll.user_voted_options.length > 0);
+  const hasVoted = Boolean(
+    (activePoll.user_voted_options && activePoll.user_voted_options.length > 0) || hasVotedLocally
+  );
 
   return (
     <div className="px-5 mb-3">

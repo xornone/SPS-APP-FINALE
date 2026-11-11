@@ -1,5 +1,7 @@
 import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
+import { getActivePollForHome } from "@/lib/pollsStorage";
+import { checkIsAdminServer } from "@/lib/adminGuard";
 import { HomeRidesSection } from "@/components/HomeRidesSection";
 import { NotificationOptIn } from "@/components/NotificationOptIn";
 import { JerseyPreorderBanner } from "@/components/JerseyPreorderBanner";
@@ -10,17 +12,17 @@ import { ActivePollBanner } from "@/components/ActivePollBanner";
 import { isPastDate } from "@/lib/format";
 import { fetchRideWeather, getRideCoordinates, type RideWeather } from "@/lib/weather";
 
-// Page 100% publique (aucune donnee liee a une session, voir
-// lib/supabase/publicClient.ts), mais rendue a chaque requete plutot que
-// mise en cache : le club prefere voir l'app se mettre a jour a chaque
-// clic (changement d'onglet, ouverture d'une sortie, retour arriere)
-// plutot que de gagner quelques dixiemes de seconde avec un cache qui peut
-// rester perime le temps de sa fenetre de revalidation.
+// Page rendue à chaque requête (force-dynamic) pour garantir des données fraîches.
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const supabase = createPublicClient();
-  const [rides, participations] = await Promise.all([fetchRides(supabase), fetchAllParticipations(supabase)]);
+  const [rides, participations, activePoll, isAdmin] = await Promise.all([
+    fetchRides(supabase),
+    fetchAllParticipations(supabase),
+    getActivePollForHome(),
+    checkIsAdminServer(),
+  ]);
 
   // Toutes les sorties du jour le plus proche sont mises en avant (en
   // violet) — pas seulement la premiere — si plusieurs sorties ont lieu le
@@ -93,7 +95,7 @@ export default async function HomePage() {
       <PreorderVisibility>
         <JerseyPreorderBanner />
       </PreorderVisibility>
-      <ActivePollBanner />
+      <ActivePollBanner initialPoll={activePoll} initialIsAdmin={isAdmin} />
       <NotificationOptIn />
       <HomeRidesSection
         featured={featured}

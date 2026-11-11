@@ -1,4 +1,28 @@
+import { cookies } from "next/headers";
 import { createClient } from "./supabase/server";
+
+/**
+ * Verifie rapidement si l'utilisateur courant est admin côté serveur (SSR).
+ * Retourne false immédiatement si aucun cookie de session Supabase n'est présent,
+ * évitant tout appel réseau inutile pour les visiteurs non connectés.
+ */
+export async function checkIsAdminServer(): Promise<boolean> {
+  try {
+    const cookieStore = cookies();
+    const allCookies = cookieStore.getAll();
+    const hasAuthCookie = allCookies.some(
+      (c) => c.name.startsWith("sb-") && c.name.includes("-auth-token")
+    );
+    if (!hasAuthCookie) return false;
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return Boolean(user);
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Verifie que l'utilisateur de la requete courante est authentifie.
