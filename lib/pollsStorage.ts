@@ -64,6 +64,8 @@ interface LocalStoreData {
 
 function getFilePath(): string {
   try {
+    // Si process.cwd() n'est pas inscriptible (comme sur Vercel serverless EROFS), basculer sur /tmp
+    fs.accessSync(process.cwd(), fs.constants.W_OK);
     const dataDir = path.join(process.cwd(), "data");
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
@@ -76,28 +78,37 @@ function getFilePath(): string {
 
 function readLocalStore(): LocalStoreData {
   try {
-    const filePath = getFilePath();
-    if (!fs.existsSync(filePath)) {
-      return { polls: [], options: [], votes: [] };
+    const tmpPath = path.join("/tmp", "sps-polls.json");
+    if (fs.existsSync(tmpPath)) {
+      const raw = fs.readFileSync(tmpPath, "utf8");
+      const data = JSON.parse(raw);
+      if (Array.isArray(data.polls)) return data;
     }
-    const raw = fs.readFileSync(filePath, "utf8");
-    const data = JSON.parse(raw);
-    return {
-      polls: Array.isArray(data.polls) ? data.polls : [],
-      options: Array.isArray(data.options) ? data.options : [],
-      votes: Array.isArray(data.votes) ? data.votes : [],
-    };
+    const localPath = path.join(process.cwd(), "data/polls.json");
+    if (fs.existsSync(localPath)) {
+      const raw = fs.readFileSync(localPath, "utf8");
+      const data = JSON.parse(raw);
+      if (Array.isArray(data.polls)) return data;
+    }
   } catch {
-    return { polls: [], options: [], votes: [] };
+    // Fallback silencieux
   }
+  return { polls: [], options: [], votes: [] };
 }
 
 function writeLocalStore(data: LocalStoreData): void {
+  const jsonStr = JSON.stringify(data, null, 2);
+  // Toujours tenter /tmp en premier (seul dossier inscriptible sur Vercel serverless)
+  try {
+    fs.writeFileSync("/tmp/sps-polls.json", jsonStr, "utf8");
+  } catch {}
+
+  // Tenter le dossier local data/ si accessible en écriture
   try {
     const filePath = getFilePath();
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf8");
+    fs.writeFileSync(filePath, jsonStr, "utf8");
   } catch (err) {
-    console.error("Erreur écriture fichier polls :", err);
+    // Normal sur environnement en lecture seule Vercel
   }
 }
 
