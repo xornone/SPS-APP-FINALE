@@ -172,6 +172,8 @@ export function BottomNav() {
 
   const isPreorderOpen = isPreorderOpenToPublic();
   const visibleTabs = TABS.filter((t) => {
+    // Sondages restreints aux admins pendant la phase de test
+    if (t.href === "/sondages" && !isAdmin) return false;
     if (t.preorderTab && !isAdmin && !isPreorderOpen) return false;
     return true;
   });

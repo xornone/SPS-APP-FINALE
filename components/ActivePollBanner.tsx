@@ -5,11 +5,14 @@ import Link from "next/link";
 import { Icon } from "./Icons";
 import { Poll } from "@/lib/pollsStorage";
 import { getOrCreateVoterToken, getInitialVoterName } from "@/lib/pollClient";
+import { useIsAdmin } from "@/lib/useIsAdmin";
 
 export function ActivePollBanner() {
+  const isAdmin = useIsAdmin();
   const [activeUnvotedPoll, setActiveUnvotedPoll] = useState<Poll | null>(null);
 
   useEffect(() => {
+    if (!isAdmin) return;
     let cancelled = false;
 
     async function checkPolls() {
@@ -41,9 +44,9 @@ export function ActivePollBanner() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [isAdmin]);
 
-  if (!activeUnvotedPoll) return null;
+  if (!isAdmin || !activeUnvotedPoll) return null;
 
   return (
     <div className="px-5 mb-3">

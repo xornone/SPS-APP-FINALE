@@ -5,9 +5,11 @@ import { isPreorderOpenToPublic } from "@/lib/preorder";
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   // /admin exige une session en permanence.
-  // /precommandes exige une session admin avant la date d'ouverture publique officielle (mardi 10 nov 2026 à 20h00).
+  // /precommandes exige une session admin avant la date d'ouverture publique officielle.
+  // /sondages est en test privé réservé aux admins.
   const isPreorderProtected = !isPreorderOpenToPublic() && path.startsWith("/precommandes");
-  const isProtected = path.startsWith("/admin") || isPreorderProtected;
+  const isSondagesProtected = path.startsWith("/sondages");
+  const isProtected = path.startsWith("/admin") || isPreorderProtected || isSondagesProtected;
   const isLogin = path === "/login";
   // Une route API (retrait d'un participant ou d'un commentaire, gestion
   // des sorties depuis /api/admin/*...) peut verifier elle-meme une session
