@@ -556,19 +556,32 @@ export async function deletePollVote({
  * Clôturer ou rouvrir un sondage (réservé admin).
  */
 export async function togglePollStatus(poll_id: string, is_closed: boolean): Promise<boolean> {
+  let supabaseUpdated = false;
   try {
     const db = getDbClient();
-    if (db) await db.from("polls").update({ is_closed }).eq("id", poll_id);
-  } catch {}
+    if (db) {
+      const { data, error } = await db
+        .from("polls")
+        .update({ is_closed })
+        .eq("id", poll_id)
+        .select("id");
+      if (!error && data && data.length > 0) {
+        supabaseUpdated = true;
+      }
+    }
+  } catch (err) {
+    console.error("[togglePollStatus] Erreur Supabase :", err);
+  }
 
   const store = readLocalStore();
+  let localUpdated = false;
   const poll = store.polls.find((p) => p.id === poll_id);
   if (poll) {
     poll.is_closed = is_closed;
     writeLocalStore(store);
-    return true;
+    localUpdated = true;
   }
-  return false;
+  return supabaseUpdated || localUpdated;
 }
 
 export interface UpdatePollInput {
@@ -607,18 +620,25 @@ export async function updatePoll({
     throw new Error("Un sondage doit comporter au moins 2 options.");
   }
 
+  let supabaseUpdated = false;
+
   // 1. Supabase
   try {
     const db = getDbClient();
     if (db) {
-      await db
+      const { data: updatedPolls, error: pollErr } = await db
         .from("polls")
         .update({
           question: cleanQuestion,
           description: description?.trim() || null,
           allow_multiple: Boolean(allow_multiple),
         })
-        .eq("id", poll_id);
+        .eq("id", poll_id)
+        .select("id");
+
+      if (!pollErr && updatedPolls && updatedPolls.length > 0) {
+        supabaseUpdated = true;
+      }
 
       const { data: currentOptions } = await db
         .from("poll_options")
@@ -659,67 +679,84 @@ export async function updatePoll({
 
   // 2. Synchroniser le fichier local (store)
   const store = readLocalStore();
+  let localUpdated = false;
   const poll = store.polls.find((p) => p.id === poll_id);
-  if (!poll) {
-    return false;
-  }
 
-  poll.question = cleanQuestion;
-  poll.description = description?.trim() || null;
-  poll.allow_multiple = Boolean(allow_multiple);
+  if (poll) {
+    localUpdated = true;
+    poll.question = cleanQuestion;
+    poll.description = description?.trim() || null;
+    poll.allow_multiple = Boolean(allow_multiple);
 
-  // Mettre à jour les options locales
-  const existingLocalOptionIds = new Set(
-    store.options.filter((o) => o.poll_id === poll_id).map((o) => o.id)
-  );
-  const newOptionIds = new Set(cleanOptions.map((o) => o.id).filter(Boolean));
-  const removedOptionIds = new Set(
-    [...existingLocalOptionIds].filter((id) => !newOptionIds.has(id))
-  );
+    // Mettre à jour les options locales
+    const existingLocalOptionIds = new Set(
+      store.options.filter((o) => o.poll_id === poll_id).map((o) => o.id)
+    );
+    const newOptionIds = new Set(cleanOptions.map((o) => o.id).filter(Boolean));
+    const removedOptionIds = new Set(
+      [...existingLocalOptionIds].filter((id) => !newOptionIds.has(id))
+    );
 
-  // Supprimer les options et votes retirés
-  store.options = store.options.filter(
-    (o) => !(o.poll_id === poll_id && removedOptionIds.has(o.id))
-  );
-  store.votes = store.votes.filter(
-    (v) => !(v.poll_id === poll_id && removedOptionIds.has(v.option_id))
-  );
+    // Supprimer les options et votes retirés
+    store.options = store.options.filter(
+      (o) => !(o.poll_id === poll_id && removedOptionIds.has(o.id))
+    );
+    store.votes = store.votes.filter(
+      (v) => !(v.poll_id === poll_id && removedOptionIds.has(v.option_id))
+    );
 
-  // Mettre à jour ou ajouter les options
-  for (const opt of cleanOptions) {
-    const existing = store.options.find((o) => o.id === opt.id);
-    if (existing) {
-      existing.title = opt.title;
-      existing.position = opt.position;
-    } else {
-      const optId = opt.id || crypto.randomUUID();
-      opt.id = optId;
-      store.options.push({
-        id: optId,
-        poll_id,
-        title: opt.title,
-        position: opt.position,
-      });
+    // Mettre à jour ou ajouter les options
+    for (const opt of cleanOptions) {
+      const existing = store.options.find((o) => o.id === opt.id);
+      if (existing) {
+        existing.title = opt.title;
+        existing.position = opt.position;
+      } else {
+        const optId = opt.id || crypto.randomUUID();
+        opt.id = optId;
+        store.options.push({
+          id: optId,
+          poll_id,
+          title: opt.title,
+          position: opt.position,
+        });
+      }
     }
+
+    writeLocalStore(store);
   }
 
-  writeLocalStore(store);
-  return true;
+  return supabaseUpdated || localUpdated;
 }
 
 /**
  * Supprimer un sondage (réservé admin).
  */
 export async function deletePoll(poll_id: string): Promise<boolean> {
+  let supabaseDeleted = false;
   try {
     const db = getDbClient();
-    if (db) await db.from("polls").delete().eq("id", poll_id);
-  } catch {}
+    if (db) {
+      const { data, error } = await db
+        .from("polls")
+        .delete()
+        .eq("id", poll_id)
+        .select("id");
+      if (!error && data && data.length > 0) {
+        supabaseDeleted = true;
+      }
+    }
+  } catch (err) {
+    console.error("[deletePoll] Erreur Supabase :", err);
+  }
 
   const store = readLocalStore();
+  const hadPoll = store.polls.some((p) => p.id === poll_id);
   store.polls = store.polls.filter((p) => p.id !== poll_id);
   store.options = store.options.filter((o) => o.poll_id !== poll_id);
   store.votes = store.votes.filter((v) => v.poll_id !== poll_id);
-  writeLocalStore(store);
-  return true;
+  if (hadPoll) {
+    writeLocalStore(store);
+  }
+  return supabaseDeleted || hadPoll;
 }
