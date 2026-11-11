@@ -4,6 +4,7 @@ import crypto from "crypto";
 import { createPublicClient } from "./supabase/publicClient";
 import { createAdminClient } from "./supabase/admin";
 import { sendPushToAdmins } from "./webpush";
+import { getCanonicalVoterKey, getCanonicalDisplayName } from "./voterCanonical";
 
 export interface VoterDetail {
   name: string;
@@ -60,6 +61,19 @@ interface LocalStoreData {
     position: number;
   }>;
   votes: RawPollVote[];
+}
+
+function getDbClient() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return null;
+  try {
+    return createAdminClient();
+  } catch {
+    try {
+      return createPublicClient();
+    } catch {
+      return null;
+    }
+  }
 }
 
 function getFilePath(): string {
@@ -165,27 +179,64 @@ function assemblePolls(
   voterToken?: string,
   voterName?: string
 ): Poll[] {
-  const normVoterName = voterName ? voterName.trim().toLowerCase() : null;
+  const visitorCanonicalKey = voterName ? getCanonicalVoterKey(voterName) : null;
 
   return polls.map((p) => {
     const pollOptions = options
       .filter((o) => o.poll_id === p.id)
       .sort((a, b) => a.position - b.position);
 
-    const pollVotes = votes.filter((v) => v.poll_id === p.id);
-    const uniqueVoterTokens = new Set(pollVotes.map((v) => v.voter_token || v.voter_name.toLowerCase()));
+    const rawPollVotes = votes.filter((v) => v.poll_id === p.id);
+
+    // Déduplication robuste des votes par votant canonique (inversion, accents, alias) :
+    // On trie par date décroissante pour retenir les votes les plus récents
+    const sortedVotes = [...rawPollVotes].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+
+    const votesByVoter = new Map<string, RawPollVote[]>();
+    for (const v of sortedVotes) {
+      const vKey = getCanonicalVoterKey(v.voter_name) || v.voter_token;
+      if (!votesByVoter.has(vKey)) {
+        votesByVoter.set(vKey, []);
+      }
+      votesByVoter.get(vKey)!.push(v);
+    }
+
+    // Pour chaque votant :
+    // - Choix unique : 1 seule option autorisée (la plus récente)
+    // - Choix multiples : déduplication par option_id
+    const deduplicatedPollVotes: RawPollVote[] = [];
+    for (const [, vList] of votesByVoter.entries()) {
+      if (!p.allow_multiple) {
+        if (vList.length > 0) {
+          deduplicatedPollVotes.push(vList[0]);
+        }
+      } else {
+        const seenOptions = new Set<string>();
+        for (const v of vList) {
+          if (!seenOptions.has(v.option_id)) {
+            seenOptions.add(v.option_id);
+            deduplicatedPollVotes.push(v);
+          }
+        }
+      }
+    }
+
+    // Nombre réel de votants uniques
+    const totalVoters = votesByVoter.size;
 
     // Détecter les votes de l'utilisateur actuel
-    const userVotes = pollVotes.filter(
-      (v) =>
-        (voterToken && v.voter_token === voterToken) ||
-        (normVoterName && v.voter_name.trim().toLowerCase() === normVoterName)
-    );
+    const userVotes = deduplicatedPollVotes.filter((v) => {
+      if (voterToken && v.voter_token === voterToken) return true;
+      if (visitorCanonicalKey && getCanonicalVoterKey(v.voter_name) === visitorCanonicalKey) return true;
+      return false;
+    });
     const userVotedOptionIds = userVotes.map((v) => v.option_id);
-    const currentUserName = userVotes.length > 0 ? userVotes[0].voter_name : null;
+    const currentUserName = userVotes.length > 0 ? getCanonicalDisplayName(userVotes[0].voter_name) : null;
 
     const formattedOptions: PollOption[] = pollOptions.map((opt) => {
-      const optVotes = pollVotes.filter((v) => v.option_id === opt.id);
+      const optVotes = deduplicatedPollVotes.filter((v) => v.option_id === opt.id);
       const optObj: PollOption = {
         id: opt.id,
         poll_id: opt.poll_id,
@@ -194,12 +245,21 @@ function assemblePolls(
         votes_count: optVotes.length,
       };
 
-      // Si admin : on ajoute la liste détaillée des votants
+      // Si admin : on ajoute la liste détaillée des votants sans doublon
       if (isAdmin) {
-        optObj.voters = optVotes.map((v) => ({
-          name: v.voter_name,
-          voted_at: v.created_at,
-        }));
+        const seenVoterKeys = new Set<string>();
+        const optVoters: VoterDetail[] = [];
+        for (const v of optVotes) {
+          const vKey = getCanonicalVoterKey(v.voter_name) || v.voter_token;
+          if (!seenVoterKeys.has(vKey)) {
+            seenVoterKeys.add(vKey);
+            optVoters.push({
+              name: getCanonicalDisplayName(v.voter_name),
+              voted_at: v.created_at,
+            });
+          }
+        }
+        optObj.voters = optVoters;
       }
 
       return optObj;
@@ -214,8 +274,8 @@ function assemblePolls(
       created_at: p.created_at,
       created_by: p.created_by,
       options: formattedOptions,
-      total_votes: pollVotes.length,
-      total_voters: uniqueVoterTokens.size,
+      total_votes: deduplicatedPollVotes.length,
+      total_voters: totalVoters,
       user_voted_options: userVotedOptionIds,
       user_voter_name: currentUserName,
     };
@@ -267,12 +327,14 @@ export async function createPoll({
   // 1. Sauvegarde Supabase
   let savedToSupabase = false;
   try {
-    const admin = createAdminClient();
-    const { error: pollErr } = await admin.from("polls").insert(newPoll);
-    if (!pollErr) {
-      const { error: optErr } = await admin.from("poll_options").insert(newOptions);
-      if (!optErr) {
-        savedToSupabase = true;
+    const db = getDbClient();
+    if (db) {
+      const { error: pollErr } = await db.from("polls").insert(newPoll);
+      if (!pollErr) {
+        const { error: optErr } = await db.from("poll_options").insert(newOptions);
+        if (!optErr) {
+          savedToSupabase = true;
+        }
       }
     }
   } catch {
@@ -307,6 +369,7 @@ export async function createPoll({
 
 /**
  * Enregistre ou met à jour le vote d'un membre (prénom + nom, sans compte).
+ * Unicité stricte : réconcilie les alias, inversions prénom/nom, accents, etc.
  */
 export async function submitPollVote({
   poll_id,
@@ -328,6 +391,9 @@ export async function submitPollVote({
     throw new Error("Jeton de vote manquant.");
   }
 
+  const canonicalKey = getCanonicalVoterKey(cleanName);
+  const displayName = getCanonicalDisplayName(cleanName);
+
   // Vérifier le sondage
   const store = readLocalStore();
   const poll = store.polls.find((p) => p.id === poll_id);
@@ -340,32 +406,47 @@ export async function submitPollVote({
   }
 
   const now = new Date().toISOString();
-  const normName = cleanName.toLowerCase();
 
   // 1. Essayer Supabase
   try {
-    const admin = createAdminClient();
-    // Retirer les votes précédents de ce membre pour ce sondage
-    await admin
-      .from("poll_votes")
-      .delete()
-      .eq("poll_id", poll_id)
-      .or(`voter_token.eq.${voter_token},voter_name.ilike.${cleanName}`);
+    const db = getDbClient();
+    if (db) {
+      // Récupérer les votes existants pour ce sondage et supprimer tout vote antérieur
+      // correspondant à ce même membre (même token ou même identité canonique : inversion, accents, alias...)
+      const { data: existingVotes } = await db
+        .from("poll_votes")
+        .select("id, voter_name, voter_token")
+        .eq("poll_id", poll_id);
 
-    // Insérer les nouveaux votes s'il y en a
-    if (selected_option_ids.length > 0) {
-      const rows = selected_option_ids.map((optId) => ({
-        id: crypto.randomUUID(),
-        poll_id,
-        option_id: optId,
-        voter_name: cleanName,
-        voter_token,
-        created_at: now,
-      }));
-      await admin.from("poll_votes").insert(rows);
+      if (existingVotes && existingVotes.length > 0) {
+        const idsToDelete = existingVotes
+          .filter((v) => {
+            if (voter_token && v.voter_token === voter_token) return true;
+            if (v.voter_name && getCanonicalVoterKey(v.voter_name) === canonicalKey) return true;
+            return false;
+          })
+          .map((v) => v.id);
+
+        if (idsToDelete.length > 0) {
+          await db.from("poll_votes").delete().in("id", idsToDelete);
+        }
+      }
+
+      // Insérer les nouveaux votes s'il y en a
+      if (selected_option_ids.length > 0) {
+        const rows = selected_option_ids.map((optId) => ({
+          id: crypto.randomUUID(),
+          poll_id,
+          option_id: optId,
+          voter_name: displayName,
+          voter_token,
+          created_at: now,
+        }));
+        await db.from("poll_votes").insert(rows);
+      }
     }
-  } catch {
-    // Failover
+  } catch (err) {
+    console.error("[submitPollVote] Erreur Supabase :", err);
   }
 
   // 2. Synchroniser le fichier local
@@ -373,7 +454,8 @@ export async function submitPollVote({
     (v) =>
       !(
         v.poll_id === poll_id &&
-        (v.voter_token === voter_token || v.voter_name.trim().toLowerCase() === normName)
+        ((voter_token && v.voter_token === voter_token) ||
+         (v.voter_name && getCanonicalVoterKey(v.voter_name) === canonicalKey))
       )
   );
 
@@ -382,7 +464,7 @@ export async function submitPollVote({
       id: crypto.randomUUID(),
       poll_id,
       option_id: optId,
-      voter_name: cleanName,
+      voter_name: displayName,
       voter_token,
       created_at: now,
     });
@@ -394,12 +476,80 @@ export async function submitPollVote({
 }
 
 /**
+ * Supprime le vote d'un utilisateur pour un sondage donné.
+ * Supprime tous les votes associés au token du navigateur OU au nom canonique du votant.
+ */
+export async function deletePollVote({
+  poll_id,
+  voter_name,
+  voter_token,
+}: {
+  poll_id: string;
+  voter_name?: string;
+  voter_token?: string;
+}): Promise<{ ok: boolean; message: string }> {
+  if (!voter_name && !voter_token) {
+    throw new Error("Identifiant de votant manquant.");
+  }
+
+  // Vérifier le sondage
+  const store = readLocalStore();
+  const poll = store.polls.find((p) => p.id === poll_id);
+  if (poll && poll.is_closed) {
+    throw new Error("Ce sondage est clôturé, votre vote ne peut plus être supprimé.");
+  }
+
+  const canonicalKey = voter_name ? getCanonicalVoterKey(voter_name) : null;
+
+  // 1. Supabase
+  try {
+    const db = getDbClient();
+    if (db) {
+      const { data: existingVotes } = await db
+        .from("poll_votes")
+        .select("id, voter_name, voter_token")
+        .eq("poll_id", poll_id);
+
+      if (existingVotes && existingVotes.length > 0) {
+        const idsToDelete = existingVotes
+          .filter((v) => {
+            if (voter_token && v.voter_token === voter_token) return true;
+            if (canonicalKey && v.voter_name && getCanonicalVoterKey(v.voter_name) === canonicalKey) return true;
+            return false;
+          })
+          .map((v) => v.id);
+
+        if (idsToDelete.length > 0) {
+          await db.from("poll_votes").delete().in("id", idsToDelete);
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[deletePollVote] Erreur Supabase :", err);
+  }
+
+  // 2. Synchroniser le fichier local
+  store.votes = store.votes.filter(
+    (v) =>
+      !(
+        v.poll_id === poll_id &&
+        ((voter_token && v.voter_token === voter_token) ||
+         (canonicalKey && v.voter_name && getCanonicalVoterKey(v.voter_name) === canonicalKey))
+      )
+  );
+
+  writeLocalStore(store);
+
+  return { ok: true, message: "Votre vote a bien été supprimé." };
+}
+
+/**
  * Clôturer ou rouvrir un sondage (réservé admin).
  */
 export async function togglePollStatus(poll_id: string, is_closed: boolean): Promise<boolean> {
   try {
-    const admin = createAdminClient();
-    await admin.from("polls").update({ is_closed }).eq("id", poll_id);
+    const db = getDbClient();
+    if (db) await db.from("polls").update({ is_closed }).eq("id", poll_id);
   } catch {}
 
   const store = readLocalStore();
@@ -417,8 +567,8 @@ export async function togglePollStatus(poll_id: string, is_closed: boolean): Pro
  */
 export async function deletePoll(poll_id: string): Promise<boolean> {
   try {
-    const admin = createAdminClient();
-    await admin.from("polls").delete().eq("id", poll_id);
+    const db = getDbClient();
+    if (db) await db.from("polls").delete().eq("id", poll_id);
   } catch {}
 
   const store = readLocalStore();

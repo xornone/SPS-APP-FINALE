@@ -3,6 +3,7 @@ import {
   createPoll,
   getAllPolls,
   submitPollVote,
+  deletePollVote,
   togglePollStatus,
   deletePoll,
 } from "../lib/pollsStorage";
@@ -84,5 +85,78 @@ describe("Polls storage & privacy", () => {
     await deletePoll(poll.id);
     const remainingPolls = await getAllPolls(false);
     expect(remainingPolls.find((p) => p.id === poll.id)).toBeUndefined();
+  });
+
+  it("strictly enforces 1 vote per voter with inversions, accents, and aliases, and allows deleting vote", async () => {
+    const poll = await createPoll({
+      question: "Test Unicité — Choix du maillot",
+      allow_multiple: false,
+      options: ["Manches courtes", "Manches longues"],
+    });
+
+    const optCourt = poll.options[0].id;
+    const optLong = poll.options[1].id;
+
+    // Premier vote : Thomas Trégaro avec accents et ordre prénom nom
+    await submitPollVote({
+      poll_id: poll.id,
+      voter_name: "Thomas Trégaro",
+      voter_token: "token_browser_1",
+      selected_option_ids: [optCourt],
+    });
+
+    let currentPolls = await getAllPolls(true);
+    let p = currentPolls.find((item) => item.id === poll.id)!;
+    expect(p.total_voters).toBe(1);
+    expect(p.options[0].votes_count).toBe(1);
+
+    // Deuxième vote : "Trégaro Thomas" (inversion nom prénom) avec un autre token
+    await submitPollVote({
+      poll_id: poll.id,
+      voter_name: "Trégaro Thomas",
+      voter_token: "token_browser_2",
+      selected_option_ids: [optLong],
+    });
+
+    currentPolls = await getAllPolls(true);
+    p = currentPolls.find((item) => item.id === poll.id)!;
+    // Doit TOUJOURS avoir 1 seul votant unique !
+    expect(p.total_voters).toBe(1);
+    expect(p.options[0].votes_count).toBe(0);
+    expect(p.options[1].votes_count).toBe(1);
+    // Le nom affiché côté admin doit être normalisé sans doublon
+    expect(p.options[1].voters).toHaveLength(1);
+    expect(p.options[1].voters![0].name).toBe("Thomas Trégaro");
+
+    // Troisième vote : "Thomas Tregaro" (sans accent)
+    await submitPollVote({
+      poll_id: poll.id,
+      voter_name: "Thomas Tregaro",
+      voter_token: "token_browser_3",
+      selected_option_ids: [optCourt],
+    });
+
+    currentPolls = await getAllPolls(true);
+    p = currentPolls.find((item) => item.id === poll.id)!;
+    expect(p.total_voters).toBe(1);
+    expect(p.options[0].votes_count).toBe(1);
+    expect(p.options[1].votes_count).toBe(0);
+
+    // Suppression du vote par le votant avec son nom inversé
+    const delRes = await deletePollVote({
+      poll_id: poll.id,
+      voter_name: "Trégaro Thomas",
+    });
+    expect(delRes.ok).toBe(true);
+
+    currentPolls = await getAllPolls(true);
+    p = currentPolls.find((item) => item.id === poll.id)!;
+    expect(p.total_voters).toBe(0);
+    expect(p.total_votes).toBe(0);
+    expect(p.options[0].votes_count).toBe(0);
+    expect(p.options[1].votes_count).toBe(0);
+
+    // Nettoyage
+    await deletePoll(poll.id);
   });
 });

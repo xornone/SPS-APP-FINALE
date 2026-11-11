@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Poll, PollOption } from "@/lib/pollsStorage";
 import { Icon } from "./Icons";
 import { hapticTap } from "@/lib/haptics";
@@ -22,8 +22,21 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
   const [selectedOptions, setSelectedOptions] = useState<string[]>(poll.user_voted_options || []);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Synchronisation avec les props du sondage lors des rafraîchissements
+  useEffect(() => {
+    if (poll.user_voted_options && poll.user_voted_options.length > 0) {
+      setSelectedOptions(poll.user_voted_options);
+    } else {
+      setSelectedOptions([]);
+    }
+    if (poll.user_voter_name) {
+      setVoterName(poll.user_voter_name);
+    }
+  }, [poll.user_voted_options, poll.user_voter_name]);
 
   // État de dépliage du contexte / description
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
@@ -91,6 +104,44 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
       setError(msg);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Supprimer son vote
+  const handleDeleteVote = async () => {
+    if (poll.is_closed) return;
+    if (!confirm("Voulez-vous vraiment retirer votre vote de ce sondage ?")) return;
+
+    setIsDeleting(true);
+    setError(null);
+    setSuccessMsg(null);
+    hapticTap();
+
+    const voterToken = getOrCreateVoterToken();
+    try {
+      const res = await fetch(`/api/polls/${poll.id}/vote`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          voter_name: voterName,
+          voter_token: voterToken,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Erreur lors de la suppression du vote.");
+      }
+
+      setSuccessMsg("Votre vote a bien été supprimé.");
+      setSelectedOptions([]);
+      setShowResults(false);
+      onRefresh();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -299,15 +350,30 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
             );
           })}
 
-          {/* Action Modifier le vote */}
+          {/* Actions : Modifier le vote & Supprimer mon vote */}
           {!poll.is_closed && (
-            <div className="pt-2 flex justify-end">
+            <div className="pt-3 mt-1 flex items-center justify-between border-t border-neutral-100 dark:border-white/5">
+              {hasVoted ? (
+                <button
+                  type="button"
+                  onClick={handleDeleteVote}
+                  disabled={isDeleting}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-red-500 hover:text-red-600 transition disabled:opacity-50 dark:text-red-400"
+                >
+                  <Icon name="trash" size={13} />
+                  <span>{isDeleting ? "Suppression..." : "Supprimer mon vote"}</span>
+                </button>
+              ) : (
+                <span />
+              )}
+
               <button
                 type="button"
                 onClick={() => setShowResults(false)}
-                className="text-xs font-bold text-sps-violet600 hover:underline dark:text-sps-violet400"
+                className="inline-flex items-center gap-1 text-xs font-bold text-sps-violet600 hover:underline dark:text-sps-violet400"
               >
-                {hasVoted ? "✏️ Modifier mon vote" : "🗳️ Passer au vote"}
+                <Icon name={hasVoted ? "pencil" : "poll"} size={13} />
+                <span>{hasVoted ? "Modifier mon vote" : "Passer au vote"}</span>
               </button>
             </div>
           )}
@@ -378,9 +444,29 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
               className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-4 py-2 text-xs font-black text-white shadow-md shadow-violet-600/30 transition hover:brightness-110 active:scale-95 disabled:opacity-50"
             >
               <Icon name="check" size={14} />
-              <span>{isSubmitting ? "Enregistrement..." : "Valider mon vote"}</span>
+              <span>
+                {isSubmitting
+                  ? "Enregistrement..."
+                  : hasVoted
+                  ? "Mettre à jour mon vote"
+                  : "Valider mon vote"}
+              </span>
             </button>
           </div>
+
+          {hasVoted && (
+            <div className="pt-2 flex justify-center border-t border-neutral-100 dark:border-white/5 mt-3">
+              <button
+                type="button"
+                onClick={handleDeleteVote}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-600 hover:underline transition disabled:opacity-50 dark:text-red-400"
+              >
+                <Icon name="trash" size={12} />
+                <span>{isDeleting ? "Suppression en cours..." : "Supprimer mon vote"}</span>
+              </button>
+            </div>
+          )}
         </form>
       )}
 
