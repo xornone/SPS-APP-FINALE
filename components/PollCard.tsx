@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { Poll, PollOption } from "@/lib/pollsStorage";
 import { Icon } from "./Icons";
 import { hapticTap } from "@/lib/haptics";
+import { EditPollModal } from "./EditPollModal";
 import {
   getInitialVoterName,
   saveVoterName,
   getOrCreateVoterToken,
   markPollVotedLocally,
-  clearPollVotedLocally,
 } from "@/lib/pollClient";
 
 interface PollCardProps {
@@ -24,13 +24,23 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
 
   // État d'affichage : soit le formulaire de vote, soit les résultats
   const [showResults, setShowResults] = useState(hasVoted || poll.is_closed);
-  const [voterName, setVoterName] = useState(poll.user_voter_name || getInitialVoterName());
+  const [voterName, setVoterName] = useState(() => poll.user_voter_name || getInitialVoterName());
   const [selectedOptions, setSelectedOptions] = useState<string[]>(poll.user_voted_options || []);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Pré-remplissage automatique avec le nom habituel (sorties, participations)
+  useEffect(() => {
+    if (!poll.user_voter_name) {
+      const initial = getInitialVoterName();
+      if (initial) {
+        setVoterName(initial);
+      }
+    }
+  }, [poll.user_voter_name]);
 
   // Synchronisation avec les props du sondage lors des rafraîchissements
   useEffect(() => {
@@ -111,45 +121,6 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
       setError(msg);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  // Supprimer son vote
-  const handleDeleteVote = async () => {
-    if (poll.is_closed) return;
-    if (!confirm("Voulez-vous vraiment retirer votre vote de ce sondage ?")) return;
-
-    setIsDeleting(true);
-    setError(null);
-    setSuccessMsg(null);
-    hapticTap();
-
-    const voterToken = getOrCreateVoterToken();
-    try {
-      const res = await fetch(`/api/polls/${poll.id}/vote`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          voter_name: voterName,
-          voter_token: voterToken,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Erreur lors de la suppression du vote.");
-      }
-
-      setSuccessMsg("Votre vote a bien été supprimé.");
-      clearPollVotedLocally(poll.id);
-      setSelectedOptions([]);
-      setShowResults(false);
-      onRefresh();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setError(msg);
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -358,23 +329,9 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
             );
           })}
 
-          {/* Actions : Modifier le vote & Supprimer mon vote */}
+          {/* Action : Modifier mon vote */}
           {!poll.is_closed && (
-            <div className="pt-3 mt-1 flex items-center justify-between border-t border-neutral-100 dark:border-white/5">
-              {hasVoted ? (
-                <button
-                  type="button"
-                  onClick={handleDeleteVote}
-                  disabled={isDeleting}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-red-500 hover:text-red-600 transition disabled:opacity-50 dark:text-red-400"
-                >
-                  <Icon name="trash" size={13} />
-                  <span>{isDeleting ? "Suppression..." : "Supprimer mon vote"}</span>
-                </button>
-              ) : (
-                <span />
-              )}
-
+            <div className="pt-3 mt-1 flex items-center justify-end border-t border-neutral-100 dark:border-white/5">
               <button
                 type="button"
                 onClick={() => setShowResults(false)}
@@ -391,13 +348,16 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
         <form onSubmit={handleVoteSubmit} className="mt-4 space-y-3">
           {/* Saisie Prénom + Nom */}
           <div>
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
-              Votre Prénom + Nom *
+            <label className="block text-[11px] font-bold tracking-wider text-neutral-500 dark:text-neutral-400 mb-1.5">
+              <span className="uppercase">Votre Prénom + Nom</span>{" "}
+              <span className="font-normal normal-case text-neutral-400 dark:text-neutral-500">
+                (le vote n&apos;est pas nominatif, votre nom n&apos;apparaît pas)
+              </span>{" "}
+              <span className="text-sps-violet600 dark:text-sps-violet400">*</span>
             </label>
             <input
               type="text"
               required
-              placeholder="Ex : Florian Sicard-Baux"
               value={voterName}
               onChange={(e) => setVoterName(e.target.value)}
               className="w-full rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-2 text-xs font-bold text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
@@ -461,20 +421,6 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
               </span>
             </button>
           </div>
-
-          {hasVoted && (
-            <div className="pt-2 flex justify-center border-t border-neutral-100 dark:border-white/5 mt-3">
-              <button
-                type="button"
-                onClick={handleDeleteVote}
-                disabled={isDeleting}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-red-500 hover:text-red-600 hover:underline transition disabled:opacity-50 dark:text-red-400"
-              >
-                <Icon name="trash" size={12} />
-                <span>{isDeleting ? "Suppression en cours..." : "Supprimer mon vote"}</span>
-              </button>
-            </div>
-          )}
         </form>
       )}
 
@@ -484,7 +430,15 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
           <span className="text-[11px] font-black uppercase text-amber-600 dark:text-amber-400 tracking-wider">
             🛡️ Admin
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+              className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 px-2.5 py-1 text-[11px] font-bold text-neutral-700 hover:bg-neutral-50 dark:border-white/15 dark:text-white/80 dark:hover:bg-white/10 transition"
+            >
+              <Icon name="pencil" size={11} />
+              <span>Modifier</span>
+            </button>
             <button
               type="button"
               onClick={handleToggleClosed}
@@ -501,6 +455,16 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Modale de modification réservée aux admins */}
+      {isAdmin && isEditModalOpen && (
+        <EditPollModal
+          isOpen={isEditModalOpen}
+          poll={poll}
+          onClose={() => setIsEditModalOpen(false)}
+          onUpdated={onRefresh}
+        />
       )}
     </div>
   );

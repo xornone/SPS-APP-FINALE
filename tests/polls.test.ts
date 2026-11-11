@@ -6,6 +6,7 @@ import {
   deletePollVote,
   togglePollStatus,
   deletePoll,
+  updatePoll,
 } from "../lib/pollsStorage";
 
 describe("Polls storage & privacy", () => {
@@ -157,6 +158,68 @@ describe("Polls storage & privacy", () => {
     expect(p.options[1].votes_count).toBe(0);
 
     // Nettoyage
+    await deletePoll(poll.id);
+  });
+
+  it("allows admins to update a poll, preserving existing votes on modified options", async () => {
+    // 1. Création initiale
+    const poll = await createPoll({
+      question: "Question initiale",
+      description: "Description initiale",
+      allow_multiple: false,
+      options: ["Option A", "Option B"],
+      created_by: "admin@sps.cc",
+    });
+
+    const optAId = poll.options[0].id;
+    const optBId = poll.options[1].id;
+
+    // 2. Un vote sur l'option A
+    await submitPollVote({
+      poll_id: poll.id,
+      voter_name: "Florian Sicard-Baux",
+      voter_token: "token_florian",
+      selected_option_ids: [optAId],
+    });
+
+    // 3. Modification du sondage par l'admin
+    const updateSuccess = await updatePoll({
+      poll_id: poll.id,
+      question: "Question mise à jour par l'admin",
+      description: "Description enrichie avec plus de détails",
+      allow_multiple: true,
+      options: [
+        { id: optAId, title: "Option A (renommée)" },
+        { title: "Nouvelle Option C" },
+      ],
+    });
+    expect(updateSuccess).toBe(true);
+
+    // 4. Vérification
+    const polls = await getAllPolls(true);
+    const updated = polls.find((p) => p.id === poll.id)!;
+    expect(updated).toBeDefined();
+    expect(updated.question).toBe("Question mise à jour par l'admin");
+    expect(updated.description).toBe("Description enrichie avec plus de détails");
+    expect(updated.allow_multiple).toBe(true);
+    expect(updated.options).toHaveLength(2);
+
+    // Option A renommée a conservé son ID et son vote !
+    const updatedOptA = updated.options.find((o) => o.id === optAId);
+    expect(updatedOptA).toBeDefined();
+    expect(updatedOptA?.title).toBe("Option A (renommée)");
+    expect(updatedOptA?.votes_count).toBe(1);
+
+    // Option C ajoutée a 0 vote
+    const optC = updated.options.find((o) => o.title === "Nouvelle Option C");
+    expect(optC).toBeDefined();
+    expect(optC?.votes_count).toBe(0);
+
+    // Option B retirée
+    const optB = updated.options.find((o) => o.id === optBId);
+    expect(optB).toBeUndefined();
+
+    // 5. Nettoyage
     await deletePoll(poll.id);
   });
 });

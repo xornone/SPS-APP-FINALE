@@ -571,6 +571,142 @@ export async function togglePollStatus(poll_id: string, is_closed: boolean): Pro
   return false;
 }
 
+export interface UpdatePollInput {
+  poll_id: string;
+  question: string;
+  description?: string | null;
+  allow_multiple: boolean;
+  options: { id?: string; title: string }[];
+}
+
+/**
+ * Met à jour un sondage existant (réservé admin).
+ * Préserve les options existantes et leurs votes correspondants.
+ */
+export async function updatePoll({
+  poll_id,
+  question,
+  description,
+  allow_multiple,
+  options,
+}: UpdatePollInput): Promise<boolean> {
+  const cleanQuestion = question.trim();
+  if (!cleanQuestion) {
+    throw new Error("La question ne peut pas être vide.");
+  }
+
+  const cleanOptions = options
+    .map((o, idx) => ({
+      id: o.id?.trim() || undefined,
+      title: o.title.trim(),
+      position: idx,
+    }))
+    .filter((o) => o.title.length > 0);
+
+  if (cleanOptions.length < 2) {
+    throw new Error("Un sondage doit comporter au moins 2 options.");
+  }
+
+  // 1. Supabase
+  try {
+    const db = getDbClient();
+    if (db) {
+      await db
+        .from("polls")
+        .update({
+          question: cleanQuestion,
+          description: description?.trim() || null,
+          allow_multiple: Boolean(allow_multiple),
+        })
+        .eq("id", poll_id);
+
+      const { data: currentOptions } = await db
+        .from("poll_options")
+        .select("id")
+        .eq("poll_id", poll_id);
+
+      const currentOptionIds = new Set((currentOptions || []).map((o) => o.id));
+      const keptOptionIds = new Set(cleanOptions.map((o) => o.id).filter(Boolean));
+
+      // Supprimer les options retirées
+      const toDeleteIds = [...currentOptionIds].filter((id) => !keptOptionIds.has(id));
+      if (toDeleteIds.length > 0) {
+        await db.from("poll_options").delete().in("id", toDeleteIds);
+      }
+
+      // Mettre à jour les options conservées et insérer les nouvelles
+      for (const opt of cleanOptions) {
+        if (opt.id && currentOptionIds.has(opt.id)) {
+          await db
+            .from("poll_options")
+            .update({ title: opt.title, position: opt.position })
+            .eq("id", opt.id);
+        } else {
+          const newOptId = opt.id || crypto.randomUUID();
+          opt.id = newOptId;
+          await db.from("poll_options").insert({
+            id: newOptId,
+            poll_id,
+            title: opt.title,
+            position: opt.position,
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error("[updatePoll] Erreur Supabase :", err);
+  }
+
+  // 2. Synchroniser le fichier local (store)
+  const store = readLocalStore();
+  const poll = store.polls.find((p) => p.id === poll_id);
+  if (!poll) {
+    return false;
+  }
+
+  poll.question = cleanQuestion;
+  poll.description = description?.trim() || null;
+  poll.allow_multiple = Boolean(allow_multiple);
+
+  // Mettre à jour les options locales
+  const existingLocalOptionIds = new Set(
+    store.options.filter((o) => o.poll_id === poll_id).map((o) => o.id)
+  );
+  const newOptionIds = new Set(cleanOptions.map((o) => o.id).filter(Boolean));
+  const removedOptionIds = new Set(
+    [...existingLocalOptionIds].filter((id) => !newOptionIds.has(id))
+  );
+
+  // Supprimer les options et votes retirés
+  store.options = store.options.filter(
+    (o) => !(o.poll_id === poll_id && removedOptionIds.has(o.id))
+  );
+  store.votes = store.votes.filter(
+    (v) => !(v.poll_id === poll_id && removedOptionIds.has(v.option_id))
+  );
+
+  // Mettre à jour ou ajouter les options
+  for (const opt of cleanOptions) {
+    const existing = store.options.find((o) => o.id === opt.id);
+    if (existing) {
+      existing.title = opt.title;
+      existing.position = opt.position;
+    } else {
+      const optId = opt.id || crypto.randomUUID();
+      opt.id = optId;
+      store.options.push({
+        id: optId,
+        poll_id,
+        title: opt.title,
+        position: opt.position,
+      });
+    }
+  }
+
+  writeLocalStore(store);
+  return true;
+}
+
 /**
  * Supprimer un sondage (réservé admin).
  */

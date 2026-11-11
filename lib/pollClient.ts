@@ -19,12 +19,16 @@ export function getOrCreateVoterToken(): string {
 
 export function getInitialVoterName(): string {
   if (typeof window === "undefined") return "";
-  const pollName = localStorage.getItem(NAME_KEY);
-  if (pollName && pollName.trim()) return pollName.trim();
 
+  // 1. Priorité au nom utilisé d'habitude pour les sorties (inscriptions rides)
   const rideName = getLastUsedName();
   if (rideName && rideName.trim()) return rideName.trim();
 
+  // 2. Nom mémorisé pour les sondages
+  const pollName = localStorage.getItem(NAME_KEY);
+  if (pollName && pollName.trim()) return pollName.trim();
+
+  // 3. Nom utilisé pour les commentaires
   const commentName = localStorage.getItem("sps-last-comment-name-v1");
   if (commentName && commentName.trim()) return commentName.trim();
 
