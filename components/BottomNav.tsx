@@ -10,6 +10,7 @@ import { hapticTap } from "@/lib/haptics";
 
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
+  { href: "/sondages", label: "Sondages", icon: "poll" as const },
   { href: "/precommandes", label: "Pré-commandes", icon: "shirt" as const, preorderTab: true },
   { href: "/classement", label: "Stats SPS", icon: "trophy" as const },
   { href: "/admin", label: "Admin", icon: "gear" as const },
@@ -26,6 +27,12 @@ function isTabActive(tabHref: string, currentPath: string): boolean {
       currentPath === "/home" ||
       currentPath === "/" ||
       currentPath.startsWith("/rides")
+    );
+  }
+  if (tabHref === "/sondages") {
+    return (
+      currentPath === "/sondages" ||
+      currentPath.startsWith("/sondages/")
     );
   }
   if (tabHref === "/classement") {
@@ -173,7 +180,7 @@ export function BottomNav() {
   return (
     <div
       data-bottom-nav
-      className="bottom-nav-container fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-2 sm:inset-x-4 z-40 mx-auto max-w-sm pointer-events-none will-change-transform"
+      className="bottom-nav-container fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-2 sm:inset-x-4 z-40 mx-auto max-w-md pointer-events-none will-change-transform"
     >
       <nav className="pointer-events-auto flex items-center justify-around gap-1 rounded-full border border-black/[0.08] bg-white/85 p-1.5 backdrop-blur-2xl shadow-[0_12px_32px_-4px_rgba(0,0,0,0.10)] ring-1 ring-black/[0.04] transition-colors dark:border-white/15 dark:bg-[#0F0A1A]/85 dark:shadow-[0_16px_40px_-6px_rgba(0,0,0,0.7)] dark:ring-white/10">
         {visibleTabs.map((t) => {

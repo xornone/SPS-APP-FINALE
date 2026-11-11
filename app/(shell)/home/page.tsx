@@ -6,6 +6,7 @@ import { JerseyPreorderBanner } from "@/components/JerseyPreorderBanner";
 import { PreorderVisibility } from "@/components/PreorderVisibility";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SuggestionButton } from "@/components/SuggestionButton";
+import { ActivePollBanner } from "@/components/ActivePollBanner";
 import { isPastDate } from "@/lib/format";
 import { fetchRideWeather, getRideCoordinates, type RideWeather } from "@/lib/weather";
 
@@ -92,6 +93,7 @@ export default async function HomePage() {
       <PreorderVisibility>
         <JerseyPreorderBanner />
       </PreorderVisibility>
+      <ActivePollBanner />
       <NotificationOptIn />
       <HomeRidesSection
         featured={featured}
