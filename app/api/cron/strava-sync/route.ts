@@ -5,9 +5,9 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * Route appelée automatiquement chaque dimanche à 21h00 par Vercel Cron.
- * Scrape les sorties du mois en cours et du mois précédent pour mettre à jour
- * le classement Grimpeur du mois et Rouleur du mois.
+ * Route appelée automatiquement toutes les 48h (à 04h00 UTC) par Vercel Cron.
+ * Scrape uniquement le mois en cours pour rester furtif et diviser par 2 les requêtes,
+ * tout en conservant intacts les classements des mois précédents déjà enregistrés.
  */
 export async function GET(request: Request) {
   try {
@@ -18,11 +18,8 @@ export async function GET(request: Request) {
 
     const now = new Date();
     const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-    const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const prevMonthKey = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, "0")}`;
-
-    const targetMonths = [prevMonthKey, currentMonthKey];
-    console.log("[cron/strava-sync] Exécution automatique hebdomadaire (dimanche 21h) pour :", targetMonths);
+    const targetMonths = [currentMonthKey];
+    console.log("[cron/strava-sync] Exécution automatique furtive 48h pour :", targetMonths);
 
     const store = await syncAllMembersStravaStats(targetMonths);
 

@@ -4,6 +4,7 @@
  */
 import fs from "fs";
 import path from "path";
+import { createPublicClient } from "@/lib/supabase/publicClient";
 
 export interface StravaMonthStats {
   activities: number;
@@ -269,44 +270,90 @@ function getDataFilePath(): string {
 }
 
 /**
- * Récupère les données Strava en cache (depuis /tmp si Vercel, sinon data/strava_sps_stats.json)
+ * Récupère les données Strava en cache.
+ * Priorité 1 : Table Supabase `strava_cache` (partagée entre toutes les instances Vercel).
+ * Priorité 2 : Cache /tmp (si même instance).
+ * Priorité 3 : data/strava_sps_stats.json (fallback statique git).
  */
-export function getCachedStravaData(): StravaDataStore | null {
+export async function getCachedStravaData(): Promise<StravaDataStore | null> {
+  // 1. Supabase strava_cache (persistant entre toutes les instances Vercel)
+  try {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      const supabase = createPublicClient();
+      const { data, error } = await supabase
+        .from("strava_cache")
+        .select("data")
+        .eq("key", "latest")
+        .maybeSingle();
+
+      if (!error && data?.data) {
+        return data.data as StravaDataStore;
+      }
+    }
+  } catch {
+    // Fallback silencieux vers les fichiers
+  }
+
+  // 2. Fichier /tmp
   try {
     const tmpPath = "/tmp/strava_sps_stats.json";
     if (fs.existsSync(tmpPath)) {
       return JSON.parse(fs.readFileSync(tmpPath, "utf8"));
     }
+  } catch {}
+
+  // 3. Fichier data/strava_sps_stats.json
+  try {
     const localPath = getDataFilePath();
     if (fs.existsSync(localPath)) {
       return JSON.parse(fs.readFileSync(localPath, "utf8"));
     }
   } catch (err) {
-    console.error("[getCachedStravaData] Erreur lecture cache :", err);
+    console.error("[getCachedStravaData] Erreur lecture cache local :", err);
   }
   return null;
 }
 
 /**
- * Sauvegarde les données Strava dans les fichiers de cache disponibles.
+ * Sauvegarde les données Strava :
+ * 1. Dans Supabase (clé: "latest") pour persistance sur Vercel serverless.
+ * 2. Dans /tmp (pour l'instance en cours).
+ * 3. Dans data/strava_sps_stats.json (si filesystem inscriptible).
  */
-export function saveStravaData(data: StravaDataStore): void {
+export async function saveStravaData(data: StravaDataStore): Promise<void> {
   const jsonStr = JSON.stringify(data, null, 2);
 
-  // 1. Sauvegarde dans /tmp (toujours inscriptible y compris sur Vercel serverless)
+  // 1. Sauvegarde dans Supabase
+  try {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      const supabase = createPublicClient();
+      const { error } = await supabase
+        .from("strava_cache")
+        .upsert({ key: "latest", data, updated_at: new Date().toISOString() });
+      if (error) {
+        console.warn("[saveStravaData] Supabase non disponible ou table absente :", error.message);
+      } else {
+        console.log("[saveStravaData] Données Strava sauvegardées dans Supabase (clé: latest)");
+      }
+    }
+  } catch (err) {
+    console.warn("[saveStravaData] Erreur tentative sauvegarde Supabase :", err);
+  }
+
+  // 2. Sauvegarde dans /tmp
   try {
     fs.writeFileSync("/tmp/strava_sps_stats.json", jsonStr, "utf8");
   } catch (err) {
     console.warn("[saveStravaData] Impossible d'écrire dans /tmp :", err);
   }
 
-  // 2. Sauvegarde dans data/strava_sps_stats.json (si inscriptible)
+  // 3. Sauvegarde dans data/strava_sps_stats.json (si inscriptible)
   try {
     const localPath = getDataFilePath();
     fs.mkdirSync(path.dirname(localPath), { recursive: true });
     fs.writeFileSync(localPath, jsonStr, "utf8");
-  } catch (err) {
-    // Sur Vercel en production le filesystem local est en lecture seule, ce qui est normal
+  } catch {
+    // Sur Vercel en production le filesystem local est en lecture seule
   }
 }
 
@@ -363,16 +410,39 @@ export async function fetchAthleteCalendarMonth(
     const totalHours = hours + mins / 60;
     const avgSpeed = totalHours > 0 ? Math.round((distanceKm / totalHours) * 10) / 10 : 0;
 
-    // Nombre d'activités trouvées dans le flux du mois
+    // Nombre total d'activités trouvées dans le flux du mois
     const matches = text.match(/Activity-\d+/g);
-    const activities = matches ? new Set(matches).size : 0;
+    const rawActivities = matches ? new Set(matches).size : 0;
+
+    // Détection et soustraction des activités non-cyclistes (ex: Run, Walk, Hike).
+    // Strava #totals cumule par défaut tous les sports dans le graphique d'intervalle.
+    const CYCLING_TYPES = new Set(["Ride", "VirtualRide", "EBikeRide", "GravelRide", "MountainBikeRide"]);
+    const chunks = text.split("&quot;entity&quot;:&quot;Activity&quot;");
+    let nonCyclingKm = 0;
+    let nonCyclingCount = 0;
+
+    for (let i = 1; i < chunks.length; i++) {
+      const chunk = chunks[i];
+      const typeM = chunk.match(/&quot;type&quot;:&quot;([^&]+)&quot;/);
+      const type = typeM ? typeM[1] : "Ride";
+      if (!CYCLING_TYPES.has(type)) {
+        const distM = chunk.match(/&quot;key&quot;:&quot;stat_one&quot;,&quot;value&quot;:&quot;([0-9.]+)/);
+        const dist = distM ? parseFloat(distM[1]) || 0 : 0;
+        nonCyclingKm += dist;
+        nonCyclingCount++;
+      }
+    }
+
+    const cleanDistanceKm = Math.max(0, Math.round((distanceKm - nonCyclingKm) * 10) / 10);
+    const cleanActivities = Math.max(0, rawActivities - nonCyclingCount);
+    const cleanAvgSpeed = totalHours > 0 ? Math.round((cleanDistanceKm / totalHours) * 10) / 10 : 0;
 
     return {
-      activities,
-      distance_km: distanceKm,
+      activities: cleanActivities,
+      distance_km: cleanDistanceKm,
       elev_gain_m: elevGainM,
       time: timeStr,
-      avg_speed_kmh: avgSpeed,
+      avg_speed_kmh: cleanAvgSpeed,
     };
   } catch (err) {
     console.error(`[fetchAthleteCalendarMonth] Erreur athlete ${athleteId} ${monthKey}:`, err);
@@ -432,12 +502,17 @@ export async function fetchAthleteAnnualStats(
 }
 
 /**
- * Synchronise les données Strava pour une liste de mois calendaires donnés (ex: ["2026-10", "2026-11"])
+ * Synchronise les données Strava pour une liste de mois calendaires donnés (ex: ["2026-11"]).
+ * Par défaut, ne scrape QUE le mois en cours et conserve intacts les mois précédents déjà collectés.
  */
 export async function syncAllMembersStravaStats(
-  targetMonths: string[] = ["2026-10", "2026-11"],
+  targetMonths?: string[],
   onProgress?: (current: number, total: number) => void
 ): Promise<StravaDataStore> {
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const effectiveMonths = targetMonths && targetMonths.length > 0 ? targetMonths : [currentMonthKey];
+
   // Vérification de sécurité avec bascule automatique sur les backups
   const sessionCheck = await checkAllStravaSessions();
   if (!sessionCheck.connected || !sessionCheck.activeToken) {
@@ -447,7 +522,7 @@ export async function syncAllMembersStravaStats(
   }
 
   const cookie = sessionCheck.activeToken;
-  console.log(`[syncAllMembersStravaStats] Synchronisation via la session Strava : ${sessionCheck.activeLabel}`);
+  console.log(`[syncAllMembersStravaStats] Synchronisation via la session Strava : ${sessionCheck.activeLabel} pour :`, effectiveMonths);
 
   const membersList = Object.entries(SPS_MEMBER_STRAVA_MAPPINGS).map(([officialName, info]) => ({
     officialName,
@@ -455,19 +530,20 @@ export async function syncAllMembersStravaStats(
     stravaName: info.stravaName,
   }));
 
-  const existingStore = getCachedStravaData();
+  const existingStore = await getCachedStravaData();
   const membersResults: StravaMemberSummary[] = [];
-  const BATCH_SIZE = 5;
+  const BATCH_SIZE = 3; // Réduit à 3 pour rester sous les radars anti-bot de Cloudflare
 
   for (let i = 0; i < membersList.length; i += BATCH_SIZE) {
     const batch = membersList.slice(i, i + BATCH_SIZE);
     await Promise.all(
       batch.map(async (m) => {
         const annual = await fetchAthleteAnnualStats(m.athleteId, cookie);
+        // Conserve intégralement les mois passés précédemment collectés (ex: 2026-10)
         const prevMonths = existingStore?.members?.find((em) => em.athleteId === m.athleteId)?.months || {};
         const monthsData: Record<string, StravaMonthStats> = { ...prevMonths };
 
-        for (const ym of targetMonths) {
+        for (const ym of effectiveMonths) {
           monthsData[ym] = await fetchAthleteCalendarMonth(m.athleteId, ym, cookie);
         }
 
@@ -482,8 +558,9 @@ export async function syncAllMembersStravaStats(
     if (onProgress) {
       onProgress(Math.min(i + BATCH_SIZE, membersList.length), membersList.length);
     }
-    // Petit délai de courtoisie pour éviter le rate-limiting
-    await new Promise((r) => setTimeout(r, 100));
+    // Délai aléatoire furtif (350ms à 750ms) pour casser la régularité d'un robot
+    const jitterMs = 350 + Math.floor(Math.random() * 400);
+    await new Promise((r) => setTimeout(r, jitterMs));
   }
 
   // Calcul des classements mensuels (fusionné avec les mois existants)
@@ -491,7 +568,7 @@ export async function syncAllMembersStravaStats(
     ? { ...existingStore.monthlyLeaders }
     : {};
 
-  for (const ym of targetMonths) {
+  for (const ym of effectiveMonths) {
     let totalKm = 0;
     let totalElevation = 0;
     let totalActivities = 0;
@@ -571,7 +648,8 @@ export async function syncAllMembersStravaStats(
     segmentOfMonth: segment || existingStore?.segmentOfMonth,
   };
 
-  saveStravaData(store);
+  await saveStravaData(store);
+  return store;
   return store;
 }
 

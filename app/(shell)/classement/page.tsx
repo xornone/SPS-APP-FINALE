@@ -20,8 +20,11 @@ export const dynamic = "force-dynamic";
 
 export default async function ClassementPage() {
   const supabase = createPublicClient();
-  const [rides, participations] = await Promise.all([fetchRides(supabase), fetchAllParticipations(supabase)]);
-  const stravaData = getCachedStravaData();
+  const [rides, participations, stravaData] = await Promise.all([
+    fetchRides(supabase),
+    fetchAllParticipations(supabase),
+    getCachedStravaData(),
+  ]);
 
   const ridesById = new Map(rides.map((r) => [r.id, r]));
   const past = participations

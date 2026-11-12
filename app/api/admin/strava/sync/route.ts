@@ -21,14 +21,16 @@ export async function POST(request: Request) {
       );
     }
 
-    let targetMonths = ["2026-10", "2026-11"];
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    let targetMonths = [currentMonthKey];
     try {
       const body = await request.json();
-      if (body?.months && Array.isArray(body.months)) {
+      if (body?.months && Array.isArray(body.months) && body.months.length > 0) {
         targetMonths = body.months;
       }
     } catch {
-      // Pas de corps JSON, utilisation des mois par défaut
+      // Pas de corps JSON, utilisation du mois en cours par défaut
     }
 
     console.log("[api/admin/strava/sync] Démarrage de la synchronisation Strava pour les mois :", targetMonths);
@@ -54,7 +56,7 @@ export async function GET() {
       return NextResponse.json({ error: guard.error }, { status: guard.status });
     }
 
-    const cached = getCachedStravaData();
+    const cached = await getCachedStravaData();
     return NextResponse.json({ ok: true, data: cached });
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err);
