@@ -467,7 +467,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
         rank: 1,
         display: topElevationLeader.display,
         statFormatted: topElevationLeader.statFormatted,
-        subStat: `${topElevationLeader.ridesCount} sortie${topElevationLeader.ridesCount > 1 ? "s" : ""}`,
       }
     : null;
 
@@ -476,7 +475,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
         rank: 2,
         display: elevationPodiumRest[0].display,
         statFormatted: elevationPodiumRest[0].statFormatted,
-        subStat: `${elevationPodiumRest[0].ridesCount} sortie${elevationPodiumRest[0].ridesCount > 1 ? "s" : ""}`,
       }
     : null;
 
@@ -485,7 +483,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
         rank: 3,
         display: elevationPodiumRest[1].display,
         statFormatted: elevationPodiumRest[1].statFormatted,
-        subStat: `${elevationPodiumRest[1].ridesCount} sortie${elevationPodiumRest[1].ridesCount > 1 ? "s" : ""}`,
       }
     : null;
 
@@ -495,7 +492,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
         rank: 1,
         display: topDistanceLeader.display,
         statFormatted: topDistanceLeader.statFormatted,
-        subStat: `${topDistanceLeader.ridesCount} sortie${topDistanceLeader.ridesCount > 1 ? "s" : ""}`,
       }
     : null;
 
@@ -504,7 +500,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
         rank: 2,
         display: distancePodiumRest[0].display,
         statFormatted: distancePodiumRest[0].statFormatted,
-        subStat: `${distancePodiumRest[0].ridesCount} sortie${distancePodiumRest[0].ridesCount > 1 ? "s" : ""}`,
       }
     : null;
 
@@ -513,7 +508,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
         rank: 3,
         display: distancePodiumRest[1].display,
         statFormatted: distancePodiumRest[1].statFormatted,
-        subStat: `${distancePodiumRest[1].ridesCount} sortie${distancePodiumRest[1].ridesCount > 1 ? "s" : ""}`,
       }
     : null;
 
@@ -523,7 +517,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
         rank: 1,
         display: topSpeedLeader.display,
         statFormatted: topSpeedLeader.statFormatted,
-        subStat: `${topSpeedLeader.ridesCount} sortie${topSpeedLeader.ridesCount > 1 ? "s" : ""}`,
       }
     : null;
 
@@ -532,7 +525,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
         rank: 2,
         display: speedPodiumRest[0].display,
         statFormatted: speedPodiumRest[0].statFormatted,
-        subStat: `${speedPodiumRest[0].ridesCount} sortie${speedPodiumRest[0].ridesCount > 1 ? "s" : ""}`,
       }
     : null;
 
@@ -541,7 +533,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
         rank: 3,
         display: speedPodiumRest[1].display,
         statFormatted: speedPodiumRest[1].statFormatted,
-        subStat: `${speedPodiumRest[1].ridesCount} sortie${speedPodiumRest[1].ridesCount > 1 ? "s" : ""}`,
       }
     : null;
 
@@ -1455,11 +1446,6 @@ function TrophyCard({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-none pl-1">
-                    {m.ridesCount !== undefined && m.ridesCount > 0 && m.statLabel !== "sorties" && (
-                      <span className="text-[10px] text-neutral-400 dark:text-white/40">
-                        {m.ridesCount} sortie{m.ridesCount > 1 ? "s" : ""}
-                      </span>
-                    )}
                     <span className="font-bold text-neutral-700 dark:text-white/80 whitespace-nowrap">
                       {m.statFormatted}
                     </span>
