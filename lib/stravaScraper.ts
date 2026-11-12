@@ -538,9 +538,9 @@ export async function syncAllMembersStravaStats(
     const batch = membersList.slice(i, i + BATCH_SIZE);
     await Promise.all(
       batch.map(async (m) => {
-        const annual = await fetchAthleteAnnualStats(m.athleteId, cookie);
+        const prevMember = existingStore?.members?.find((em) => em.athleteId === m.athleteId);
         // Conserve intégralement les mois passés précédemment collectés (ex: 2026-10)
-        const prevMonths = existingStore?.members?.find((em) => em.athleteId === m.athleteId)?.months || {};
+        const prevMonths = prevMember?.months || {};
         const monthsData: Record<string, StravaMonthStats> = { ...prevMonths };
 
         for (const ym of effectiveMonths) {
@@ -549,7 +549,8 @@ export async function syncAllMembersStravaStats(
 
         membersResults.push({
           ...m,
-          annual,
+          // Conserve l'annual précédent s'il existe sans faire d'appel réseau superflu
+          annual: prevMember?.annual || { activities: 0, distance_km: 0, elev_gain_m: 0, time: "0h 0m" },
           months: monthsData,
         });
       })
