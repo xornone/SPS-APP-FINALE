@@ -233,13 +233,23 @@ export function RideForm({
       const parsed = parseGpx(data.gpxText);
       if (!parsed) throw new Error("Trace Strava illisible.");
 
+      const officialDistance = typeof data.distanceKm === "number" ? data.distanceKm : Math.round(parsed.distanceKm * 10) / 10;
+      const officialElevation = typeof data.elevationGainM === "number" ? data.elevationGainM : Math.round(parsed.elevationGainM);
+
       const file = new File([data.gpxText], `strava-${data.stravaId}.gpx`, { type: "application/gpx+xml" });
       setGpxFile(file);
       setGpxFileName(file.name);
       setError("");
-      setPreview(parsed);
-      setDistance((Math.round(parsed.distanceKm * 10) / 10).toString());
-      setElevation(Math.round(parsed.elevationGainM).toString());
+      setPreview({
+        ...parsed,
+        distanceKm: officialDistance,
+        elevationGainM: officialElevation,
+      });
+      setDistance(officialDistance.toString());
+      setElevation(officialElevation.toString());
+      if (data.name && !title) {
+        setTitle(data.name);
+      }
       setDescription((prev) => prependGenerated(prev, describeRideProfile(parsed)));
       fillPlaceUrlFromGpxStart(parsed);
     } catch (err: any) {
@@ -253,6 +263,12 @@ export function RideForm({
     if (!routeId) return;
     const url = `https://www.strava.com/routes/${routeId}`;
     setStravaUrl(url);
+    const selectedRoute = stravaRoutes.find((r) => r.id === routeId);
+    if (selectedRoute) {
+      if (typeof selectedRoute.distanceKm === "number") setDistance(selectedRoute.distanceKm.toString());
+      if (typeof selectedRoute.elevationGainM === "number") setElevation(selectedRoute.elevationGainM.toString());
+      if (selectedRoute.name && !title) setTitle(selectedRoute.name);
+    }
     handleStravaImport(url);
   }
 
@@ -477,7 +493,7 @@ export function RideForm({
                 disabled={stravaImporting || !stravaUrl.trim()}
                 className="flex-1 rounded-xl border-[1.5px] border-sps-violet600 px-3 py-2 text-xs font-bold text-sps-violet600 disabled:opacity-50 dark:border-sps-violet400 dark:text-sps-violet400"
               >
-                {stravaImporting ? "Import en cours…" : "🔄 Importer le tracé depuis le lien"}
+                {stravaImporting ? "Import en cours…" : "🔄 Importer / Synchroniser D+ Strava"}
               </button>
             </div>
             {stravaRoutesError && <p className="text-[11px] text-black/35 dark:text-white/35">{stravaRoutesError}</p>}

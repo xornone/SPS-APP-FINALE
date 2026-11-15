@@ -1,5 +1,10 @@
-import { describe, expect, it } from "vitest";
-import { buildGpxFromStreams, extractStravaResource } from "@/lib/strava";
+import { describe, expect, it, vi } from "vitest";
+import {
+  buildGpxFromStreams,
+  extractStravaResource,
+  fetchStravaActivityMetadata,
+  fetchStravaRouteMetadata,
+} from "@/lib/strava";
 import { parseGpx } from "@/lib/gpx";
 
 describe("extractStravaResource", () => {
@@ -60,5 +65,51 @@ describe("buildGpxFromStreams", () => {
   it("leve une erreur si la trace GPS est vide ou trop courte", () => {
     expect(() => buildGpxFromStreams({ latlng: { data: [] } }, "test")).toThrow();
     expect(() => buildGpxFromStreams({}, "test")).toThrow();
+  });
+});
+
+describe("fetchStravaRouteMetadata & fetchStravaActivityMetadata", () => {
+  it("extrait fidèlement la distance et le D+ officiel d'une route Strava", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 3556675818888622208,
+        name: "Violet 22/11",
+        distance: 82540.2, // ~82.5 km
+        elevation_gain: 923.4, // 923 m D+
+      }),
+    } as any);
+
+    try {
+      const meta = await fetchStravaRouteMetadata("fake_token", "3556675818888622208");
+      expect(meta.distanceKm).toBe(82.5);
+      expect(meta.elevationGainM).toBe(923);
+      expect(meta.name).toBe("Violet 22/11");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("extrait fidèlement la distance et le D+ officiel d'une activité Strava", async () => {
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        id: 12345678,
+        name: "Sortie du dimanche",
+        distance: 72930.0, // ~72.9 km
+        total_elevation_gain: 747.8, // 748 m D+
+      }),
+    } as any);
+
+    try {
+      const meta = await fetchStravaActivityMetadata("fake_token", "12345678");
+      expect(meta.distanceKm).toBe(72.9);
+      expect(meta.elevationGainM).toBe(748);
+      expect(meta.name).toBe("Sortie du dimanche");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
   });
 });

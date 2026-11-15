@@ -39,6 +39,7 @@ function getCurrentMonthKey(): string {
 export function AdminRidesList({ rides, counts }: { rides: Ride[]; counts: Record<string, number> }) {
   const router = useRouter();
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
 
   const currentMonthKey = getCurrentMonthKey();
 
@@ -53,6 +54,21 @@ export function AdminRidesList({ rides, counts }: { rides: Ride[]; counts: Recor
       return next;
     });
   };
+
+  async function handleSyncStrava(id: string, title: string) {
+    setSyncingId(id);
+    try {
+      const res = await fetch(`/api/admin/rides/${id}/sync-strava`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      alert(`Sortie « ${title} » synchronisée avec Strava :\n📏 ${data.distance_km} km\n⛰️ ${data.elevation_gain_m} m D+`);
+      router.refresh();
+    } catch (err: any) {
+      alert(err?.message || "Impossible de synchroniser avec Strava.");
+    } finally {
+      setSyncingId(null);
+    }
+  }
 
   async function handleDelete(id: string, title: string) {
     if (!confirm(`Supprimer définitivement « ${title} » ?`)) return;
@@ -95,10 +111,22 @@ export function AdminRidesList({ rides, counts }: { rides: Ride[]; counts: Recor
           {r.title}
         </b>
         <span className="text-[11.5px] text-black/45 dark:text-white/45">
-          {fmtDateShort(r.ride_date)} · {fmtTime(r.ride_time)} · {counts[r.id] || 0} participants
+          {fmtDateShort(r.ride_date)} · {fmtTime(r.ride_time)} · {r.distance_km} km · {r.elevation_gain_m} m D+ · {counts[r.id] || 0} participants
         </span>
       </div>
       <div className="flex flex-none gap-1.5">
+        {r.strava_url && (
+          <button
+            type="button"
+            disabled={syncingId === r.id || busyId === r.id}
+            onClick={() => handleSyncStrava(r.id, r.title)}
+            aria-label={`Synchroniser D+ avec Strava pour ${r.title}`}
+            title="Synchroniser le D+ et la distance officielle depuis Strava"
+            className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-black/[0.08] bg-black/[0.02] text-sps-violet600 transition-colors hover:bg-sps-violet600/10 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-sps-violet400 dark:hover:bg-sps-violet400/20"
+          >
+            <span className={syncingId === r.id ? "animate-spin text-xs inline-block" : "text-xs inline-block"}>🔄</span>
+          </button>
+        )}
         <Link
           href={`/admin/rides/${r.id}/edit`}
           prefetch={true}

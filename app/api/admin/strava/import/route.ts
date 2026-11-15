@@ -3,8 +3,10 @@ import { requireAdmin } from "@/lib/adminGuard";
 import {
   buildGpxFromStreams,
   extractStravaResource,
+  fetchStravaActivityMetadata,
   fetchStravaActivityStreams,
   fetchStravaRouteGpx,
+  fetchStravaRouteMetadata,
   getValidAccessToken,
 } from "@/lib/strava";
 
@@ -30,20 +32,52 @@ export async function POST(request: Request) {
     // d'autre, meme en manipulant la requete.
     const accessToken = await getValidAccessToken(guard.user.id);
 
-    // Une "route" (parcours planifie, pas encore effectue) a son propre
-    // endpoint d'export GPX cote Strava — pas besoin de reconstruire le
-    // fichier a partir de streams comme pour une "activity" (deja
-    // effectuee). Les sorties du club sont le plus souvent partagees comme
-    // une route.
-    const gpxText =
-      resource.type === "route"
-        ? await fetchStravaRouteGpx(accessToken, resource.id)
-        : buildGpxFromStreams(
-            await fetchStravaActivityStreams(accessToken, resource.id),
-            `Sortie SPS — activité Strava ${resource.id}`
-          );
+    let gpxText = "";
+    let distanceKm: number | undefined;
+    let elevationGainM: number | undefined;
+    let name: string | undefined;
 
-    return NextResponse.json({ ok: true, gpxText, stravaId: resource.id });
+    if (resource.type === "route") {
+      const [gpx, meta] = await Promise.all([
+        fetchStravaRouteGpx(accessToken, resource.id),
+        fetchStravaRouteMetadata(accessToken, resource.id).catch((err) => {
+          console.warn("Could not fetch route metadata from Strava:", err);
+          return null;
+        }),
+      ]);
+      gpxText = gpx;
+      if (meta) {
+        distanceKm = meta.distanceKm;
+        elevationGainM = meta.elevationGainM;
+        name = meta.name;
+      }
+    } else {
+      const [streams, meta] = await Promise.all([
+        fetchStravaActivityStreams(accessToken, resource.id),
+        fetchStravaActivityMetadata(accessToken, resource.id).catch((err) => {
+          console.warn("Could not fetch activity metadata from Strava:", err);
+          return null;
+        }),
+      ]);
+      gpxText = buildGpxFromStreams(
+        streams,
+        `Sortie SPS — activité Strava ${resource.id}`
+      );
+      if (meta) {
+        distanceKm = meta.distanceKm;
+        elevationGainM = meta.elevationGainM;
+        name = meta.name;
+      }
+    }
+
+    return NextResponse.json({
+      ok: true,
+      gpxText,
+      stravaId: resource.id,
+      distanceKm,
+      elevationGainM,
+      name,
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Import Strava impossible." }, { status: 400 });
   }

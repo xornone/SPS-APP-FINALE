@@ -242,6 +242,45 @@ export async function fetchStravaRouteGpx(accessToken: string, routeId: string):
   return res.text();
 }
 
+export interface StravaResourceMetadata {
+  distanceKm: number;
+  elevationGainM: number;
+  name?: string;
+}
+
+/** Récupère les métadonnées officielles d'une route Strava (distance et D+ calculé
+ * par Strava avec son modèle altimétrique précis, sans les bruits du GPX brut). */
+export async function fetchStravaRouteMetadata(accessToken: string, routeId: string): Promise<StravaResourceMetadata> {
+  const res = await fetch(`https://www.strava.com/api/v3/routes/${routeId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) {
+    throw new Error(`Impossible de récupérer les métadonnées de la route Strava (${res.status}).`);
+  }
+  const data = await res.json();
+  return {
+    distanceKm: Math.round((data.distance || 0) / 100) / 10,
+    elevationGainM: Math.round(data.elevation_gain || 0),
+    name: data.name,
+  };
+}
+
+/** Récupère les métadonnées officielles d'une activité Strava (distance et D+ officiel). */
+export async function fetchStravaActivityMetadata(accessToken: string, activityId: string): Promise<StravaResourceMetadata> {
+  const res = await fetch(`https://www.strava.com/api/v3/activities/${activityId}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (!res.ok) {
+    throw new Error(`Impossible de récupérer les métadonnées de l'activité Strava (${res.status}).`);
+  }
+  const data = await res.json();
+  return {
+    distanceKm: Math.round((data.distance || 0) / 100) / 10,
+    elevationGainM: Math.round(data.total_elevation_gain || 0),
+    name: data.name,
+  };
+}
+
 export interface StravaRouteSummary {
   id: string;
   name: string;
