@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminGuard";
 import { isSuperAdmin } from "@/lib/notificationAdmins";
-import { checkAllStravaSessions } from "@/lib/stravaScraper";
+import { checkAllStravaSessions, getCachedStravaData } from "@/lib/stravaScraper";
 
 export const dynamic = "force-dynamic";
 
 /**
  * Route GET /api/admin/strava/status
- * Vérifie l'état de l'ensemble des sessions Strava (Principal + Backups).
+ * Vérifie l'état de l'ensemble des sessions Strava (Principal + Backups)
+ * et renvoie la date du dernier scraping enregistré.
  * Réservé exclusivement au Super Admin (th.tregaro@gmail.com).
  */
 export async function GET() {
@@ -24,11 +25,15 @@ export async function GET() {
       );
     }
 
-    const result = await checkAllStravaSessions();
+    const [result, cachedData] = await Promise.all([
+      checkAllStravaSessions(),
+      getCachedStravaData().catch(() => null),
+    ]);
 
     return NextResponse.json({
       ok: true,
       ...result,
+      lastScrapeAt: cachedData?.extractedAt || null,
       checkedAt: new Date().toISOString(),
     });
   } catch (err: unknown) {

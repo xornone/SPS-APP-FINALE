@@ -41,6 +41,55 @@ export interface PodiumEntry {
   isFirstTie?: boolean;
 }
 
+/** Formate la date du dernier scraping en format relatif clair (ex: "Aujourd'hui à 04:00", "Il y a 15 min", "Hier à 14:30") */
+function formatLastScraped(isoString: string): string {
+  try {
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return "";
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+
+    const timeStr = date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+    // Moins de 60 minutes
+    if (diffMins < 60) {
+      if (diffMins <= 1) return "À l'instant";
+      return `Il y a ${diffMins} min`;
+    }
+
+    // Même jour
+    const isSameDay =
+      date.getDate() === now.getDate() &&
+      date.getMonth() === now.getMonth() &&
+      date.getFullYear() === now.getFullYear();
+    if (isSameDay) {
+      return `Aujourd'hui à ${timeStr}`;
+    }
+
+    // Hier
+    const yesterday = new Date(now);
+    yesterday.setDate(now.getDate() - 1);
+    const isYesterday =
+      date.getDate() === yesterday.getDate() &&
+      date.getMonth() === yesterday.getMonth() &&
+      date.getFullYear() === yesterday.getFullYear();
+    if (isYesterday) {
+      return `Hier à ${timeStr}`;
+    }
+
+    // Date courte (ex: 15 nov. à 04:00)
+    const dayName = date.toLocaleDateString("fr-FR", { weekday: "short" });
+    const dayCapitalized = dayName.charAt(0).toUpperCase() + dayName.slice(1).replace(".", "");
+    const dateStr = date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+
+    return `${dayCapitalized} ${dateStr} à ${timeStr}`;
+  } catch {
+    return "";
+  }
+}
+
 export function MonthlyStatsSection({ rides, participations, stravaData }: MonthlyStatsSectionProps) {
   // Onglet principal sélectionné : "trophees" (Trophées du mois) ou "segment" (Le segment SPS du mois)
   const [activeTab, setActiveTab] = useState<"trophees" | "segment">("trophees");
@@ -88,6 +137,15 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
 
   const canManualScrape = isSuperAdmin(currentUserEmail);
 
+  // Date du dernier scraping Strava (initialisée avec stravaData, rafraîchie avec l'API status)
+  const [lastScrapeAt, setLastScrapeAt] = useState<string | null>(stravaData?.extractedAt || null);
+
+  useEffect(() => {
+    if (stravaData?.extractedAt) {
+      setLastScrapeAt(stravaData.extractedAt);
+    }
+  }, [stravaData?.extractedAt]);
+
   // Voyant de validité du token Strava (réservé à th.tregaro@gmail.com)
   const [tokenStatus, setTokenStatus] = useState<"idle" | "checking" | "valid" | "invalid">("checking");
   const [tokenInfo, setTokenInfo] = useState<{
@@ -100,12 +158,20 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
     try {
       const res = await fetch("/api/admin/strava/status", { cache: "no-store" });
       const data = await res.json();
-      if (res.ok && data.connected) {
-        setTokenStatus("valid");
-        setTokenInfo({
-          activeLabel: data.activeLabel,
-          details: data.details,
-        });
+      if (res.ok) {
+        if (data.lastScrapeAt) {
+          setLastScrapeAt(data.lastScrapeAt);
+        }
+        if (data.connected) {
+          setTokenStatus("valid");
+          setTokenInfo({
+            activeLabel: data.activeLabel,
+            details: data.details,
+          });
+        } else {
+          setTokenStatus("invalid");
+          setTokenInfo(null);
+        }
       } else {
         setTokenStatus("invalid");
         setTokenInfo(null);
@@ -135,6 +201,9 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || "Erreur de synchronisation");
+      }
+      if (data.timestamp) {
+        setLastScrapeAt(data.timestamp);
       }
       setSyncFeedback("Données Strava synchronisées avec succès ! Rechargement...");
       setTimeout(() => {
@@ -676,6 +745,23 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                         </>
                       )}
                     </button>
+
+                    {/* Date/Heure du dernier scraping Strava */}
+                    {lastScrapeAt && (
+                      <span
+                        className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white px-2.5 py-1.5 text-xs text-neutral-700 shadow-xs dark:border-white/10 dark:bg-white/[0.06] dark:text-white/80 whitespace-nowrap cursor-help"
+                        title={`Dernier scraping Strava effectué le ${new Date(lastScrapeAt).toLocaleString("fr-FR", {
+                          dateStyle: "full",
+                          timeStyle: "medium",
+                        })}`}
+                      >
+                        <span className="text-[11px] opacity-70">⏱️</span>
+                        <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">Dernier scraping :</span>
+                        <span className="text-[11px] font-black text-neutral-900 dark:text-white">
+                          {formatLastScraped(lastScrapeAt)}
+                        </span>
+                      </span>
+                    )}
                   </div>
                 )}
 

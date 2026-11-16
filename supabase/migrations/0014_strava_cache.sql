@@ -6,6 +6,9 @@ create table if not exists strava_cache (
   updated_at timestamptz not null default now()
 );
 
+-- Permissions de table pour les rôles Supabase
+grant select, insert, update on strava_cache to anon, authenticated;
+
 -- Active le Row Level Security
 alter table strava_cache enable row level security;
 
