@@ -4,6 +4,7 @@
  */
 import fs from "fs";
 import path from "path";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createPublicClient } from "@/lib/supabase/publicClient";
 
 export interface StravaMonthStats {
@@ -270,6 +271,23 @@ function getDataFilePath(): string {
 }
 
 /**
+ * Retourne le client Supabase le plus approprié pour le cache Strava :
+ * Service Role (prioritaire côté serveur pour bypasser RLS) ou client public anon.
+ */
+function getSupabaseClientForCache() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (url && serviceKey && serviceKey.length > 20 && serviceKey !== "eyJ...") {
+    try {
+      return createSupabaseClient(url, serviceKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+    } catch {}
+  }
+  return createPublicClient();
+}
+
+/**
  * Récupère les données Strava en cache.
  * Priorité 1 : Table Supabase `strava_cache` (partagée entre toutes les instances Vercel).
  * Priorité 2 : Cache /tmp (si même instance).
@@ -278,8 +296,8 @@ function getDataFilePath(): string {
 export async function getCachedStravaData(): Promise<StravaDataStore | null> {
   // 1. Supabase strava_cache (persistant entre toutes les instances Vercel)
   try {
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      const supabase = createPublicClient();
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      const supabase = getSupabaseClientForCache();
       const { data, error } = await supabase
         .from("strava_cache")
         .select("data")
@@ -325,8 +343,8 @@ export async function saveStravaData(data: StravaDataStore): Promise<void> {
 
   // 1. Sauvegarde dans Supabase
   try {
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-      const supabase = createPublicClient();
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      const supabase = getSupabaseClientForCache();
       const { error } = await supabase
         .from("strava_cache")
         .upsert({ key: "latest", data, updated_at: new Date().toISOString() });

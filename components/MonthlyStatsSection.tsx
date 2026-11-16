@@ -652,14 +652,15 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
       <section className="px-5">
         <div className="overflow-hidden rounded-[28px] border border-neutral-200/90 bg-white shadow-xs transition dark:border-white/10 dark:bg-[#130B22]/90">
           {/* Header avec Onglets de navigation + Sélecteur de mois */}
-          <div className="border-b border-neutral-100 p-5 dark:border-white/[0.08]">
-            <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="border-b border-neutral-100 p-4 sm:p-5 dark:border-white/[0.08]">
+            {/* Ligne 1 : Navigation publique (Onglets + Sélecteur de mois) */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
               {/* Onglets principaux */}
-              <div className="flex items-center gap-1.5 rounded-2xl bg-neutral-100/90 p-1 dark:bg-white/[0.06]">
+              <div className="flex items-center gap-1 rounded-2xl bg-neutral-100/90 p-1 dark:bg-white/[0.06]">
                 <button
                   type="button"
                   onClick={() => setActiveTab("trophees")}
-                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black transition-all ${
+                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black transition-all whitespace-nowrap ${
                     activeTab === "trophees"
                       ? "bg-white text-neutral-950 shadow-xs dark:bg-[#1A1422] dark:text-white"
                       : "text-neutral-500 hover:text-neutral-900 dark:text-white/60 dark:hover:text-white"
@@ -671,121 +672,121 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                 <button
                   type="button"
                   onClick={() => setActiveTab("segment")}
-                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black transition-all ${
+                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-black transition-all whitespace-nowrap ${
                     activeTab === "segment"
                       ? "bg-white text-neutral-950 shadow-xs dark:bg-[#1A1422] dark:text-white"
                       : "text-neutral-500 hover:text-neutral-900 dark:text-white/60 dark:hover:text-white"
                   }`}
                 >
                   <span className="text-sm">⏱️</span>
-                  <span>Le segment SPS du mois</span>
+                  <span>Le segment SPS</span>
                 </button>
               </div>
 
-              {/* Sélecteur de mois + Bouton Scraper Strava + Voyant d'état (visibles uniquement pour th.tregaro@gmail.com) */}
-              <div className="flex flex-wrap items-center gap-2">
-                {canManualScrape && (
-                  <div className="flex items-center gap-1.5">
-                    {/* Bouton Scraper Strava */}
-                    <button
-                      type="button"
-                      disabled={isSyncing}
-                      onClick={handleManualSync}
-                      className="flex items-center gap-1.5 rounded-xl border border-[#FC5200]/30 bg-[#FC5200]/10 px-3 py-1.5 text-xs font-black text-[#FC5200] transition hover:bg-[#FC5200]/20 active:scale-[0.98] disabled:opacity-50 dark:border-[#FC5200]/40 dark:bg-[#FC5200]/15"
-                      title="Actualiser les données Strava immédiatement (réservé à th.tregaro@gmail.com)"
-                    >
-                      <span className={isSyncing ? "animate-spin inline-block" : ""}>🔄</span>
-                      <span>{isSyncing ? "Scraping en cours..." : "Scraper Strava"}</span>
-                    </button>
+              {/* Sélecteur de mois (visible pour l'onglet Trophées) */}
+              {activeTab === "trophees" && (
+                <div className="relative">
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => handleSelectMonth(e.target.value)}
+                    className="cursor-pointer appearance-none rounded-xl border border-neutral-200 bg-neutral-50 py-1.5 pl-3.5 pr-8 text-xs font-black text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.06] dark:text-white"
+                  >
+                    {months.map((m) => (
+                      <option key={m.key} value={m.key} className="bg-white text-black dark:bg-[#1A1422] dark:text-white">
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                  <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-white/40">
+                    <Icon name="chevDown" size={13} />
+                  </span>
+                </div>
+              )}
+            </div>
 
-                    {/* Voyant de validité de la session Strava (cliquable pour re-tester) */}
-                    <button
-                      type="button"
-                      onClick={checkTokenStatus}
-                      className="flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white px-2.5 py-1.5 text-xs font-bold text-neutral-700 shadow-xs transition hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/[0.1]"
-                      title={
-                        tokenStatus === "valid"
-                          ? `Session active via ${tokenInfo?.activeLabel || "Principal"} (${
-                              tokenInfo?.details?.filter((d) => d.connected).length || 1
-                            }/3 comptes opérationnels) - Cliquer pour revérifier`
-                          : tokenStatus === "invalid"
-                          ? "Toutes les sessions Strava sont déconnectées ou expirées (cliquer pour revérifier)"
-                          : "Test des sessions en cours..."
-                      }
-                    >
-                      {tokenStatus === "checking" && (
-                        <>
-                          <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-                          <span className="text-[11px] font-semibold text-neutral-400">Test session...</span>
-                        </>
-                      )}
-                      {tokenStatus === "valid" && (
-                        <>
-                          <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]" />
-                          <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400">
-                            Session active
-                            {tokenInfo?.activeLabel && tokenInfo.activeLabel !== "Principal"
-                              ? ` (${tokenInfo.activeLabel})`
-                              : ""}
-                          </span>
-                        </>
-                      )}
-                      {tokenStatus === "invalid" && (
-                        <>
-                          <span className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)] animate-pulse" />
-                          <span className="text-[11px] font-black text-red-600 dark:text-red-400">
-                            Sessions expirées
-                          </span>
-                        </>
-                      )}
-                      {tokenStatus === "idle" && (
-                        <>
-                          <span className="h-2 w-2 rounded-full bg-neutral-300 dark:bg-white/20" />
-                          <span className="text-[11px] font-semibold text-neutral-400">Strava</span>
-                        </>
-                      )}
-                    </button>
+            {/* Ligne 2 : Outils d'administration Strava (réservés exclusivement à th.tregaro@gmail.com) */}
+            {canManualScrape && (
+              <div className="mt-3.5 pt-3.5 border-t border-neutral-100 dark:border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  {/* Bouton Scraper Strava */}
+                  <button
+                    type="button"
+                    disabled={isSyncing}
+                    onClick={handleManualSync}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-[#FC5200]/30 bg-[#FC5200]/10 px-3 py-1.5 text-xs font-black text-[#FC5200] transition hover:bg-[#FC5200]/20 active:scale-[0.98] disabled:opacity-50 dark:border-[#FC5200]/40 dark:bg-[#FC5200]/15 whitespace-nowrap"
+                    title="Actualiser les données Strava immédiatement (réservé à th.tregaro@gmail.com)"
+                  >
+                    <span className={isSyncing ? "animate-spin inline-block" : ""}>🔄</span>
+                    <span className="whitespace-nowrap">{isSyncing ? "Scraping en cours..." : "Scraper Strava"}</span>
+                  </button>
 
-                    {/* Date/Heure du dernier scraping Strava */}
-                    {lastScrapeAt && (
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white px-2.5 py-1.5 text-xs text-neutral-700 shadow-xs dark:border-white/10 dark:bg-white/[0.06] dark:text-white/80 whitespace-nowrap cursor-help"
-                        title={`Dernier scraping Strava effectué le ${new Date(lastScrapeAt).toLocaleString("fr-FR", {
-                          dateStyle: "full",
-                          timeStyle: "medium",
-                        })}`}
-                      >
-                        <span className="text-[11px] opacity-70">⏱️</span>
-                        <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">Dernier scraping :</span>
-                        <span className="text-[11px] font-black text-neutral-900 dark:text-white">
-                          {formatLastScraped(lastScrapeAt)}
-                        </span>
-                      </span>
+                  {/* Voyant de validité de la session Strava (cliquable pour re-tester) */}
+                  <button
+                    type="button"
+                    onClick={checkTokenStatus}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-white px-2.5 py-1.5 text-xs font-bold text-neutral-700 shadow-xs transition hover:bg-neutral-50 active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.06] dark:text-white/80 dark:hover:bg-white/[0.1] whitespace-nowrap"
+                    title={
+                      tokenStatus === "valid"
+                        ? `Session active via ${tokenInfo?.activeLabel || "Principal"} (${
+                            tokenInfo?.details?.filter((d) => d.connected).length || 1
+                          }/3 comptes opérationnels) - Cliquer pour revérifier`
+                        : tokenStatus === "invalid"
+                        ? "Toutes les sessions Strava sont déconnectées ou expirées (cliquer pour revérifier)"
+                        : "Test des sessions en cours..."
+                    }
+                  >
+                    {tokenStatus === "checking" && (
+                      <>
+                        <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                        <span className="text-[11px] font-semibold text-neutral-400 whitespace-nowrap">Test session...</span>
+                      </>
                     )}
-                  </div>
-                )}
+                    {tokenStatus === "valid" && (
+                      <>
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)]" />
+                        <span className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
+                          Session active
+                          {tokenInfo?.activeLabel && tokenInfo.activeLabel !== "Principal"
+                            ? ` (${tokenInfo.activeLabel})`
+                            : ""}
+                        </span>
+                      </>
+                    )}
+                    {tokenStatus === "invalid" && (
+                      <>
+                        <span className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.9)] animate-pulse" />
+                        <span className="text-[11px] font-black text-red-600 dark:text-red-400 whitespace-nowrap">
+                          Sessions expirées
+                        </span>
+                      </>
+                    )}
+                    {tokenStatus === "idle" && (
+                      <>
+                        <span className="h-2 w-2 rounded-full bg-neutral-300 dark:bg-white/20" />
+                        <span className="text-[11px] font-semibold text-neutral-400 whitespace-nowrap">Strava</span>
+                      </>
+                    )}
+                  </button>
+                </div>
 
-                {/* Sélecteur de mois (visible pour l'onglet Trophées) */}
-                {activeTab === "trophees" && (
-                  <div className="relative">
-                    <select
-                      value={selectedMonth}
-                      onChange={(e) => handleSelectMonth(e.target.value)}
-                      className="cursor-pointer appearance-none rounded-xl border border-neutral-200 bg-neutral-50 py-1.5 pl-3.5 pr-8 text-xs font-black text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.06] dark:text-white"
-                    >
-                      {months.map((m) => (
-                        <option key={m.key} value={m.key} className="bg-white text-black dark:bg-[#1A1422] dark:text-white">
-                          {m.label}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-white/40">
-                      <Icon name="chevDown" size={13} />
+                {/* Date/Heure du dernier scraping Strava (manuel ou automatique 48h) */}
+                {lastScrapeAt && (
+                  <div
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-200/60 bg-neutral-50/80 px-2.5 py-1.5 text-xs text-neutral-600 dark:border-white/10 dark:bg-white/[0.04] dark:text-white/70 whitespace-nowrap w-fit self-start sm:self-auto cursor-help"
+                    title={`Dernier scraping (manuel ou automatique 48h) effectué le ${new Date(lastScrapeAt).toLocaleString("fr-FR", {
+                      dateStyle: "full",
+                      timeStyle: "medium",
+                    })}`}
+                  >
+                    <span className="text-[11px] opacity-70">⏱️</span>
+                    <span className="text-[11px] font-medium text-neutral-500 dark:text-white/50">Dernier scraping :</span>
+                    <span className="text-[11px] font-black text-neutral-900 dark:text-white">
+                      {formatLastScraped(lastScrapeAt)}
                     </span>
                   </div>
                 )}
               </div>
-            </div>
+            )}
 
             {/* Notification retour de scraping manuel */}
             {syncFeedback && (
