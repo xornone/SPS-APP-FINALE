@@ -1,8 +1,35 @@
 {
-  "extractedAt": "2026-11-16T14:54:33.455Z",
+  "extractedAt": "2026-11-16T15:08:51.244Z",
   "totalOfficialMembers": 99,
   "totalMatched": 99,
   "members": [
+    {
+      "officialName": "Thomas Trégaro",
+      "athleteId": "17524404",
+      "stravaName": "Thomas Trégaro",
+      "annual": {
+        "activities": 85,
+        "distance_km": 3550.7,
+        "elev_gain_m": 28949,
+        "time": "138h 6m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 5,
+          "distance_km": 76.3,
+          "elev_gain_m": 1207,
+          "time": "4h 7m",
+          "avg_speed_kmh": 18.5
+        },
+        "2026-11": {
+          "activities": 7,
+          "distance_km": 125.5,
+          "elev_gain_m": 797,
+          "time": "5h 6m",
+          "avg_speed_kmh": 24.6
+        }
+      }
+    },
     {
       "officialName": "Marina Trégaro",
       "athleteId": "23098319",
@@ -58,33 +85,6 @@
       }
     },
     {
-      "officialName": "Thomas Trégaro",
-      "athleteId": "17524404",
-      "stravaName": "Thomas Trégaro",
-      "annual": {
-        "activities": 85,
-        "distance_km": 3550.7,
-        "elev_gain_m": 28949,
-        "time": "138h 6m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 5,
-          "distance_km": 76.3,
-          "elev_gain_m": 1207,
-          "time": "4h 7m",
-          "avg_speed_kmh": 18.5
-        },
-        "2026-11": {
-          "activities": 7,
-          "distance_km": 125,
-          "elev_gain_m": 797,
-          "time": "5h 6m",
-          "avg_speed_kmh": 24.5
-        }
-      }
-    },
-    {
       "officialName": "Ulysse Dumas",
       "athleteId": "109675276",
       "stravaName": "Ulysse Dumas",
@@ -131,10 +131,10 @@
         },
         "2026-11": {
           "activities": 0,
-          "distance_km": 251.3,
-          "elev_gain_m": 1766,
-          "time": "11h 37m",
-          "avg_speed_kmh": 21.6
+          "distance_km": 316.1,
+          "elev_gain_m": 2276,
+          "time": "14h 53m",
+          "avg_speed_kmh": 21.2
         }
       }
     },
@@ -157,38 +157,11 @@
           "avg_speed_kmh": 23
         },
         "2026-11": {
-          "activities": 3,
-          "distance_km": 134.3,
-          "elev_gain_m": 1221,
-          "time": "5h 47m",
-          "avg_speed_kmh": 23.2
-        }
-      }
-    },
-    {
-      "officialName": "Margaux Dirat",
-      "athleteId": "105260114",
-      "stravaName": "Margaux Dirat",
-      "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
+          "activities": 4,
+          "distance_km": 140.5,
+          "elev_gain_m": 1263,
+          "time": "6h 0m",
+          "avg_speed_kmh": 23.4
         }
       }
     },
@@ -239,17 +212,17 @@
         },
         "2026-11": {
           "activities": 0,
-          "distance_km": 86,
-          "elev_gain_m": 343,
-          "time": "7h 1m",
-          "avg_speed_kmh": 12.3
+          "distance_km": 171.7,
+          "elev_gain_m": 1785,
+          "time": "11h 4m",
+          "avg_speed_kmh": 15.5
         }
       }
     },
     {
-      "officialName": "Hugo Lembrez",
-      "athleteId": "98328608",
-      "stravaName": "Hugo Lembrez",
+      "officialName": "Margaux Dirat",
+      "athleteId": "105260114",
+      "stravaName": "Margaux Dirat",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -292,11 +265,38 @@
           "avg_speed_kmh": 21.6
         },
         "2026-11": {
-          "activities": 1,
-          "distance_km": 60.2,
-          "elev_gain_m": 426,
-          "time": "2h 34m",
-          "avg_speed_kmh": 23.5
+          "activities": 2,
+          "distance_km": 65.1,
+          "elev_gain_m": 569,
+          "time": "7h 36m",
+          "avg_speed_kmh": 8.6
+        }
+      }
+    },
+    {
+      "officialName": "Hugo Lembrez",
+      "athleteId": "98328608",
+      "stravaName": "Hugo Lembrez",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
         }
       }
     },
@@ -320,10 +320,10 @@
         },
         "2026-11": {
           "activities": 4,
-          "distance_km": 69.9,
-          "elev_gain_m": 426,
-          "time": "5h 34m",
-          "avg_speed_kmh": 12.6
+          "distance_km": 74,
+          "elev_gain_m": 580,
+          "time": "8h 0m",
+          "avg_speed_kmh": 9.3
         }
       }
     },
@@ -373,11 +373,11 @@
           "avg_speed_kmh": 23.3
         },
         "2026-11": {
-          "activities": 23,
-          "distance_km": 501.6,
-          "elev_gain_m": 6037,
-          "time": "22h 1m",
-          "avg_speed_kmh": 22.8
+          "activities": 34,
+          "distance_km": 559,
+          "elev_gain_m": 6587,
+          "time": "25h 26m",
+          "avg_speed_kmh": 22
         }
       }
     },
@@ -400,38 +400,11 @@
           "avg_speed_kmh": 14.1
         },
         "2026-11": {
-          "activities": 1,
-          "distance_km": 75.2,
-          "elev_gain_m": 735,
-          "time": "8h 20m",
-          "avg_speed_kmh": 9
-        }
-      }
-    },
-    {
-      "officialName": "Hugo Dautruche",
-      "athleteId": "42037996",
-      "stravaName": "Hugo Dautruche",
-      "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
+          "activities": 2,
+          "distance_km": 158.8,
+          "elev_gain_m": 1425,
+          "time": "13h 56m",
+          "avg_speed_kmh": 11.4
         }
       }
     },
@@ -454,11 +427,11 @@
           "avg_speed_kmh": 22.6
         },
         "2026-11": {
-          "activities": 1,
-          "distance_km": 88.1,
-          "elev_gain_m": 579,
-          "time": "4h 37m",
-          "avg_speed_kmh": 19.1
+          "activities": 3,
+          "distance_km": 166.2,
+          "elev_gain_m": 1172,
+          "time": "7h 21m",
+          "avg_speed_kmh": 22.6
         }
       }
     },
@@ -481,18 +454,18 @@
           "avg_speed_kmh": 20.5
         },
         "2026-11": {
-          "activities": 11,
-          "distance_km": 175.1,
-          "elev_gain_m": 1333,
-          "time": "6h 48m",
-          "avg_speed_kmh": 25.8
+          "activities": 16,
+          "distance_km": 287.6,
+          "elev_gain_m": 2358,
+          "time": "10h 49m",
+          "avg_speed_kmh": 26.6
         }
       }
     },
     {
-      "officialName": "Theo Dupuy",
-      "athleteId": "109033327",
-      "stravaName": "Theo Dupuy",
+      "officialName": "Hugo Dautruche",
+      "athleteId": "42037996",
+      "stravaName": "Hugo Dautruche",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -544,6 +517,33 @@
       }
     },
     {
+      "officialName": "Theo Dupuy",
+      "athleteId": "109033327",
+      "stravaName": "Theo Dupuy",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        }
+      }
+    },
+    {
       "officialName": "Pierrick Michel",
       "athleteId": "137504714",
       "stravaName": "Pierrick MICHEL",
@@ -571,14 +571,14 @@
       }
     },
     {
-      "officialName": "Michel Heitzmann",
-      "athleteId": "46890374",
-      "stravaName": "Michel Heitzmann",
+      "officialName": "Diego Frappas",
+      "athleteId": "104860086",
+      "stravaName": "Diego Frappas",
       "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
+        "activities": 11,
+        "distance_km": 250.1,
+        "elev_gain_m": 1550,
+        "time": "15h 43m"
       },
       "months": {
         "2026-10": {
@@ -598,14 +598,14 @@
       }
     },
     {
-      "officialName": "Diego Frappas",
-      "athleteId": "104860086",
-      "stravaName": "Diego Frappas",
+      "officialName": "Michel Heitzmann",
+      "athleteId": "46890374",
+      "stravaName": "Michel Heitzmann",
       "annual": {
-        "activities": 11,
-        "distance_km": 250.1,
-        "elev_gain_m": 1550,
-        "time": "15h 43m"
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
       },
       "months": {
         "2026-10": {
@@ -645,8 +645,8 @@
         "2026-11": {
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 402,
-          "time": "8h 4m",
+          "elev_gain_m": 613,
+          "time": "12h 9m",
           "avg_speed_kmh": 0
         }
       }
@@ -724,38 +724,11 @@
           "avg_speed_kmh": 31.2
         },
         "2026-11": {
-          "activities": 8,
-          "distance_km": 249.6,
-          "elev_gain_m": 3205,
-          "time": "10h 6m",
-          "avg_speed_kmh": 24.7
-        }
-      }
-    },
-    {
-      "officialName": "Alexis Tesseyre",
-      "athleteId": "41460517",
-      "stravaName": "Alexis Tesseyre",
-      "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
+          "activities": 15,
+          "distance_km": 453.4,
+          "elev_gain_m": 5372,
+          "time": "16h 35m",
+          "avg_speed_kmh": 27.3
         }
       }
     },
@@ -814,9 +787,9 @@
       }
     },
     {
-      "officialName": "Remy Triboult",
-      "athleteId": "44498305",
-      "stravaName": "Remy TRIBOULT",
+      "officialName": "Alexis Tesseyre",
+      "athleteId": "41460517",
+      "stravaName": "Alexis Tesseyre",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -888,16 +861,16 @@
         "2026-11": {
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 171,
-          "time": "8h 21m",
+          "elev_gain_m": 239,
+          "time": "12h 29m",
           "avg_speed_kmh": 0
         }
       }
     },
     {
-      "officialName": "Xavier Tabel",
-      "athleteId": "13426749",
-      "stravaName": "Xavier Tabel",
+      "officialName": "Remy Triboult",
+      "athleteId": "44498305",
+      "stravaName": "Remy TRIBOULT",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -976,9 +949,9 @@
       }
     },
     {
-      "officialName": "Loïc Pérez",
-      "athleteId": "6516629",
-      "stravaName": "Loïc Perez",
+      "officialName": "Xavier Tabel",
+      "athleteId": "13426749",
+      "stravaName": "Xavier Tabel",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -1003,9 +976,9 @@
       }
     },
     {
-      "officialName": "Brandon Guillerminet",
-      "athleteId": "140819777",
-      "stravaName": "Brandon Guillerminet",
+      "officialName": "Loïc Pérez",
+      "athleteId": "6516629",
+      "stravaName": "Loïc Perez",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -1057,6 +1030,33 @@
       }
     },
     {
+      "officialName": "Brandon Guillerminet",
+      "athleteId": "140819777",
+      "stravaName": "Brandon Guillerminet",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        }
+      }
+    },
+    {
       "officialName": "Elias Khaldi",
       "athleteId": "148601632",
       "stravaName": "Elias going crzy",
@@ -1076,37 +1076,10 @@
         },
         "2026-11": {
           "activities": 0,
-          "distance_km": 208,
-          "elev_gain_m": 2234,
-          "time": "8h 11m",
-          "avg_speed_kmh": 25.4
-        }
-      }
-    },
-    {
-      "officialName": "Mohcine Matine",
-      "athleteId": "117229319",
-      "stravaName": "Mohcine MATINE",
-      "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 0,
-          "distance_km": 21.2,
-          "elev_gain_m": 71,
-          "time": "2h 0m",
-          "avg_speed_kmh": 10.6
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
+          "distance_km": 353.7,
+          "elev_gain_m": 3666,
+          "time": "16h 19m",
+          "avg_speed_kmh": 21.7
         }
       }
     },
@@ -1134,6 +1107,33 @@
           "elev_gain_m": 775,
           "time": "3h 9m",
           "avg_speed_kmh": 27.9
+        }
+      }
+    },
+    {
+      "officialName": "Mohcine Matine",
+      "athleteId": "117229319",
+      "stravaName": "Mohcine MATINE",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 21.2,
+          "elev_gain_m": 71,
+          "time": "2h 0m",
+          "avg_speed_kmh": 10.6
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
         }
       }
     },
@@ -1183,10 +1183,10 @@
           "avg_speed_kmh": 23.3
         },
         "2026-11": {
-          "activities": 8,
-          "distance_km": 425.8,
-          "elev_gain_m": 2409,
-          "time": "17h 30m",
+          "activities": 10,
+          "distance_km": 516.1,
+          "elev_gain_m": 2464,
+          "time": "21h 16m",
           "avg_speed_kmh": 24.3
         }
       }
@@ -1212,9 +1212,36 @@
         "2026-11": {
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 410,
-          "time": "3h 15m",
+          "elev_gain_m": 553,
+          "time": "4h 53m",
           "avg_speed_kmh": 0
+        }
+      }
+    },
+    {
+      "officialName": "Vincent Jacquot",
+      "athleteId": "105753051",
+      "stravaName": "Vincent Jacquot",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 6.9,
+          "elev_gain_m": 73,
+          "time": "1h 20m",
+          "avg_speed_kmh": 5.2
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 3.6,
+          "elev_gain_m": 44,
+          "time": "0h 44m",
+          "avg_speed_kmh": 4.9
         }
       }
     },
@@ -1273,9 +1300,9 @@
       }
     },
     {
-      "officialName": "Vincent Jacquot",
-      "athleteId": "105753051",
-      "stravaName": "Vincent Jacquot",
+      "officialName": "Louise Girot Person",
+      "athleteId": "40657656",
+      "stravaName": "Louise Girot",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -1285,17 +1312,17 @@
       "months": {
         "2026-10": {
           "activities": 0,
-          "distance_km": 6.9,
-          "elev_gain_m": 73,
-          "time": "1h 20m",
-          "avg_speed_kmh": 5.2
+          "distance_km": 418.8,
+          "elev_gain_m": 8955,
+          "time": "25h 27m",
+          "avg_speed_kmh": 16.5
         },
         "2026-11": {
           "activities": 0,
-          "distance_km": 3.1,
-          "elev_gain_m": 27,
-          "time": "0h 32m",
-          "avg_speed_kmh": 5.8
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
         }
       }
     },
@@ -1321,33 +1348,6 @@
           "distance_km": 0,
           "elev_gain_m": 0,
           "time": "0h 0m"
-        }
-      }
-    },
-    {
-      "officialName": "Louise Girot Person",
-      "athleteId": "40657656",
-      "stravaName": "Louise Girot",
-      "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 0,
-          "distance_km": 418.8,
-          "elev_gain_m": 8955,
-          "time": "25h 27m",
-          "avg_speed_kmh": 16.5
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
         }
       }
     },
@@ -1406,33 +1406,6 @@
       }
     },
     {
-      "officialName": "Thomas Lecoq",
-      "athleteId": "28723223",
-      "stravaName": "Thomas lecoq",
-      "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        }
-      }
-    },
-    {
       "officialName": "Moaad Fattali",
       "athleteId": "121175659",
       "stravaName": "Moaad Fattali",
@@ -1460,9 +1433,9 @@
       }
     },
     {
-      "officialName": "Giulia Atcher",
-      "athleteId": "118744047",
-      "stravaName": "Giulia Atcher",
+      "officialName": "Thomas Lecoq",
+      "athleteId": "28723223",
+      "stravaName": "Thomas lecoq",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -1506,10 +1479,10 @@
         },
         "2026-11": {
           "activities": 0,
-          "distance_km": 152.4,
-          "elev_gain_m": 1625,
-          "time": "13h 38m",
-          "avg_speed_kmh": 11.2
+          "distance_km": 177.7,
+          "elev_gain_m": 1816,
+          "time": "16h 38m",
+          "avg_speed_kmh": 10.7
         }
       }
     },
@@ -1533,17 +1506,17 @@
         },
         "2026-11": {
           "activities": 3,
-          "distance_km": 140.2,
-          "elev_gain_m": 1177,
-          "time": "7h 41m",
-          "avg_speed_kmh": 18.2
+          "distance_km": 142.6,
+          "elev_gain_m": 1363,
+          "time": "9h 14m",
+          "avg_speed_kmh": 15.4
         }
       }
     },
     {
-      "officialName": "Marion Buchou",
-      "athleteId": "47225244",
-      "stravaName": "Marion Buchou",
+      "officialName": "Giulia Atcher",
+      "athleteId": "118744047",
+      "stravaName": "Giulia Atcher",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -1568,9 +1541,9 @@
       }
     },
     {
-      "officialName": "Alexandre Bouyssoux",
-      "athleteId": "88079010",
-      "stravaName": "Alexandre Bouyssoux",
+      "officialName": "Marion Buchou",
+      "athleteId": "47225244",
+      "stravaName": "Marion Buchou",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -1603,6 +1576,33 @@
         "distance_km": 68.6,
         "elev_gain_m": 219,
         "time": "6h 44m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        }
+      }
+    },
+    {
+      "officialName": "Alexandre Bouyssoux",
+      "athleteId": "88079010",
+      "stravaName": "Alexandre Bouyssoux",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
       },
       "months": {
         "2026-10": {
@@ -1692,11 +1692,11 @@
           "avg_speed_kmh": 13.4
         },
         "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 2780,
-          "time": "13h 43m",
-          "avg_speed_kmh": 0
+          "activities": 2,
+          "distance_km": 63.8,
+          "elev_gain_m": 3600,
+          "time": "17h 46m",
+          "avg_speed_kmh": 3.6
         }
       }
     },
@@ -1773,11 +1773,11 @@
           "avg_speed_kmh": 17.8
         },
         "2026-11": {
-          "activities": 3,
-          "distance_km": 90.4,
-          "elev_gain_m": 803,
-          "time": "3h 19m",
-          "avg_speed_kmh": 27.3
+          "activities": 5,
+          "distance_km": 233,
+          "elev_gain_m": 4575,
+          "time": "9h 28m",
+          "avg_speed_kmh": 24.6
         }
       }
     },
@@ -1863,6 +1863,60 @@
       }
     },
     {
+      "officialName": "André Boeufgras",
+      "athleteId": "105260117",
+      "stravaName": "André Boeufgras",
+      "annual": {
+        "activities": 28,
+        "distance_km": 113.7,
+        "elev_gain_m": 161,
+        "time": "12h 25m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 9,
+          "distance_km": 20.1,
+          "elev_gain_m": 59,
+          "time": "4h 6m",
+          "avg_speed_kmh": 4.9
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 31,
+          "time": "2h 15m",
+          "avg_speed_kmh": 0
+        }
+      }
+    },
+    {
+      "officialName": "Patrick Boeufgras",
+      "athleteId": "48353332",
+      "stravaName": "Patrick Boeufgras",
+      "annual": {
+        "activities": 107,
+        "distance_km": 4847.8,
+        "elev_gain_m": 56916,
+        "time": "197h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 29,
+          "distance_km": 742.1,
+          "elev_gain_m": 7419,
+          "time": "27h 26m",
+          "avg_speed_kmh": 27.1
+        },
+        "2026-11": {
+          "activities": 10,
+          "distance_km": 229.4,
+          "elev_gain_m": 3607,
+          "time": "9h 33m",
+          "avg_speed_kmh": 24
+        }
+      }
+    },
+    {
       "officialName": "Benjamin Embry",
       "athleteId": "34754434",
       "stravaName": "Benjamin E.",
@@ -1890,56 +1944,29 @@
       }
     },
     {
-      "officialName": "André Boeufgras",
-      "athleteId": "105260117",
-      "stravaName": "André Boeufgras",
+      "officialName": "Clément Dubreucq",
+      "athleteId": "89085493",
+      "stravaName": "Clément Dubreucq",
       "annual": {
-        "activities": 28,
-        "distance_km": 113.7,
-        "elev_gain_m": 161,
-        "time": "12h 25m"
+        "activities": 111,
+        "distance_km": 3539.5,
+        "elev_gain_m": 34335,
+        "time": "156h 50m"
       },
       "months": {
         "2026-10": {
-          "activities": 9,
-          "distance_km": 20.1,
-          "elev_gain_m": 59,
-          "time": "4h 6m",
-          "avg_speed_kmh": 4.9
+          "activities": 13,
+          "distance_km": 355.5,
+          "elev_gain_m": 3353,
+          "time": "14h 15m",
+          "avg_speed_kmh": 24.9
         },
         "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 13,
-          "time": "1h 45m",
-          "avg_speed_kmh": 0
-        }
-      }
-    },
-    {
-      "officialName": "Patrick Boeufgras",
-      "athleteId": "48353332",
-      "stravaName": "Patrick Boeufgras",
-      "annual": {
-        "activities": 107,
-        "distance_km": 4847.8,
-        "elev_gain_m": 56916,
-        "time": "197h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 29,
-          "distance_km": 742.1,
-          "elev_gain_m": 7419,
-          "time": "27h 26m",
-          "avg_speed_kmh": 27.1
-        },
-        "2026-11": {
-          "activities": 6,
-          "distance_km": 149.9,
-          "elev_gain_m": 2067,
-          "time": "6h 2m",
-          "avg_speed_kmh": 24.8
+          "activities": 7,
+          "distance_km": 191.2,
+          "elev_gain_m": 3342,
+          "time": "8h 51m",
+          "avg_speed_kmh": 21.6
         }
       }
     },
@@ -1989,91 +2016,10 @@
           "avg_speed_kmh": 6.9
         },
         "2026-11": {
-          "activities": 0,
+          "activities": 1,
           "distance_km": 0,
-          "elev_gain_m": 1858,
-          "time": "6h 51m",
-          "avg_speed_kmh": 0
-        }
-      }
-    },
-    {
-      "officialName": "Clément Dubreucq",
-      "athleteId": "89085493",
-      "stravaName": "Clément Dubreucq",
-      "annual": {
-        "activities": 111,
-        "distance_km": 3539.5,
-        "elev_gain_m": 34335,
-        "time": "156h 50m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 13,
-          "distance_km": 355.5,
-          "elev_gain_m": 3353,
-          "time": "14h 15m",
-          "avg_speed_kmh": 24.9
-        },
-        "2026-11": {
-          "activities": 7,
-          "distance_km": 191.2,
-          "elev_gain_m": 3342,
-          "time": "8h 51m",
-          "avg_speed_kmh": 21.6
-        }
-      }
-    },
-    {
-      "officialName": "Dorian Raymond",
-      "athleteId": "116499874",
-      "stravaName": "Dorian Raymond",
-      "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        }
-      }
-    },
-    {
-      "officialName": "Fandy Sabarila",
-      "athleteId": "23711779",
-      "stravaName": "Fandi Sabarila",
-      "annual": {
-        "activities": 5,
-        "distance_km": 34.1,
-        "elev_gain_m": 373,
-        "time": "4h 30m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 4,
-          "distance_km": 28.3,
-          "elev_gain_m": 308,
-          "time": "3h 50m",
-          "avg_speed_kmh": 7.4
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 65,
-          "time": "0h 40m",
+          "elev_gain_m": 2127,
+          "time": "8h 39m",
           "avg_speed_kmh": 0
         }
       }
@@ -2099,43 +2045,43 @@
         "2026-11": {
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 3,
-          "time": "10h 35m",
+          "elev_gain_m": 331,
+          "time": "13h 16m",
           "avg_speed_kmh": 0
         }
       }
     },
     {
-      "officialName": "Audrey Mignon",
-      "athleteId": "116500109",
-      "stravaName": "Audrey Mignon",
+      "officialName": "Fandy Sabarila",
+      "athleteId": "23711779",
+      "stravaName": "Fandi Sabarila",
       "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
+        "activities": 5,
+        "distance_km": 34.1,
+        "elev_gain_m": 373,
+        "time": "4h 30m"
       },
       "months": {
         "2026-10": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
+          "activities": 4,
+          "distance_km": 28.3,
+          "elev_gain_m": 308,
+          "time": "3h 50m",
+          "avg_speed_kmh": 7.4
         },
         "2026-11": {
           "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
+          "distance_km": 0.8,
+          "elev_gain_m": 65,
+          "time": "0h 40m",
+          "avg_speed_kmh": 1.2
         }
       }
     },
     {
-      "officialName": "Hester van Wachem",
-      "athleteId": "140819779",
-      "stravaName": "Hester van Wachem",
+      "officialName": "Dorian Raymond",
+      "athleteId": "116499874",
+      "stravaName": "Dorian Raymond",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -2179,10 +2125,64 @@
         },
         "2026-11": {
           "activities": 0,
-          "distance_km": 298.7,
-          "elev_gain_m": 3673,
-          "time": "11h 22m",
-          "avg_speed_kmh": 26.3
+          "distance_km": 402.8,
+          "elev_gain_m": 4725,
+          "time": "14h 47m",
+          "avg_speed_kmh": 27.2
+        }
+      }
+    },
+    {
+      "officialName": "Hester van Wachem",
+      "athleteId": "140819779",
+      "stravaName": "Hester van Wachem",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        }
+      }
+    },
+    {
+      "officialName": "Audrey Mignon",
+      "athleteId": "116500109",
+      "stravaName": "Audrey Mignon",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
         }
       }
     },
@@ -2190,6 +2190,33 @@
       "officialName": "Maurizio Agnino",
       "athleteId": "88079015",
       "stravaName": "Maurizio  Agnino",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        }
+      }
+    },
+    {
+      "officialName": "Richard Planchon",
+      "athleteId": "16841100",
+      "stravaName": "Planchon  Richard",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -2239,36 +2266,9 @@
       }
     },
     {
-      "officialName": "Richard Planchon",
-      "athleteId": "16841100",
-      "stravaName": "Planchon  Richard",
-      "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        }
-      }
-    },
-    {
-      "officialName": "Mathis Roblot",
-      "athleteId": "38174865",
-      "stravaName": "Mathis Rblt",
+      "officialName": "Anthony Capelotar",
+      "athleteId": "140819782",
+      "stravaName": "Anthony Capelotar",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -2320,36 +2320,9 @@
       }
     },
     {
-      "officialName": "Anthony Capelotar",
-      "athleteId": "140819782",
-      "stravaName": "Anthony Capelotar",
-      "annual": {
-        "activities": 0,
-        "distance_km": 0,
-        "elev_gain_m": 0,
-        "time": "0h 0m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        }
-      }
-    },
-    {
-      "officialName": "Boris Cormary",
-      "athleteId": "105260119",
-      "stravaName": "Boris Cormary",
+      "officialName": "Mathis Roblot",
+      "athleteId": "38174865",
+      "stravaName": "Mathis Rblt",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -2401,36 +2374,9 @@
       }
     },
     {
-      "officialName": "Léo Kiner",
-      "athleteId": "105260121",
-      "stravaName": "Léo Kiner",
-      "annual": {
-        "activities": 334,
-        "distance_km": 4060.6,
-        "elev_gain_m": 21162,
-        "time": "363h 29m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 26,
-          "distance_km": 359.1,
-          "elev_gain_m": 1256,
-          "time": "27h 51m",
-          "avg_speed_kmh": 12.9
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 576,
-          "time": "11h 46m",
-          "avg_speed_kmh": 0
-        }
-      }
-    },
-    {
-      "officialName": "Pauline Moalic",
-      "athleteId": "140819788",
-      "stravaName": "Pauline Moalic",
+      "officialName": "Boris Cormary",
+      "athleteId": "105260119",
+      "stravaName": "Boris Cormary",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -2455,6 +2401,33 @@
       }
     },
     {
+      "officialName": "Léo Kiner",
+      "athleteId": "105260121",
+      "stravaName": "Léo Kiner",
+      "annual": {
+        "activities": 334,
+        "distance_km": 4060.6,
+        "elev_gain_m": 21162,
+        "time": "363h 29m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 26,
+          "distance_km": 359.1,
+          "elev_gain_m": 1256,
+          "time": "27h 51m",
+          "avg_speed_kmh": 12.9
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 10.8,
+          "elev_gain_m": 895,
+          "time": "16h 10m",
+          "avg_speed_kmh": 0.7
+        }
+      }
+    },
+    {
       "officialName": "Cédric Baudinet",
       "athleteId": "23843091",
       "stravaName": "Cédric Baudinet",
@@ -2473,11 +2446,11 @@
           "avg_speed_kmh": 23.5
         },
         "2026-11": {
-          "activities": 8,
-          "distance_km": 285.3,
-          "elev_gain_m": 2787,
-          "time": "11h 17m",
-          "avg_speed_kmh": 25.3
+          "activities": 9,
+          "distance_km": 364.1,
+          "elev_gain_m": 3555,
+          "time": "14h 2m",
+          "avg_speed_kmh": 25.9
         }
       }
     },
@@ -2485,6 +2458,33 @@
       "officialName": "Zoé Paquet",
       "athleteId": "105273120",
       "stravaName": "Zoe Pqt",
+      "annual": {
+        "activities": 0,
+        "distance_km": 0,
+        "elev_gain_m": 0,
+        "time": "0h 0m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        }
+      }
+    },
+    {
+      "officialName": "Pauline Moalic",
+      "athleteId": "140819788",
+      "stravaName": "Pauline Moalic",
       "annual": {
         "activities": 0,
         "distance_km": 0,
@@ -2617,6 +2617,33 @@
       }
     },
     {
+      "officialName": "Camille Frairrot",
+      "athleteId": "64813353",
+      "stravaName": "Cam 🌷 LaMenace",
+      "annual": {
+        "activities": 130,
+        "distance_km": 808,
+        "elev_gain_m": 4497,
+        "time": "93h 5m"
+      },
+      "months": {
+        "2026-10": {
+          "activities": 30,
+          "distance_km": 157.9,
+          "elev_gain_m": 448,
+          "time": "18h 12m",
+          "avg_speed_kmh": 8.7
+        },
+        "2026-11": {
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 119,
+          "time": "5h 34m",
+          "avg_speed_kmh": 0
+        }
+      }
+    },
+    {
       "officialName": "Lou Serrig",
       "athleteId": "167885991",
       "stravaName": "Lou Serrig",
@@ -2639,33 +2666,6 @@
           "distance_km": 0,
           "elev_gain_m": 0,
           "time": "0h 0m",
-          "avg_speed_kmh": 0
-        }
-      }
-    },
-    {
-      "officialName": "Camille Frairrot",
-      "athleteId": "64813353",
-      "stravaName": "Cam 🌷 LaMenace",
-      "annual": {
-        "activities": 130,
-        "distance_km": 808,
-        "elev_gain_m": 4497,
-        "time": "93h 5m"
-      },
-      "months": {
-        "2026-10": {
-          "activities": 30,
-          "distance_km": 157.9,
-          "elev_gain_m": 448,
-          "time": "18h 12m",
-          "avg_speed_kmh": 8.7
-        },
-        "2026-11": {
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 42,
-          "time": "3h 11m",
           "avg_speed_kmh": 0
         }
       }
@@ -5118,73 +5118,103 @@
           "officialName": "Redouane Mimouni",
           "stravaName": "Redouane Mimouni",
           "athleteId": "4661600",
-          "activities": 23,
-          "distance_km": 501.6,
-          "elev_gain_m": 6037,
-          "time": "22h 1m"
+          "activities": 34,
+          "distance_km": 559,
+          "elev_gain_m": 6587,
+          "time": "25h 26m"
         },
         {
           "rank": 2,
           "officialName": "Florian Maillou",
           "stravaName": "Florian Maillou",
           "athleteId": "121180934",
-          "activities": 8,
-          "distance_km": 425.8,
-          "elev_gain_m": 2409,
-          "time": "17h 30m"
+          "activities": 10,
+          "distance_km": 516.1,
+          "elev_gain_m": 2464,
+          "time": "21h 16m"
         },
         {
           "rank": 3,
+          "officialName": "Aymeric Closier",
+          "stravaName": "Aymeric Closier",
+          "athleteId": "3717532",
+          "activities": 15,
+          "distance_km": 453.4,
+          "elev_gain_m": 5372,
+          "time": "16h 35m"
+        },
+        {
+          "rank": 4,
           "officialName": "Pierrick Pinault",
           "stravaName": "Papo Kano",
           "athleteId": "58548359",
           "activities": 0,
-          "distance_km": 298.7,
-          "elev_gain_m": 3673,
-          "time": "11h 22m"
-        },
-        {
-          "rank": 4,
-          "officialName": "Cédric Baudinet",
-          "stravaName": "Cédric Baudinet",
-          "athleteId": "23843091",
-          "activities": 8,
-          "distance_km": 285.3,
-          "elev_gain_m": 2787,
-          "time": "11h 17m"
+          "distance_km": 402.8,
+          "elev_gain_m": 4725,
+          "time": "14h 47m"
         },
         {
           "rank": 5,
-          "officialName": "Huu Duc Nguyen",
-          "stravaName": "Duc Ngn",
-          "athleteId": "127761085",
-          "activities": 0,
-          "distance_km": 251.3,
-          "elev_gain_m": 1766,
-          "time": "11h 37m"
+          "officialName": "Cédric Baudinet",
+          "stravaName": "Cédric Baudinet",
+          "athleteId": "23843091",
+          "activities": 9,
+          "distance_km": 364.1,
+          "elev_gain_m": 3555,
+          "time": "14h 2m"
         },
         {
           "rank": 6,
-          "officialName": "Aymeric Closier",
-          "stravaName": "Aymeric Closier",
-          "athleteId": "3717532",
-          "activities": 8,
-          "distance_km": 249.6,
-          "elev_gain_m": 3205,
-          "time": "10h 6m"
-        },
-        {
-          "rank": 7,
           "officialName": "Elias Khaldi",
           "stravaName": "Elias going crzy",
           "athleteId": "148601632",
           "activities": 0,
-          "distance_km": 208,
-          "elev_gain_m": 2234,
-          "time": "8h 11m"
+          "distance_km": 353.7,
+          "elev_gain_m": 3666,
+          "time": "16h 19m"
+        },
+        {
+          "rank": 7,
+          "officialName": "Huu Duc Nguyen",
+          "stravaName": "Duc Ngn",
+          "athleteId": "127761085",
+          "activities": 0,
+          "distance_km": 316.1,
+          "elev_gain_m": 2276,
+          "time": "14h 53m"
         },
         {
           "rank": 8,
+          "officialName": "Nicolas Lermission",
+          "stravaName": "Nicolas Lermission",
+          "athleteId": "143429323",
+          "activities": 16,
+          "distance_km": 287.6,
+          "elev_gain_m": 2358,
+          "time": "10h 49m"
+        },
+        {
+          "rank": 9,
+          "officialName": "Louis Prome",
+          "stravaName": "Louis Promé",
+          "athleteId": "91897362",
+          "activities": 5,
+          "distance_km": 233,
+          "elev_gain_m": 4575,
+          "time": "9h 28m"
+        },
+        {
+          "rank": 10,
+          "officialName": "Patrick Boeufgras",
+          "stravaName": "Patrick Boeufgras",
+          "athleteId": "48353332",
+          "activities": 10,
+          "distance_km": 229.4,
+          "elev_gain_m": 3607,
+          "time": "9h 33m"
+        },
+        {
+          "rank": 11,
           "officialName": "Clément Dubreucq",
           "stravaName": "Clément Dubreucq",
           "athleteId": "89085493",
@@ -5194,67 +5224,77 @@
           "time": "8h 51m"
         },
         {
-          "rank": 9,
-          "officialName": "Nicolas Lermission",
-          "stravaName": "Nicolas Lermission",
-          "athleteId": "143429323",
-          "activities": 11,
-          "distance_km": 175.1,
-          "elev_gain_m": 1333,
-          "time": "6h 48m"
-        },
-        {
-          "rank": 10,
+          "rank": 12,
           "officialName": "Cédric Hamonier",
           "stravaName": "Cédric Hamonier",
           "athleteId": "7105237",
           "activities": 0,
-          "distance_km": 152.4,
-          "elev_gain_m": 1625,
-          "time": "13h 38m"
+          "distance_km": 177.7,
+          "elev_gain_m": 1816,
+          "time": "16h 38m"
         },
         {
-          "rank": 11,
-          "officialName": "Patrick Boeufgras",
-          "stravaName": "Patrick Boeufgras",
-          "athleteId": "48353332",
-          "activities": 6,
-          "distance_km": 149.9,
-          "elev_gain_m": 2067,
-          "time": "6h 2m"
+          "rank": 13,
+          "officialName": "Antonin Simon",
+          "stravaName": "Antonin Simon",
+          "athleteId": "26233481",
+          "activities": 0,
+          "distance_km": 171.7,
+          "elev_gain_m": 1785,
+          "time": "11h 4m"
         },
         {
-          "rank": 12,
+          "rank": 14,
+          "officialName": "Tanguy Delacôte",
+          "stravaName": "Tanguy Delacôte",
+          "athleteId": "34003207",
+          "activities": 3,
+          "distance_km": 166.2,
+          "elev_gain_m": 1172,
+          "time": "7h 21m"
+        },
+        {
+          "rank": 15,
+          "officialName": "Frederic Tardivot (Fred)",
+          "stravaName": "Fréd TT",
+          "athleteId": "36804008",
+          "activities": 2,
+          "distance_km": 158.8,
+          "elev_gain_m": 1425,
+          "time": "13h 56m"
+        },
+        {
+          "rank": 16,
           "officialName": "Jean-Baptiste Lafon",
           "stravaName": "Jb Lafon",
           "athleteId": "105333127",
           "activities": 3,
-          "distance_km": 140.2,
-          "elev_gain_m": 1177,
-          "time": "7h 41m"
+          "distance_km": 142.6,
+          "elev_gain_m": 1363,
+          "time": "9h 14m"
         },
         {
-          "rank": 13,
+          "rank": 17,
           "officialName": "Raphaël Villette",
           "stravaName": "Raphaël Villette",
           "athleteId": "3316462",
-          "activities": 3,
-          "distance_km": 134.3,
-          "elev_gain_m": 1221,
-          "time": "5h 47m"
+          "activities": 4,
+          "distance_km": 140.5,
+          "elev_gain_m": 1263,
+          "time": "6h 0m"
         },
         {
-          "rank": 14,
+          "rank": 18,
           "officialName": "Thomas Trégaro",
           "stravaName": "Thomas Trégaro",
           "athleteId": "17524404",
           "activities": 7,
-          "distance_km": 125,
+          "distance_km": 125.5,
           "elev_gain_m": 797,
           "time": "5h 6m"
         },
         {
-          "rank": 15,
+          "rank": 19,
           "officialName": "Valentin Ensuque",
           "stravaName": "Valentin Ensuque",
           "athleteId": "98329688",
@@ -5264,27 +5304,7 @@
           "time": "4h 41m"
         },
         {
-          "rank": 16,
-          "officialName": "Louis Prome",
-          "stravaName": "Louis Promé",
-          "athleteId": "91897362",
-          "activities": 3,
-          "distance_km": 90.4,
-          "elev_gain_m": 803,
-          "time": "3h 19m"
-        },
-        {
-          "rank": 17,
-          "officialName": "Tanguy Delacôte",
-          "stravaName": "Tanguy Delacôte",
-          "athleteId": "34003207",
-          "activities": 1,
-          "distance_km": 88.1,
-          "elev_gain_m": 579,
-          "time": "4h 37m"
-        },
-        {
-          "rank": 18,
+          "rank": 20,
           "officialName": "Louis Regnier",
           "stravaName": "Louis Regnier",
           "athleteId": "114654439",
@@ -5294,47 +5314,37 @@
           "time": "3h 9m"
         },
         {
-          "rank": 19,
-          "officialName": "Antonin Simon",
-          "stravaName": "Antonin Simon",
-          "athleteId": "26233481",
-          "activities": 0,
-          "distance_km": 86,
-          "elev_gain_m": 343,
-          "time": "7h 1m"
-        },
-        {
-          "rank": 20,
-          "officialName": "Frederic Tardivot (Fred)",
-          "stravaName": "Fréd TT",
-          "athleteId": "36804008",
-          "activities": 1,
-          "distance_km": 75.2,
-          "elev_gain_m": 735,
-          "time": "8h 20m"
-        },
-        {
           "rank": 21,
           "officialName": "Florian Sicard-Baux",
           "stravaName": "Florian Sicard--Baux",
           "athleteId": "131652920",
           "activities": 4,
-          "distance_km": 69.9,
-          "elev_gain_m": 426,
-          "time": "5h 34m"
+          "distance_km": 74,
+          "elev_gain_m": 580,
+          "time": "8h 0m"
         },
         {
           "rank": 22,
           "officialName": "Franck Georges",
           "stravaName": "Franck Georges",
           "athleteId": "39039042",
-          "activities": 1,
-          "distance_km": 60.2,
-          "elev_gain_m": 426,
-          "time": "2h 34m"
+          "activities": 2,
+          "distance_km": 65.1,
+          "elev_gain_m": 569,
+          "time": "7h 36m"
         },
         {
           "rank": 23,
+          "officialName": "Damien Kurtzemann",
+          "stravaName": "Damien Kurtzemann",
+          "athleteId": "4278363",
+          "activities": 2,
+          "distance_km": 63.8,
+          "elev_gain_m": 3600,
+          "time": "17h 46m"
+        },
+        {
+          "rank": 24,
           "officialName": "Pierrick Michel",
           "stravaName": "Pierrick MICHEL",
           "athleteId": "137504714",
@@ -5344,17 +5354,37 @@
           "time": "1h 37m"
         },
         {
-          "rank": 24,
+          "rank": 25,
+          "officialName": "Léo Kiner",
+          "stravaName": "Léo Kiner",
+          "athleteId": "105260121",
+          "activities": 0,
+          "distance_km": 10.8,
+          "elev_gain_m": 895,
+          "time": "16h 10m"
+        },
+        {
+          "rank": 26,
           "officialName": "Vincent Jacquot",
           "stravaName": "Vincent Jacquot",
           "athleteId": "105753051",
           "activities": 0,
-          "distance_km": 3.1,
-          "elev_gain_m": 27,
-          "time": "0h 32m"
+          "distance_km": 3.6,
+          "elev_gain_m": 44,
+          "time": "0h 44m"
         },
         {
-          "rank": 25,
+          "rank": 27,
+          "officialName": "Fandy Sabarila",
+          "stravaName": "Fandi Sabarila",
+          "athleteId": "23711779",
+          "activities": 0,
+          "distance_km": 0.8,
+          "elev_gain_m": 65,
+          "time": "0h 40m"
+        },
+        {
+          "rank": 28,
           "officialName": "Marina Trégaro",
           "stravaName": "Marina Tregaro",
           "athleteId": "23098319",
@@ -5364,7 +5394,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 26,
+          "rank": 29,
           "officialName": "Théo Doussot",
           "stravaName": "Théo Doussot",
           "athleteId": "46686127",
@@ -5374,7 +5404,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 27,
+          "rank": 30,
           "officialName": "Ulysse Dumas",
           "stravaName": "Ulysse Dumas",
           "athleteId": "109675276",
@@ -5384,17 +5414,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 28,
-          "officialName": "Margaux Dirat",
-          "stravaName": "Margaux Dirat",
-          "athleteId": "105260114",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 29,
+          "rank": 31,
           "officialName": "Andrea Arcis-Jobert",
           "stravaName": "Andrea Arcis",
           "athleteId": "121404173",
@@ -5404,7 +5424,17 @@
           "time": "0h 0m"
         },
         {
-          "rank": 30,
+          "rank": 32,
+          "officialName": "Margaux Dirat",
+          "stravaName": "Margaux Dirat",
+          "athleteId": "105260114",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
+        },
+        {
+          "rank": 33,
           "officialName": "Hugo Lembrez",
           "stravaName": "Hugo Lembrez",
           "athleteId": "98328608",
@@ -5414,7 +5444,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 31,
+          "rank": 34,
           "officialName": "Julien Davallon",
           "stravaName": "Julien Davallon",
           "athleteId": "3235687",
@@ -5424,7 +5454,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 32,
+          "rank": 35,
           "officialName": "Hugo Dautruche",
           "stravaName": "Hugo Dautruche",
           "athleteId": "42037996",
@@ -5434,17 +5464,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 33,
-          "officialName": "Theo Dupuy",
-          "stravaName": "Theo Dupuy",
-          "athleteId": "109033327",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 34,
+          "rank": 36,
           "officialName": "Nathan Andrieu",
           "stravaName": "Nathan Andrieu",
           "athleteId": "40578641",
@@ -5454,17 +5474,17 @@
           "time": "0h 20m"
         },
         {
-          "rank": 35,
-          "officialName": "Michel Heitzmann",
-          "stravaName": "Michel Heitzmann",
-          "athleteId": "46890374",
+          "rank": 37,
+          "officialName": "Theo Dupuy",
+          "stravaName": "Theo Dupuy",
+          "athleteId": "109033327",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
           "time": "0h 0m"
         },
         {
-          "rank": 36,
+          "rank": 38,
           "officialName": "Diego Frappas",
           "stravaName": "Diego Frappas",
           "athleteId": "104860086",
@@ -5474,17 +5494,27 @@
           "time": "0h 0m"
         },
         {
-          "rank": 37,
+          "rank": 39,
+          "officialName": "Michel Heitzmann",
+          "stravaName": "Michel Heitzmann",
+          "athleteId": "46890374",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
+        },
+        {
+          "rank": 40,
           "officialName": "Theo Payet",
           "stravaName": "Theo Payet",
           "athleteId": "41999903",
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 402,
-          "time": "8h 4m"
+          "elev_gain_m": 613,
+          "time": "12h 9m"
         },
         {
-          "rank": 38,
+          "rank": 41,
           "officialName": "Matthieu Tranier",
           "stravaName": "Matthieu Tranier",
           "athleteId": "140685609",
@@ -5494,7 +5524,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 39,
+          "rank": 42,
           "officialName": "Eloi Roussel",
           "stravaName": "Eloi Roussel",
           "athleteId": "139158307",
@@ -5504,17 +5534,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 40,
-          "officialName": "Alexis Tesseyre",
-          "stravaName": "Alexis Tesseyre",
-          "athleteId": "41460517",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 41,
+          "rank": 43,
           "officialName": "Nathan Gavalda",
           "stravaName": "Nathan Gavalda",
           "athleteId": "140687799",
@@ -5524,7 +5544,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 42,
+          "rank": 44,
           "officialName": "Vincent Carli",
           "stravaName": "Vincent Carli",
           "athleteId": "6809800",
@@ -5534,17 +5554,17 @@
           "time": "0h 0m"
         },
         {
-          "rank": 43,
-          "officialName": "Remy Triboult",
-          "stravaName": "Remy TRIBOULT",
-          "athleteId": "44498305",
+          "rank": 45,
+          "officialName": "Alexis Tesseyre",
+          "stravaName": "Alexis Tesseyre",
+          "athleteId": "41460517",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
           "time": "0h 0m"
         },
         {
-          "rank": 44,
+          "rank": 46,
           "officialName": "Elie Willems",
           "stravaName": "Elie Willems",
           "athleteId": "43793012",
@@ -5554,27 +5574,27 @@
           "time": "0h 0m"
         },
         {
-          "rank": 45,
+          "rank": 47,
           "officialName": "Christopher Walton",
           "stravaName": "Chris Walton",
           "athleteId": "19030055",
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 171,
-          "time": "8h 21m"
+          "elev_gain_m": 239,
+          "time": "12h 29m"
         },
         {
-          "rank": 46,
-          "officialName": "Xavier Tabel",
-          "stravaName": "Xavier Tabel",
-          "athleteId": "13426749",
+          "rank": 48,
+          "officialName": "Remy Triboult",
+          "stravaName": "Remy TRIBOULT",
+          "athleteId": "44498305",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
           "time": "0h 0m"
         },
         {
-          "rank": 47,
+          "rank": 49,
           "officialName": "Kevin Costil",
           "stravaName": "kevin costil",
           "athleteId": "7320475",
@@ -5584,7 +5604,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 48,
+          "rank": 50,
           "officialName": "Ben Horny",
           "stravaName": "Ben Horny",
           "athleteId": "120320770",
@@ -5594,7 +5614,17 @@
           "time": "0h 0m"
         },
         {
-          "rank": 49,
+          "rank": 51,
+          "officialName": "Xavier Tabel",
+          "stravaName": "Xavier Tabel",
+          "athleteId": "13426749",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
+        },
+        {
+          "rank": 52,
           "officialName": "Loïc Pérez",
           "stravaName": "Loïc Perez",
           "athleteId": "6516629",
@@ -5604,17 +5634,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 50,
-          "officialName": "Brandon Guillerminet",
-          "stravaName": "Brandon Guillerminet",
-          "athleteId": "140819777",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 51,
+          "rank": 53,
           "officialName": "Florian Lamarre",
           "stravaName": "Florian Lamarre",
           "athleteId": "39474706",
@@ -5624,7 +5644,17 @@
           "time": "0h 0m"
         },
         {
-          "rank": 52,
+          "rank": 54,
+          "officialName": "Brandon Guillerminet",
+          "stravaName": "Brandon Guillerminet",
+          "athleteId": "140819777",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
+        },
+        {
+          "rank": 55,
           "officialName": "Mohcine Matine",
           "stravaName": "Mohcine MATINE",
           "athleteId": "117229319",
@@ -5634,7 +5664,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 53,
+          "rank": 56,
           "officialName": "Léonard Zocchetto",
           "stravaName": "Léonard Zocchetto",
           "athleteId": "121404172",
@@ -5644,17 +5674,17 @@
           "time": "0h 0m"
         },
         {
-          "rank": 54,
+          "rank": 57,
           "officialName": "Pierre-Louis Mejean",
           "stravaName": "Pierre-Louis Mejean",
           "athleteId": "6805650",
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 410,
-          "time": "3h 15m"
+          "elev_gain_m": 553,
+          "time": "4h 53m"
         },
         {
-          "rank": 55,
+          "rank": 58,
           "officialName": "François Xavier Rives",
           "stravaName": "François-xavier Rives",
           "athleteId": "105051996",
@@ -5664,7 +5694,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 56,
+          "rank": 59,
           "officialName": "Richard King",
           "stravaName": "Richard King",
           "athleteId": "2048333447",
@@ -5674,17 +5704,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 57,
-          "officialName": "Nicholas Sydenham",
-          "stravaName": "Nicholas Sydenham",
-          "athleteId": "11069796",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 58,
+          "rank": 60,
           "officialName": "Louise Girot Person",
           "stravaName": "Louise Girot",
           "athleteId": "40657656",
@@ -5694,7 +5714,17 @@
           "time": "0h 0m"
         },
         {
-          "rank": 59,
+          "rank": 61,
+          "officialName": "Nicholas Sydenham",
+          "stravaName": "Nicholas Sydenham",
+          "athleteId": "11069796",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
+        },
+        {
+          "rank": 62,
           "officialName": "Gaspard Cayrat",
           "stravaName": "Gaspard Cayrat",
           "athleteId": "138379685",
@@ -5704,17 +5734,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 60,
-          "officialName": "Thomas Lecoq",
-          "stravaName": "Thomas lecoq",
-          "athleteId": "28723223",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 61,
+          "rank": 63,
           "officialName": "Moaad Fattali",
           "stravaName": "Moaad Fattali",
           "athleteId": "121175659",
@@ -5724,7 +5744,17 @@
           "time": "0h 0m"
         },
         {
-          "rank": 62,
+          "rank": 64,
+          "officialName": "Thomas Lecoq",
+          "stravaName": "Thomas lecoq",
+          "athleteId": "28723223",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
+        },
+        {
+          "rank": 65,
           "officialName": "Giulia Atcher",
           "stravaName": "Giulia Atcher",
           "athleteId": "118744047",
@@ -5734,7 +5764,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 63,
+          "rank": 66,
           "officialName": "Marion Buchou",
           "stravaName": "Marion Buchou",
           "athleteId": "47225244",
@@ -5744,17 +5774,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 64,
-          "officialName": "Alexandre Bouyssoux",
-          "stravaName": "Alexandre Bouyssoux",
-          "athleteId": "88079010",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 65,
+          "rank": 67,
           "officialName": "François Granier",
           "stravaName": "Francois Granier",
           "athleteId": "116499839",
@@ -5764,7 +5784,17 @@
           "time": "0h 0m"
         },
         {
-          "rank": 66,
+          "rank": 68,
+          "officialName": "Alexandre Bouyssoux",
+          "stravaName": "Alexandre Bouyssoux",
+          "athleteId": "88079010",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
+        },
+        {
+          "rank": 69,
           "officialName": "Julien Boisson",
           "stravaName": "Julien Boisson",
           "athleteId": "116498877",
@@ -5774,7 +5804,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 67,
+          "rank": 70,
           "officialName": "Didier Varon",
           "stravaName": "Didier Varon",
           "athleteId": "14005190",
@@ -5784,17 +5814,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 68,
-          "officialName": "Damien Kurtzemann",
-          "stravaName": "Damien Kurtzemann",
-          "athleteId": "4278363",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 2780,
-          "time": "13h 43m"
-        },
-        {
-          "rank": 69,
+          "rank": 71,
           "officialName": "Simon Boddaert",
           "stravaName": "Simon Boddaert",
           "athleteId": "116499951",
@@ -5804,7 +5824,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 70,
+          "rank": 72,
           "officialName": "Justine Durand",
           "stravaName": "Justine Durand",
           "athleteId": "116500115",
@@ -5814,7 +5834,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 71,
+          "rank": 73,
           "officialName": "Kieran Sweetman",
           "stravaName": "Kieran Sweetman",
           "athleteId": "105260113",
@@ -5824,7 +5844,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 72,
+          "rank": 74,
           "officialName": "Valentin Escoffier",
           "stravaName": "Valentin Escoffier",
           "athleteId": "105260115",
@@ -5834,7 +5854,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 73,
+          "rank": 75,
           "officialName": "Lucille Roux",
           "stravaName": "Lu Lu",
           "athleteId": "195125562",
@@ -5844,7 +5864,17 @@
           "time": "0h 0m"
         },
         {
-          "rank": 74,
+          "rank": 76,
+          "officialName": "André Boeufgras",
+          "stravaName": "André Boeufgras",
+          "athleteId": "105260117",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 31,
+          "time": "2h 15m"
+        },
+        {
+          "rank": 77,
           "officialName": "Benjamin Embry",
           "stravaName": "Benjamin E.",
           "athleteId": "34754434",
@@ -5854,17 +5884,7 @@
           "time": "0h 0m"
         },
         {
-          "rank": 75,
-          "officialName": "André Boeufgras",
-          "stravaName": "André Boeufgras",
-          "athleteId": "105260117",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 13,
-          "time": "1h 45m"
-        },
-        {
-          "rank": 76,
+          "rank": 78,
           "officialName": "René Espinosa Rojas",
           "stravaName": "René  E",
           "athleteId": "185529050",
@@ -5874,34 +5894,14 @@
           "time": "0h 0m"
         },
         {
-          "rank": 77,
+          "rank": 79,
           "officialName": "Hendricks Delcambre",
           "stravaName": "Hendricks Delcambre",
           "athleteId": "144531882",
-          "activities": 0,
+          "activities": 1,
           "distance_km": 0,
-          "elev_gain_m": 1858,
-          "time": "6h 51m"
-        },
-        {
-          "rank": 78,
-          "officialName": "Dorian Raymond",
-          "stravaName": "Dorian Raymond",
-          "athleteId": "116499874",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 79,
-          "officialName": "Fandy Sabarila",
-          "stravaName": "Fandi Sabarila",
-          "athleteId": "23711779",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 65,
-          "time": "0h 40m"
+          "elev_gain_m": 2127,
+          "time": "8h 39m"
         },
         {
           "rank": 80,
@@ -5910,14 +5910,14 @@
           "athleteId": "165159968",
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 3,
-          "time": "10h 35m"
+          "elev_gain_m": 331,
+          "time": "13h 16m"
         },
         {
           "rank": 81,
-          "officialName": "Audrey Mignon",
-          "stravaName": "Audrey Mignon",
-          "athleteId": "116500109",
+          "officialName": "Dorian Raymond",
+          "stravaName": "Dorian Raymond",
+          "athleteId": "116499874",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -5935,9 +5935,9 @@
         },
         {
           "rank": 83,
-          "officialName": "Maurizio Agnino",
-          "stravaName": "Maurizio  Agnino",
-          "athleteId": "88079015",
+          "officialName": "Audrey Mignon",
+          "stravaName": "Audrey Mignon",
+          "athleteId": "116500109",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -5945,9 +5945,9 @@
         },
         {
           "rank": 84,
-          "officialName": "Lucas Nesta",
-          "stravaName": "Lucas Nesta",
-          "athleteId": "140685600",
+          "officialName": "Maurizio Agnino",
+          "stravaName": "Maurizio  Agnino",
+          "athleteId": "88079015",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -5965,9 +5965,9 @@
         },
         {
           "rank": 86,
-          "officialName": "Mathis Roblot",
-          "stravaName": "Mathis Rblt",
-          "athleteId": "38174865",
+          "officialName": "Lucas Nesta",
+          "stravaName": "Lucas Nesta",
+          "athleteId": "140685600",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -5975,16 +5975,6 @@
         },
         {
           "rank": 87,
-          "officialName": "Tom Garrandaux",
-          "stravaName": "Tom Garrandaux",
-          "athleteId": "140819784",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 88,
           "officialName": "Anthony Capelotar",
           "stravaName": "Anthony Capelotar",
           "athleteId": "140819782",
@@ -5994,10 +5984,20 @@
           "time": "0h 0m"
         },
         {
+          "rank": 88,
+          "officialName": "Tom Garrandaux",
+          "stravaName": "Tom Garrandaux",
+          "athleteId": "140819784",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
+        },
+        {
           "rank": 89,
-          "officialName": "Boris Cormary",
-          "stravaName": "Boris Cormary",
-          "athleteId": "105260119",
+          "officialName": "Mathis Roblot",
+          "stravaName": "Mathis Rblt",
+          "athleteId": "38174865",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6015,19 +6015,19 @@
         },
         {
           "rank": 91,
-          "officialName": "Léo Kiner",
-          "stravaName": "Léo Kiner",
-          "athleteId": "105260121",
+          "officialName": "Boris Cormary",
+          "stravaName": "Boris Cormary",
+          "athleteId": "105260119",
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 576,
-          "time": "11h 46m"
+          "elev_gain_m": 0,
+          "time": "0h 0m"
         },
         {
           "rank": 92,
-          "officialName": "Pauline Moalic",
-          "stravaName": "Pauline Moalic",
-          "athleteId": "140819788",
+          "officialName": "Zoé Paquet",
+          "stravaName": "Zoe Pqt",
+          "athleteId": "105273120",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6035,9 +6035,9 @@
         },
         {
           "rank": 93,
-          "officialName": "Zoé Paquet",
-          "stravaName": "Zoe Pqt",
-          "athleteId": "105273120",
+          "officialName": "Pauline Moalic",
+          "stravaName": "Pauline Moalic",
+          "athleteId": "140819788",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6085,6 +6085,16 @@
         },
         {
           "rank": 98,
+          "officialName": "Camille Frairrot",
+          "stravaName": "Cam 🌷 LaMenace",
+          "athleteId": "64813353",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 119,
+          "time": "5h 34m"
+        },
+        {
+          "rank": 99,
           "officialName": "Lou Serrig",
           "stravaName": "Lou Serrig",
           "athleteId": "167885991",
@@ -6092,16 +6102,6 @@
           "distance_km": 0,
           "elev_gain_m": 0,
           "time": "0h 0m"
-        },
-        {
-          "rank": 99,
-          "officialName": "Camille Frairrot",
-          "stravaName": "Cam 🌷 LaMenace",
-          "athleteId": "64813353",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 42,
-          "time": "3h 11m"
         }
       ],
       "topElevation": [
@@ -6110,25 +6110,91 @@
           "officialName": "Redouane Mimouni",
           "stravaName": "Redouane Mimouni",
           "athleteId": "4661600",
-          "activities": 23,
-          "distance_km": 501.6,
-          "elev_gain_m": 6037,
-          "time": "22h 1m",
-          "avg_speed_kmh": 22.8
+          "activities": 34,
+          "distance_km": 559,
+          "elev_gain_m": 6587,
+          "time": "25h 26m",
+          "avg_speed_kmh": 22
         },
         {
           "rank": 2,
+          "officialName": "Aymeric Closier",
+          "stravaName": "Aymeric Closier",
+          "athleteId": "3717532",
+          "activities": 15,
+          "distance_km": 453.4,
+          "elev_gain_m": 5372,
+          "time": "16h 35m",
+          "avg_speed_kmh": 27.3
+        },
+        {
+          "rank": 3,
           "officialName": "Pierrick Pinault",
           "stravaName": "Papo Kano",
           "athleteId": "58548359",
           "activities": 0,
-          "distance_km": 298.7,
-          "elev_gain_m": 3673,
-          "time": "11h 22m",
-          "avg_speed_kmh": 26.3
+          "distance_km": 402.8,
+          "elev_gain_m": 4725,
+          "time": "14h 47m",
+          "avg_speed_kmh": 27.2
         },
         {
-          "rank": 3,
+          "rank": 4,
+          "officialName": "Louis Prome",
+          "stravaName": "Louis Promé",
+          "athleteId": "91897362",
+          "activities": 5,
+          "distance_km": 233,
+          "elev_gain_m": 4575,
+          "time": "9h 28m",
+          "avg_speed_kmh": 24.6
+        },
+        {
+          "rank": 5,
+          "officialName": "Elias Khaldi",
+          "stravaName": "Elias going crzy",
+          "athleteId": "148601632",
+          "activities": 0,
+          "distance_km": 353.7,
+          "elev_gain_m": 3666,
+          "time": "16h 19m",
+          "avg_speed_kmh": 21.7
+        },
+        {
+          "rank": 6,
+          "officialName": "Patrick Boeufgras",
+          "stravaName": "Patrick Boeufgras",
+          "athleteId": "48353332",
+          "activities": 10,
+          "distance_km": 229.4,
+          "elev_gain_m": 3607,
+          "time": "9h 33m",
+          "avg_speed_kmh": 24
+        },
+        {
+          "rank": 7,
+          "officialName": "Damien Kurtzemann",
+          "stravaName": "Damien Kurtzemann",
+          "athleteId": "4278363",
+          "activities": 2,
+          "distance_km": 63.8,
+          "elev_gain_m": 3600,
+          "time": "17h 46m",
+          "avg_speed_kmh": 3.6
+        },
+        {
+          "rank": 8,
+          "officialName": "Cédric Baudinet",
+          "stravaName": "Cédric Baudinet",
+          "athleteId": "23843091",
+          "activities": 9,
+          "distance_km": 364.1,
+          "elev_gain_m": 3555,
+          "time": "14h 2m",
+          "avg_speed_kmh": 25.9
+        },
+        {
+          "rank": 9,
           "officialName": "Clément Dubreucq",
           "stravaName": "Clément Dubreucq",
           "athleteId": "89085493",
@@ -6139,161 +6205,139 @@
           "avg_speed_kmh": 21.6
         },
         {
-          "rank": 4,
-          "officialName": "Aymeric Closier",
-          "stravaName": "Aymeric Closier",
-          "athleteId": "3717532",
-          "activities": 8,
-          "distance_km": 249.6,
-          "elev_gain_m": 3205,
-          "time": "10h 6m",
-          "avg_speed_kmh": 24.7
-        },
-        {
-          "rank": 5,
-          "officialName": "Cédric Baudinet",
-          "stravaName": "Cédric Baudinet",
-          "athleteId": "23843091",
-          "activities": 8,
-          "distance_km": 285.3,
-          "elev_gain_m": 2787,
-          "time": "11h 17m",
-          "avg_speed_kmh": 25.3
-        },
-        {
-          "rank": 6,
-          "officialName": "Damien Kurtzemann",
-          "stravaName": "Damien Kurtzemann",
-          "athleteId": "4278363",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 2780,
-          "time": "13h 43m",
-          "avg_speed_kmh": 0
-        },
-        {
-          "rank": 7,
+          "rank": 10,
           "officialName": "Florian Maillou",
           "stravaName": "Florian Maillou",
           "athleteId": "121180934",
-          "activities": 8,
-          "distance_km": 425.8,
-          "elev_gain_m": 2409,
-          "time": "17h 30m",
+          "activities": 10,
+          "distance_km": 516.1,
+          "elev_gain_m": 2464,
+          "time": "21h 16m",
           "avg_speed_kmh": 24.3
         },
         {
-          "rank": 8,
-          "officialName": "Elias Khaldi",
-          "stravaName": "Elias going crzy",
-          "athleteId": "148601632",
-          "activities": 0,
-          "distance_km": 208,
-          "elev_gain_m": 2234,
-          "time": "8h 11m",
-          "avg_speed_kmh": 25.4
-        },
-        {
-          "rank": 9,
-          "officialName": "Patrick Boeufgras",
-          "stravaName": "Patrick Boeufgras",
-          "athleteId": "48353332",
-          "activities": 6,
-          "distance_km": 149.9,
-          "elev_gain_m": 2067,
-          "time": "6h 2m",
-          "avg_speed_kmh": 24.8
-        },
-        {
-          "rank": 10,
-          "officialName": "Hendricks Delcambre",
-          "stravaName": "Hendricks Delcambre",
-          "athleteId": "144531882",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 1858,
-          "time": "6h 51m",
-          "avg_speed_kmh": 0
-        },
-        {
           "rank": 11,
+          "officialName": "Nicolas Lermission",
+          "stravaName": "Nicolas Lermission",
+          "athleteId": "143429323",
+          "activities": 16,
+          "distance_km": 287.6,
+          "elev_gain_m": 2358,
+          "time": "10h 49m",
+          "avg_speed_kmh": 26.6
+        },
+        {
+          "rank": 12,
           "officialName": "Huu Duc Nguyen",
           "stravaName": "Duc Ngn",
           "athleteId": "127761085",
           "activities": 0,
-          "distance_km": 251.3,
-          "elev_gain_m": 1766,
-          "time": "11h 37m",
-          "avg_speed_kmh": 21.6
+          "distance_km": 316.1,
+          "elev_gain_m": 2276,
+          "time": "14h 53m",
+          "avg_speed_kmh": 21.2
         },
         {
-          "rank": 12,
+          "rank": 13,
+          "officialName": "Hendricks Delcambre",
+          "stravaName": "Hendricks Delcambre",
+          "athleteId": "144531882",
+          "activities": 1,
+          "distance_km": 0,
+          "elev_gain_m": 2127,
+          "time": "8h 39m",
+          "avg_speed_kmh": 0
+        },
+        {
+          "rank": 14,
           "officialName": "Cédric Hamonier",
           "stravaName": "Cédric Hamonier",
           "athleteId": "7105237",
           "activities": 0,
-          "distance_km": 152.4,
-          "elev_gain_m": 1625,
-          "time": "13h 38m",
-          "avg_speed_kmh": 11.2
-        },
-        {
-          "rank": 13,
-          "officialName": "Nicolas Lermission",
-          "stravaName": "Nicolas Lermission",
-          "athleteId": "143429323",
-          "activities": 11,
-          "distance_km": 175.1,
-          "elev_gain_m": 1333,
-          "time": "6h 48m",
-          "avg_speed_kmh": 25.8
-        },
-        {
-          "rank": 14,
-          "officialName": "Raphaël Villette",
-          "stravaName": "Raphaël Villette",
-          "athleteId": "3316462",
-          "activities": 3,
-          "distance_km": 134.3,
-          "elev_gain_m": 1221,
-          "time": "5h 47m",
-          "avg_speed_kmh": 23.2
+          "distance_km": 177.7,
+          "elev_gain_m": 1816,
+          "time": "16h 38m",
+          "avg_speed_kmh": 10.7
         },
         {
           "rank": 15,
+          "officialName": "Antonin Simon",
+          "stravaName": "Antonin Simon",
+          "athleteId": "26233481",
+          "activities": 0,
+          "distance_km": 171.7,
+          "elev_gain_m": 1785,
+          "time": "11h 4m",
+          "avg_speed_kmh": 15.5
+        },
+        {
+          "rank": 16,
+          "officialName": "Frederic Tardivot (Fred)",
+          "stravaName": "Fréd TT",
+          "athleteId": "36804008",
+          "activities": 2,
+          "distance_km": 158.8,
+          "elev_gain_m": 1425,
+          "time": "13h 56m",
+          "avg_speed_kmh": 11.4
+        },
+        {
+          "rank": 17,
           "officialName": "Jean-Baptiste Lafon",
           "stravaName": "Jb Lafon",
           "athleteId": "105333127",
           "activities": 3,
-          "distance_km": 140.2,
-          "elev_gain_m": 1177,
-          "time": "7h 41m",
-          "avg_speed_kmh": 18.2
+          "distance_km": 142.6,
+          "elev_gain_m": 1363,
+          "time": "9h 14m",
+          "avg_speed_kmh": 15.4
         },
         {
-          "rank": 16,
-          "officialName": "Louis Prome",
-          "stravaName": "Louis Promé",
-          "athleteId": "91897362",
+          "rank": 18,
+          "officialName": "Raphaël Villette",
+          "stravaName": "Raphaël Villette",
+          "athleteId": "3316462",
+          "activities": 4,
+          "distance_km": 140.5,
+          "elev_gain_m": 1263,
+          "time": "6h 0m",
+          "avg_speed_kmh": 23.4
+        },
+        {
+          "rank": 19,
+          "officialName": "Tanguy Delacôte",
+          "stravaName": "Tanguy Delacôte",
+          "athleteId": "34003207",
           "activities": 3,
-          "distance_km": 90.4,
-          "elev_gain_m": 803,
-          "time": "3h 19m",
-          "avg_speed_kmh": 27.3
+          "distance_km": 166.2,
+          "elev_gain_m": 1172,
+          "time": "7h 21m",
+          "avg_speed_kmh": 22.6
         },
         {
-          "rank": 17,
+          "rank": 20,
+          "officialName": "Léo Kiner",
+          "stravaName": "Léo Kiner",
+          "athleteId": "105260121",
+          "activities": 0,
+          "distance_km": 10.8,
+          "elev_gain_m": 895,
+          "time": "16h 10m",
+          "avg_speed_kmh": 0.7
+        },
+        {
+          "rank": 21,
           "officialName": "Thomas Trégaro",
           "stravaName": "Thomas Trégaro",
           "athleteId": "17524404",
           "activities": 7,
-          "distance_km": 125,
+          "distance_km": 125.5,
           "elev_gain_m": 797,
           "time": "5h 6m",
-          "avg_speed_kmh": 24.5
+          "avg_speed_kmh": 24.6
         },
         {
-          "rank": 18,
+          "rank": 22,
           "officialName": "Louis Regnier",
           "stravaName": "Louis Regnier",
           "athleteId": "114654439",
@@ -6304,40 +6348,40 @@
           "avg_speed_kmh": 27.9
         },
         {
-          "rank": 19,
-          "officialName": "Frederic Tardivot (Fred)",
-          "stravaName": "Fréd TT",
-          "athleteId": "36804008",
-          "activities": 1,
-          "distance_km": 75.2,
-          "elev_gain_m": 735,
-          "time": "8h 20m",
-          "avg_speed_kmh": 9
-        },
-        {
-          "rank": 20,
-          "officialName": "Tanguy Delacôte",
-          "stravaName": "Tanguy Delacôte",
-          "athleteId": "34003207",
-          "activities": 1,
-          "distance_km": 88.1,
-          "elev_gain_m": 579,
-          "time": "4h 37m",
-          "avg_speed_kmh": 19.1
-        },
-        {
-          "rank": 21,
-          "officialName": "Léo Kiner",
-          "stravaName": "Léo Kiner",
-          "athleteId": "105260121",
+          "rank": 23,
+          "officialName": "Theo Payet",
+          "stravaName": "Theo Payet",
+          "athleteId": "41999903",
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 576,
-          "time": "11h 46m",
+          "elev_gain_m": 613,
+          "time": "12h 9m",
           "avg_speed_kmh": 0
         },
         {
-          "rank": 22,
+          "rank": 24,
+          "officialName": "Florian Sicard-Baux",
+          "stravaName": "Florian Sicard--Baux",
+          "athleteId": "131652920",
+          "activities": 4,
+          "distance_km": 74,
+          "elev_gain_m": 580,
+          "time": "8h 0m",
+          "avg_speed_kmh": 9.3
+        },
+        {
+          "rank": 25,
+          "officialName": "Franck Georges",
+          "stravaName": "Franck Georges",
+          "athleteId": "39039042",
+          "activities": 2,
+          "distance_km": 65.1,
+          "elev_gain_m": 569,
+          "time": "7h 36m",
+          "avg_speed_kmh": 8.6
+        },
+        {
+          "rank": 26,
           "officialName": "Valentin Ensuque",
           "stravaName": "Valentin Ensuque",
           "athleteId": "98329688",
@@ -6348,7 +6392,18 @@
           "avg_speed_kmh": 24.7
         },
         {
-          "rank": 23,
+          "rank": 27,
+          "officialName": "Pierre-Louis Mejean",
+          "stravaName": "Pierre-Louis Mejean",
+          "athleteId": "6805650",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 553,
+          "time": "4h 53m",
+          "avg_speed_kmh": 0
+        },
+        {
+          "rank": 28,
           "officialName": "Pierrick Michel",
           "stravaName": "Pierrick MICHEL",
           "athleteId": "137504714",
@@ -6359,80 +6414,25 @@
           "avg_speed_kmh": 25.5
         },
         {
-          "rank": 24,
-          "officialName": "Franck Georges",
-          "stravaName": "Franck Georges",
-          "athleteId": "39039042",
-          "activities": 1,
-          "distance_km": 60.2,
-          "elev_gain_m": 426,
-          "time": "2h 34m",
-          "avg_speed_kmh": 23.5
-        },
-        {
-          "rank": 25,
-          "officialName": "Florian Sicard-Baux",
-          "stravaName": "Florian Sicard--Baux",
-          "athleteId": "131652920",
-          "activities": 4,
-          "distance_km": 69.9,
-          "elev_gain_m": 426,
-          "time": "5h 34m",
-          "avg_speed_kmh": 12.6
-        },
-        {
-          "rank": 26,
-          "officialName": "Pierre-Louis Mejean",
-          "stravaName": "Pierre-Louis Mejean",
-          "athleteId": "6805650",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 410,
-          "time": "3h 15m",
-          "avg_speed_kmh": 0
-        },
-        {
-          "rank": 27,
-          "officialName": "Theo Payet",
-          "stravaName": "Theo Payet",
-          "athleteId": "41999903",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 402,
-          "time": "8h 4m",
-          "avg_speed_kmh": 0
-        },
-        {
-          "rank": 28,
-          "officialName": "Antonin Simon",
-          "stravaName": "Antonin Simon",
-          "athleteId": "26233481",
-          "activities": 0,
-          "distance_km": 86,
-          "elev_gain_m": 343,
-          "time": "7h 1m",
-          "avg_speed_kmh": 12.3
-        },
-        {
           "rank": 29,
+          "officialName": "Raquel Cardó Fernández",
+          "stravaName": "Raquel CF",
+          "athleteId": "165159968",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 331,
+          "time": "13h 16m",
+          "avg_speed_kmh": 0
+        },
+        {
+          "rank": 30,
           "officialName": "Christopher Walton",
           "stravaName": "Chris Walton",
           "athleteId": "19030055",
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 171,
-          "time": "8h 21m",
-          "avg_speed_kmh": 0
-        },
-        {
-          "rank": 30,
-          "officialName": "Fandy Sabarila",
-          "stravaName": "Fandi Sabarila",
-          "athleteId": "23711779",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 65,
-          "time": "0h 40m",
+          "elev_gain_m": 239,
+          "time": "12h 29m",
           "avg_speed_kmh": 0
         },
         {
@@ -6442,41 +6442,41 @@
           "athleteId": "64813353",
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 42,
-          "time": "3h 11m",
+          "elev_gain_m": 119,
+          "time": "5h 34m",
           "avg_speed_kmh": 0
         },
         {
           "rank": 32,
+          "officialName": "Fandy Sabarila",
+          "stravaName": "Fandi Sabarila",
+          "athleteId": "23711779",
+          "activities": 0,
+          "distance_km": 0.8,
+          "elev_gain_m": 65,
+          "time": "0h 40m",
+          "avg_speed_kmh": 1.2
+        },
+        {
+          "rank": 33,
           "officialName": "Vincent Jacquot",
           "stravaName": "Vincent Jacquot",
           "athleteId": "105753051",
           "activities": 0,
-          "distance_km": 3.1,
-          "elev_gain_m": 27,
-          "time": "0h 32m",
-          "avg_speed_kmh": 5.8
+          "distance_km": 3.6,
+          "elev_gain_m": 44,
+          "time": "0h 44m",
+          "avg_speed_kmh": 4.9
         },
         {
-          "rank": 33,
+          "rank": 34,
           "officialName": "André Boeufgras",
           "stravaName": "André Boeufgras",
           "athleteId": "105260117",
           "activities": 0,
           "distance_km": 0,
-          "elev_gain_m": 13,
-          "time": "1h 45m",
-          "avg_speed_kmh": 0
-        },
-        {
-          "rank": 34,
-          "officialName": "Raquel Cardó Fernández",
-          "stravaName": "Raquel CF",
-          "athleteId": "165159968",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 3,
-          "time": "10h 35m",
+          "elev_gain_m": 31,
+          "time": "2h 15m",
           "avg_speed_kmh": 0
         },
         {
@@ -6525,9 +6525,9 @@
         },
         {
           "rank": 39,
-          "officialName": "Margaux Dirat",
-          "stravaName": "Margaux Dirat",
-          "athleteId": "105260114",
+          "officialName": "Andrea Arcis-Jobert",
+          "stravaName": "Andrea Arcis",
+          "athleteId": "121404173",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6536,9 +6536,9 @@
         },
         {
           "rank": 40,
-          "officialName": "Andrea Arcis-Jobert",
-          "stravaName": "Andrea Arcis",
-          "athleteId": "121404173",
+          "officialName": "Margaux Dirat",
+          "stravaName": "Margaux Dirat",
+          "athleteId": "105260114",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6591,9 +6591,9 @@
         },
         {
           "rank": 45,
-          "officialName": "Michel Heitzmann",
-          "stravaName": "Michel Heitzmann",
-          "athleteId": "46890374",
+          "officialName": "Diego Frappas",
+          "stravaName": "Diego Frappas",
+          "athleteId": "104860086",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6602,9 +6602,9 @@
         },
         {
           "rank": 46,
-          "officialName": "Diego Frappas",
-          "stravaName": "Diego Frappas",
-          "athleteId": "104860086",
+          "officialName": "Michel Heitzmann",
+          "stravaName": "Michel Heitzmann",
+          "athleteId": "46890374",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6635,17 +6635,6 @@
         },
         {
           "rank": 49,
-          "officialName": "Alexis Tesseyre",
-          "stravaName": "Alexis Tesseyre",
-          "athleteId": "41460517",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        },
-        {
-          "rank": 50,
           "officialName": "Nathan Gavalda",
           "stravaName": "Nathan Gavalda",
           "athleteId": "140687799",
@@ -6656,7 +6645,7 @@
           "avg_speed_kmh": 0
         },
         {
-          "rank": 51,
+          "rank": 50,
           "officialName": "Vincent Carli",
           "stravaName": "Vincent Carli",
           "athleteId": "6809800",
@@ -6667,10 +6656,10 @@
           "avg_speed_kmh": 0
         },
         {
-          "rank": 52,
-          "officialName": "Remy Triboult",
-          "stravaName": "Remy TRIBOULT",
-          "athleteId": "44498305",
+          "rank": 51,
+          "officialName": "Alexis Tesseyre",
+          "stravaName": "Alexis Tesseyre",
+          "athleteId": "41460517",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6678,7 +6667,7 @@
           "avg_speed_kmh": 0
         },
         {
-          "rank": 53,
+          "rank": 52,
           "officialName": "Elie Willems",
           "stravaName": "Elie Willems",
           "athleteId": "43793012",
@@ -6689,10 +6678,10 @@
           "avg_speed_kmh": 0
         },
         {
-          "rank": 54,
-          "officialName": "Xavier Tabel",
-          "stravaName": "Xavier Tabel",
-          "athleteId": "13426749",
+          "rank": 53,
+          "officialName": "Remy Triboult",
+          "stravaName": "Remy TRIBOULT",
+          "athleteId": "44498305",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6700,7 +6689,7 @@
           "avg_speed_kmh": 0
         },
         {
-          "rank": 55,
+          "rank": 54,
           "officialName": "Kevin Costil",
           "stravaName": "kevin costil",
           "athleteId": "7320475",
@@ -6711,10 +6700,21 @@
           "avg_speed_kmh": 0
         },
         {
-          "rank": 56,
+          "rank": 55,
           "officialName": "Ben Horny",
           "stravaName": "Ben Horny",
           "athleteId": "120320770",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        {
+          "rank": 56,
+          "officialName": "Xavier Tabel",
+          "stravaName": "Xavier Tabel",
+          "athleteId": "13426749",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6734,9 +6734,9 @@
         },
         {
           "rank": 58,
-          "officialName": "Brandon Guillerminet",
-          "stravaName": "Brandon Guillerminet",
-          "athleteId": "140819777",
+          "officialName": "Florian Lamarre",
+          "stravaName": "Florian Lamarre",
+          "athleteId": "39474706",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6745,9 +6745,9 @@
         },
         {
           "rank": 59,
-          "officialName": "Florian Lamarre",
-          "stravaName": "Florian Lamarre",
-          "athleteId": "39474706",
+          "officialName": "Brandon Guillerminet",
+          "stravaName": "Brandon Guillerminet",
+          "athleteId": "140819777",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6800,16 +6800,6 @@
         },
         {
           "rank": 64,
-          "officialName": "Nicholas Sydenham",
-          "stravaName": "Nicholas Sydenham",
-          "athleteId": "11069796",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 65,
           "officialName": "Louise Girot Person",
           "stravaName": "Louise Girot",
           "athleteId": "40657656",
@@ -6818,6 +6808,16 @@
           "elev_gain_m": 0,
           "time": "0h 0m",
           "avg_speed_kmh": 0
+        },
+        {
+          "rank": 65,
+          "officialName": "Nicholas Sydenham",
+          "stravaName": "Nicholas Sydenham",
+          "athleteId": "11069796",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
         },
         {
           "rank": 66,
@@ -6832,9 +6832,9 @@
         },
         {
           "rank": 67,
-          "officialName": "Thomas Lecoq",
-          "stravaName": "Thomas lecoq",
-          "athleteId": "28723223",
+          "officialName": "Moaad Fattali",
+          "stravaName": "Moaad Fattali",
+          "athleteId": "121175659",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6843,9 +6843,9 @@
         },
         {
           "rank": 68,
-          "officialName": "Moaad Fattali",
-          "stravaName": "Moaad Fattali",
-          "athleteId": "121175659",
+          "officialName": "Thomas Lecoq",
+          "stravaName": "Thomas lecoq",
+          "athleteId": "28723223",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6876,9 +6876,9 @@
         },
         {
           "rank": 71,
-          "officialName": "Alexandre Bouyssoux",
-          "stravaName": "Alexandre Bouyssoux",
-          "athleteId": "88079010",
+          "officialName": "François Granier",
+          "stravaName": "Francois Granier",
+          "athleteId": "116499839",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -6887,9 +6887,9 @@
         },
         {
           "rank": 72,
-          "officialName": "François Granier",
-          "stravaName": "Francois Granier",
-          "athleteId": "116499839",
+          "officialName": "Alexandre Bouyssoux",
+          "stravaName": "Alexandre Bouyssoux",
+          "athleteId": "88079010",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -7007,9 +7007,9 @@
         },
         {
           "rank": 83,
-          "officialName": "Audrey Mignon",
-          "stravaName": "Audrey Mignon",
-          "athleteId": "116500109",
+          "officialName": "Hester van Wachem",
+          "stravaName": "Hester van Wachem",
+          "athleteId": "140819779",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -7018,9 +7018,9 @@
         },
         {
           "rank": 84,
-          "officialName": "Hester van Wachem",
-          "stravaName": "Hester van Wachem",
-          "athleteId": "140819779",
+          "officialName": "Audrey Mignon",
+          "stravaName": "Audrey Mignon",
+          "athleteId": "116500109",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -7040,16 +7040,6 @@
         },
         {
           "rank": 86,
-          "officialName": "Lucas Nesta",
-          "stravaName": "Lucas Nesta",
-          "athleteId": "140685600",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m"
-        },
-        {
-          "rank": 87,
           "officialName": "Richard Planchon",
           "stravaName": "Planchon  Richard",
           "athleteId": "16841100",
@@ -7060,10 +7050,20 @@
           "avg_speed_kmh": 0
         },
         {
+          "rank": 87,
+          "officialName": "Lucas Nesta",
+          "stravaName": "Lucas Nesta",
+          "athleteId": "140685600",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m"
+        },
+        {
           "rank": 88,
-          "officialName": "Mathis Roblot",
-          "stravaName": "Mathis Rblt",
-          "athleteId": "38174865",
+          "officialName": "Anthony Capelotar",
+          "stravaName": "Anthony Capelotar",
+          "athleteId": "140819782",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -7083,9 +7083,9 @@
         },
         {
           "rank": 90,
-          "officialName": "Anthony Capelotar",
-          "stravaName": "Anthony Capelotar",
-          "athleteId": "140819782",
+          "officialName": "Mathis Roblot",
+          "stravaName": "Mathis Rblt",
+          "athleteId": "38174865",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -7094,17 +7094,6 @@
         },
         {
           "rank": 91,
-          "officialName": "Boris Cormary",
-          "stravaName": "Boris Cormary",
-          "athleteId": "105260119",
-          "activities": 0,
-          "distance_km": 0,
-          "elev_gain_m": 0,
-          "time": "0h 0m",
-          "avg_speed_kmh": 0
-        },
-        {
-          "rank": 92,
           "officialName": "Charly Jegat",
           "stravaName": "Charly  🇫🇷",
           "athleteId": "123685345",
@@ -7115,10 +7104,21 @@
           "avg_speed_kmh": 0
         },
         {
+          "rank": 92,
+          "officialName": "Boris Cormary",
+          "stravaName": "Boris Cormary",
+          "athleteId": "105260119",
+          "activities": 0,
+          "distance_km": 0,
+          "elev_gain_m": 0,
+          "time": "0h 0m",
+          "avg_speed_kmh": 0
+        },
+        {
           "rank": 93,
-          "officialName": "Pauline Moalic",
-          "stravaName": "Pauline Moalic",
-          "athleteId": "140819788",
+          "officialName": "Zoé Paquet",
+          "stravaName": "Zoe Pqt",
+          "athleteId": "105273120",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -7127,9 +7127,9 @@
         },
         {
           "rank": 94,
-          "officialName": "Zoé Paquet",
-          "stravaName": "Zoe Pqt",
-          "athleteId": "105273120",
+          "officialName": "Pauline Moalic",
+          "stravaName": "Pauline Moalic",
+          "athleteId": "140819788",
           "activities": 0,
           "distance_km": 0,
           "elev_gain_m": 0,
@@ -7206,13 +7206,13 @@
         },
         {
           "rank": 2,
-          "officialName": "Louis Prome",
-          "stravaName": "Louis Promé",
-          "athleteId": "91897362",
-          "activities": 3,
-          "distance_km": 90.4,
-          "elev_gain_m": 803,
-          "time": "3h 19m",
+          "officialName": "Aymeric Closier",
+          "stravaName": "Aymeric Closier",
+          "athleteId": "3717532",
+          "activities": 15,
+          "distance_km": 453.4,
+          "elev_gain_m": 5372,
+          "time": "16h 35m",
           "avg_speed_kmh": 27.3
         },
         {
@@ -7221,24 +7221,35 @@
           "stravaName": "Papo Kano",
           "athleteId": "58548359",
           "activities": 0,
-          "distance_km": 298.7,
-          "elev_gain_m": 3673,
-          "time": "11h 22m",
-          "avg_speed_kmh": 26.3
+          "distance_km": 402.8,
+          "elev_gain_m": 4725,
+          "time": "14h 47m",
+          "avg_speed_kmh": 27.2
         },
         {
           "rank": 4,
           "officialName": "Nicolas Lermission",
           "stravaName": "Nicolas Lermission",
           "athleteId": "143429323",
-          "activities": 11,
-          "distance_km": 175.1,
-          "elev_gain_m": 1333,
-          "time": "6h 48m",
-          "avg_speed_kmh": 25.8
+          "activities": 16,
+          "distance_km": 287.6,
+          "elev_gain_m": 2358,
+          "time": "10h 49m",
+          "avg_speed_kmh": 26.6
         },
         {
           "rank": 5,
+          "officialName": "Cédric Baudinet",
+          "stravaName": "Cédric Baudinet",
+          "athleteId": "23843091",
+          "activities": 9,
+          "distance_km": 364.1,
+          "elev_gain_m": 3555,
+          "time": "14h 2m",
+          "avg_speed_kmh": 25.9
+        },
+        {
+          "rank": 6,
           "officialName": "Pierrick Michel",
           "stravaName": "Pierrick MICHEL",
           "athleteId": "137504714",
@@ -7249,51 +7260,7 @@
           "avg_speed_kmh": 25.5
         },
         {
-          "rank": 6,
-          "officialName": "Elias Khaldi",
-          "stravaName": "Elias going crzy",
-          "athleteId": "148601632",
-          "activities": 0,
-          "distance_km": 208,
-          "elev_gain_m": 2234,
-          "time": "8h 11m",
-          "avg_speed_kmh": 25.4
-        },
-        {
           "rank": 7,
-          "officialName": "Cédric Baudinet",
-          "stravaName": "Cédric Baudinet",
-          "athleteId": "23843091",
-          "activities": 8,
-          "distance_km": 285.3,
-          "elev_gain_m": 2787,
-          "time": "11h 17m",
-          "avg_speed_kmh": 25.3
-        },
-        {
-          "rank": 8,
-          "officialName": "Patrick Boeufgras",
-          "stravaName": "Patrick Boeufgras",
-          "athleteId": "48353332",
-          "activities": 6,
-          "distance_km": 149.9,
-          "elev_gain_m": 2067,
-          "time": "6h 2m",
-          "avg_speed_kmh": 24.8
-        },
-        {
-          "rank": 9,
-          "officialName": "Aymeric Closier",
-          "stravaName": "Aymeric Closier",
-          "athleteId": "3717532",
-          "activities": 8,
-          "distance_km": 249.6,
-          "elev_gain_m": 3205,
-          "time": "10h 6m",
-          "avg_speed_kmh": 24.7
-        },
-        {
-          "rank": 10,
           "officialName": "Valentin Ensuque",
           "stravaName": "Valentin Ensuque",
           "athleteId": "98329688",
@@ -7304,73 +7271,95 @@
           "avg_speed_kmh": 24.7
         },
         {
-          "rank": 11,
+          "rank": 8,
           "officialName": "Thomas Trégaro",
           "stravaName": "Thomas Trégaro",
           "athleteId": "17524404",
           "activities": 7,
-          "distance_km": 125,
+          "distance_km": 125.5,
           "elev_gain_m": 797,
           "time": "5h 6m",
-          "avg_speed_kmh": 24.5
+          "avg_speed_kmh": 24.6
         },
         {
-          "rank": 12,
+          "rank": 9,
+          "officialName": "Louis Prome",
+          "stravaName": "Louis Promé",
+          "athleteId": "91897362",
+          "activities": 5,
+          "distance_km": 233,
+          "elev_gain_m": 4575,
+          "time": "9h 28m",
+          "avg_speed_kmh": 24.6
+        },
+        {
+          "rank": 10,
           "officialName": "Florian Maillou",
           "stravaName": "Florian Maillou",
           "athleteId": "121180934",
-          "activities": 8,
-          "distance_km": 425.8,
-          "elev_gain_m": 2409,
-          "time": "17h 30m",
+          "activities": 10,
+          "distance_km": 516.1,
+          "elev_gain_m": 2464,
+          "time": "21h 16m",
           "avg_speed_kmh": 24.3
         },
         {
-          "rank": 13,
-          "officialName": "Franck Georges",
-          "stravaName": "Franck Georges",
-          "athleteId": "39039042",
-          "activities": 1,
-          "distance_km": 60.2,
-          "elev_gain_m": 426,
-          "time": "2h 34m",
-          "avg_speed_kmh": 23.5
+          "rank": 11,
+          "officialName": "Patrick Boeufgras",
+          "stravaName": "Patrick Boeufgras",
+          "athleteId": "48353332",
+          "activities": 10,
+          "distance_km": 229.4,
+          "elev_gain_m": 3607,
+          "time": "9h 33m",
+          "avg_speed_kmh": 24
         },
         {
-          "rank": 14,
+          "rank": 12,
           "officialName": "Raphaël Villette",
           "stravaName": "Raphaël Villette",
           "athleteId": "3316462",
-          "activities": 3,
-          "distance_km": 134.3,
-          "elev_gain_m": 1221,
-          "time": "5h 47m",
-          "avg_speed_kmh": 23.2
+          "activities": 4,
+          "distance_km": 140.5,
+          "elev_gain_m": 1263,
+          "time": "6h 0m",
+          "avg_speed_kmh": 23.4
         },
         {
-          "rank": 15,
+          "rank": 13,
+          "officialName": "Tanguy Delacôte",
+          "stravaName": "Tanguy Delacôte",
+          "athleteId": "34003207",
+          "activities": 3,
+          "distance_km": 166.2,
+          "elev_gain_m": 1172,
+          "time": "7h 21m",
+          "avg_speed_kmh": 22.6
+        },
+        {
+          "rank": 14,
           "officialName": "Redouane Mimouni",
           "stravaName": "Redouane Mimouni",
           "athleteId": "4661600",
-          "activities": 23,
-          "distance_km": 501.6,
-          "elev_gain_m": 6037,
-          "time": "22h 1m",
-          "avg_speed_kmh": 22.8
+          "activities": 34,
+          "distance_km": 559,
+          "elev_gain_m": 6587,
+          "time": "25h 26m",
+          "avg_speed_kmh": 22
+        },
+        {
+          "rank": 15,
+          "officialName": "Elias Khaldi",
+          "stravaName": "Elias going crzy",
+          "athleteId": "148601632",
+          "activities": 0,
+          "distance_km": 353.7,
+          "elev_gain_m": 3666,
+          "time": "16h 19m",
+          "avg_speed_kmh": 21.7
         },
         {
           "rank": 16,
-          "officialName": "Huu Duc Nguyen",
-          "stravaName": "Duc Ngn",
-          "athleteId": "127761085",
-          "activities": 0,
-          "distance_km": 251.3,
-          "elev_gain_m": 1766,
-          "time": "11h 37m",
-          "avg_speed_kmh": 21.6
-        },
-        {
-          "rank": 17,
           "officialName": "Clément Dubreucq",
           "stravaName": "Clément Dubreucq",
           "athleteId": "89085493",
@@ -7381,15 +7370,26 @@
           "avg_speed_kmh": 21.6
         },
         {
+          "rank": 17,
+          "officialName": "Huu Duc Nguyen",
+          "stravaName": "Duc Ngn",
+          "athleteId": "127761085",
+          "activities": 0,
+          "distance_km": 316.1,
+          "elev_gain_m": 2276,
+          "time": "14h 53m",
+          "avg_speed_kmh": 21.2
+        },
+        {
           "rank": 18,
-          "officialName": "Tanguy Delacôte",
-          "stravaName": "Tanguy Delacôte",
-          "athleteId": "34003207",
-          "activities": 1,
-          "distance_km": 88.1,
-          "elev_gain_m": 579,
-          "time": "4h 37m",
-          "avg_speed_kmh": 19.1
+          "officialName": "Antonin Simon",
+          "stravaName": "Antonin Simon",
+          "athleteId": "26233481",
+          "activities": 0,
+          "distance_km": 171.7,
+          "elev_gain_m": 1785,
+          "time": "11h 4m",
+          "avg_speed_kmh": 15.5
         },
         {
           "rank": 19,
@@ -7397,59 +7397,70 @@
           "stravaName": "Jb Lafon",
           "athleteId": "105333127",
           "activities": 3,
-          "distance_km": 140.2,
-          "elev_gain_m": 1177,
-          "time": "7h 41m",
-          "avg_speed_kmh": 18.2
+          "distance_km": 142.6,
+          "elev_gain_m": 1363,
+          "time": "9h 14m",
+          "avg_speed_kmh": 15.4
         },
         {
           "rank": 20,
-          "officialName": "Florian Sicard-Baux",
-          "stravaName": "Florian Sicard--Baux",
-          "athleteId": "131652920",
-          "activities": 4,
-          "distance_km": 69.9,
-          "elev_gain_m": 426,
-          "time": "5h 34m",
-          "avg_speed_kmh": 12.6
+          "officialName": "Frederic Tardivot (Fred)",
+          "stravaName": "Fréd TT",
+          "athleteId": "36804008",
+          "activities": 2,
+          "distance_km": 158.8,
+          "elev_gain_m": 1425,
+          "time": "13h 56m",
+          "avg_speed_kmh": 11.4
         },
         {
           "rank": 21,
-          "officialName": "Antonin Simon",
-          "stravaName": "Antonin Simon",
-          "athleteId": "26233481",
-          "activities": 0,
-          "distance_km": 86,
-          "elev_gain_m": 343,
-          "time": "7h 1m",
-          "avg_speed_kmh": 12.3
-        },
-        {
-          "rank": 22,
           "officialName": "Cédric Hamonier",
           "stravaName": "Cédric Hamonier",
           "athleteId": "7105237",
           "activities": 0,
-          "distance_km": 152.4,
-          "elev_gain_m": 1625,
-          "time": "13h 38m",
-          "avg_speed_kmh": 11.2
+          "distance_km": 177.7,
+          "elev_gain_m": 1816,
+          "time": "16h 38m",
+          "avg_speed_kmh": 10.7
+        },
+        {
+          "rank": 22,
+          "officialName": "Florian Sicard-Baux",
+          "stravaName": "Florian Sicard--Baux",
+          "athleteId": "131652920",
+          "activities": 4,
+          "distance_km": 74,
+          "elev_gain_m": 580,
+          "time": "8h 0m",
+          "avg_speed_kmh": 9.3
         },
         {
           "rank": 23,
-          "officialName": "Frederic Tardivot (Fred)",
-          "stravaName": "Fréd TT",
-          "athleteId": "36804008",
-          "activities": 1,
-          "distance_km": 75.2,
-          "elev_gain_m": 735,
-          "time": "8h 20m",
-          "avg_speed_kmh": 9
+          "officialName": "Franck Georges",
+          "stravaName": "Franck Georges",
+          "athleteId": "39039042",
+          "activities": 2,
+          "distance_km": 65.1,
+          "elev_gain_m": 569,
+          "time": "7h 36m",
+          "avg_speed_kmh": 8.6
+        },
+        {
+          "rank": 24,
+          "officialName": "Damien Kurtzemann",
+          "stravaName": "Damien Kurtzemann",
+          "athleteId": "4278363",
+          "activities": 2,
+          "distance_km": 63.8,
+          "elev_gain_m": 3600,
+          "time": "17h 46m",
+          "avg_speed_kmh": 3.6
         }
       ],
-      "totalKm": 4006,
-      "totalElevation": 45122,
-      "totalActivities": 102
+      "totalKm": 5452,
+      "totalElevation": 63704,
+      "totalActivities": 142
     }
   },
   "segmentOfMonth": {

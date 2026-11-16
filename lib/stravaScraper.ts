@@ -417,17 +417,34 @@ export async function fetchAthleteCalendarMonth(
 
     const rawHtml = totalsMatch[1].replace(/\\n/g, " ").replace(/\\/g, "");
 
-    // Distance en kilomètres
-    const distMatch = rawHtml.match(/([0-9,.]+)\s*<abbr[^>]*title=['"]kilometer/i);
-    const distanceKm = distMatch ? parseFloat(distMatch[1].replace(/,/g, "")) || 0 : 0;
+    // Distance en kilomètres (supporte français 'kilomètres' ou anglais 'kilometers')
+    const distMatch = rawHtml.match(
+      /([0-9\s\u00a0\u202f,.]+)\s*<abbr[^>]*title=['"](?:kilometers?|kilomètres?)['"][^>]*>\s*km<\/abbr>/i
+    );
+    let distanceKm = 0;
+    if (distMatch) {
+      let cleaned = distMatch[1].replace(/[\s\u00a0\u202f]/g, "");
+      if (cleaned.includes(",") && !cleaned.includes(".")) {
+        cleaned = cleaned.replace(",", ".");
+      } else if (cleaned.includes(",") && cleaned.includes(".")) {
+        cleaned = cleaned.replace(/,/g, "");
+      }
+      distanceKm = parseFloat(cleaned) || 0;
+    }
 
-    // Dénivelé en mètres
-    const elevMatch = rawHtml.match(/([0-9,.]+)\s*<abbr[^>]*title=['"]meter/i);
-    const elevGainM = elevMatch ? parseInt(elevMatch[1].replace(/,/g, ""), 10) || 0 : 0;
+    // Dénivelé en mètres (supporte français 'mètres' ou anglais 'meters')
+    const elevMatch = rawHtml.match(
+      /([0-9\s\u00a0\u202f,.]+)\s*<abbr[^>]*title=['"](?:meters?|mètres?)['"][^>]*>\s*m<\/abbr>/i
+    );
+    let elevGainM = 0;
+    if (elevMatch) {
+      const cleaned = elevMatch[1].replace(/[\s\u00a0\u202f,.]/g, "");
+      elevGainM = parseInt(cleaned, 10) || 0;
+    }
 
-    // Temps en selle (heures et minutes)
-    const hoursMatch = rawHtml.match(/(\d+)\s*<abbr[^>]*title=['"]hour['"][^>]*>h/i);
-    const minsMatch = rawHtml.match(/(\d+)\s*<abbr[^>]*title=['"]minute['"][^>]*>m/i);
+    // Temps en selle (heures et minutes, français 'heure'/'min' ou anglais 'hour'/'m')
+    const hoursMatch = rawHtml.match(/(\d+)\s*<abbr[^>]*title=['"](?:hour|heure)s?['"][^>]*>h<\/abbr>/i);
+    const minsMatch = rawHtml.match(/(\d+)\s*<abbr[^>]*title=['"]minutes?['"][^>]*>(?:m|min)<\/abbr>/i);
     const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
     const mins = minsMatch ? parseInt(minsMatch[1], 10) : 0;
     const timeStr = `${hours}h ${mins}m`;
