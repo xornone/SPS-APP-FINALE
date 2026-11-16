@@ -194,11 +194,11 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
     setIsSyncing(true);
     setSyncFeedback(null);
     try {
-      const CHUNK_SIZE = 50; // 2 étapes de 50 membres : ultra-rapide (~7s par étape) et ZÉRO risque de timeout Vercel
+      const CHUNK_SIZE = 25; // 4 étapes de 25 membres : comportement naturel indiscernable d'un navigateur, 0 risque de blocage et 0 timeout Vercel
       let offset = 0;
       let finalTimestamp: string | null = null;
       let step = 1;
-      const totalSteps = 2;
+      const totalSteps = 4;
 
       while (offset < 99) {
         setSyncStepText(`Scraping ${step}/${totalSteps}...`);

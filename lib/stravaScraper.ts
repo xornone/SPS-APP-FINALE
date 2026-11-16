@@ -392,6 +392,12 @@ export async function fetchAthleteCalendarMonth(
       {
         headers: {
           Cookie: `_strava4_session=${cookie}`,
+          Accept: "text/javascript, application/javascript, application/ecmascript, application/x-ecmascript, */*; q=0.01",
+          "Accept-Language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+          "Referer": `https://www.strava.com/athletes/${athleteId}`,
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-origin",
           "X-Requested-With": "XMLHttpRequest",
           "User-Agent":
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -584,8 +590,8 @@ export async function syncAllMembersStravaStats(
     }
   }
 
-  // BATCH_SIZE = 12 : débit rapide et stable sous les limites de temps serverless
-  const BATCH_SIZE = 12;
+  // BATCH_SIZE = 5 : modéré et naturel (équivalent au pool de connexions simultanées de Chrome/Safari)
+  const BATCH_SIZE = 5;
 
   for (let i = 0; i < membersToSync.length; i += BATCH_SIZE) {
     const batch = membersToSync.slice(i, i + BATCH_SIZE);
