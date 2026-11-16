@@ -124,6 +124,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   // Détection du compte connecté pour autoriser le scraping à la demande (th.tregaro@gmail.com uniquement)
   const [currentUserEmail, setCurrentUserEmail] = useState<string>("");
   const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStepText, setSyncStepText] = useState<string | null>(null);
   const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
 
   useEffect(() => {
@@ -193,17 +194,35 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
     setIsSyncing(true);
     setSyncFeedback(null);
     try {
-      const res = await fetch("/api/admin/strava/sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ months: [selectedMonth] }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Erreur de synchronisation");
+      const CHUNK_SIZE = 50; // 2 étapes de 50 membres : ultra-rapide (~7s par étape) et ZÉRO risque de timeout Vercel
+      let offset = 0;
+      let finalTimestamp: string | null = null;
+      let step = 1;
+      const totalSteps = 2;
+
+      while (offset < 99) {
+        setSyncStepText(`Scraping ${step}/${totalSteps}...`);
+        const res = await fetch("/api/admin/strava/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ months: [selectedMonth], offset, limit: CHUNK_SIZE }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Erreur de synchronisation");
+        }
+        if (data.timestamp) {
+          finalTimestamp = data.timestamp;
+        }
+        if (data.isFinal || !data.nextOffset) {
+          break;
+        }
+        offset = data.nextOffset;
+        step++;
       }
-      if (data.timestamp) {
-        setLastScrapeAt(data.timestamp);
+
+      if (finalTimestamp) {
+        setLastScrapeAt(finalTimestamp);
       }
       setSyncFeedback("Données Strava synchronisées avec succès ! Rechargement...");
       setTimeout(() => {
@@ -214,6 +233,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
       setSyncFeedback(`Erreur : ${msg}`);
     } finally {
       setIsSyncing(false);
+      setSyncStepText(null);
     }
   }
 
@@ -717,7 +737,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                     title="Actualiser les données Strava immédiatement (réservé à th.tregaro@gmail.com)"
                   >
                     <span className={isSyncing ? "animate-spin inline-block" : ""}>🔄</span>
-                    <span className="whitespace-nowrap">{isSyncing ? "Scraping en cours..." : "Scraper Strava"}</span>
+                    <span className="whitespace-nowrap">{isSyncing ? (syncStepText || "Scraping...") : "Scraper Strava"}</span>
                   </button>
 
                   {/* Voyant de validité de la session Strava (cliquable pour re-tester) */}

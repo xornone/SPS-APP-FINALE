@@ -24,21 +24,38 @@ export async function POST(request: Request) {
     const now = new Date();
     const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
     let targetMonths = [currentMonthKey];
+    let offset = 0;
+    let limit: number | undefined;
+
     try {
       const body = await request.json();
       if (body?.months && Array.isArray(body.months) && body.months.length > 0) {
         targetMonths = body.months;
       }
+      if (typeof body?.offset === "number") offset = body.offset;
+      if (typeof body?.limit === "number") limit = body.limit;
     } catch {
       // Pas de corps JSON, utilisation du mois en cours par défaut
     }
 
-    console.log("[api/admin/strava/sync] Démarrage de la synchronisation Strava pour les mois :", targetMonths);
-    const store = await syncAllMembersStravaStats(targetMonths);
+    console.log(
+      `[api/admin/strava/sync] Démarrage de la synchronisation Strava (offset: ${offset}, limit: ${limit ?? "tous"}) pour les mois :`,
+      targetMonths
+    );
+    const store = await syncAllMembersStravaStats({
+      months: targetMonths,
+      offset,
+      limit,
+    });
+
+    const totalMembers = 99;
+    const isFinal = limit === undefined || offset + limit >= totalMembers;
 
     return NextResponse.json({
       ok: true,
       timestamp: store.extractedAt,
+      isFinal,
+      nextOffset: isFinal ? null : offset + (limit || totalMembers),
       totalMatched: store.totalMatched,
       monthlyLeaders: store.monthlyLeaders,
     });

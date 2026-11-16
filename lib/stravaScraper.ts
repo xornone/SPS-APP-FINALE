@@ -519,14 +519,32 @@ export async function fetchAthleteAnnualStats(
   }
 }
 
+export interface SyncStravaOptions {
+  months?: string[];
+  offset?: number;
+  limit?: number;
+}
+
 /**
  * Synchronise les données Strava pour une liste de mois calendaires donnés (ex: ["2026-11"]).
- * Par défaut, ne scrape QUE le mois en cours et conserve intacts les mois précédents déjà collectés.
+ * Supporte le mode complet ou par morceaux (offset/limit) pour rester sous les timeouts serverless.
  */
 export async function syncAllMembersStravaStats(
-  targetMonths?: string[],
+  targetMonthsOrOptions?: string[] | SyncStravaOptions,
   onProgress?: (current: number, total: number) => void
 ): Promise<StravaDataStore> {
+  let targetMonths: string[] | undefined;
+  let offset = 0;
+  let limit: number | undefined;
+
+  if (targetMonthsOrOptions && !Array.isArray(targetMonthsOrOptions)) {
+    targetMonths = targetMonthsOrOptions.months;
+    offset = targetMonthsOrOptions.offset ?? 0;
+    limit = targetMonthsOrOptions.limit;
+  } else if (Array.isArray(targetMonthsOrOptions)) {
+    targetMonths = targetMonthsOrOptions;
+  }
+
   const now = new Date();
   const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const effectiveMonths = targetMonths && targetMonths.length > 0 ? targetMonths : [currentMonthKey];
@@ -540,23 +558,40 @@ export async function syncAllMembersStravaStats(
   }
 
   const cookie = sessionCheck.activeToken;
-  console.log(`[syncAllMembersStravaStats] Synchronisation via la session Strava : ${sessionCheck.activeLabel} pour :`, effectiveMonths);
 
-  const membersList = Object.entries(SPS_MEMBER_STRAVA_MAPPINGS).map(([officialName, info]) => ({
+  const fullMembersList = Object.entries(SPS_MEMBER_STRAVA_MAPPINGS).map(([officialName, info]) => ({
     officialName,
     athleteId: info.id,
     stravaName: info.stravaName,
   }));
 
-  const existingStore = await getCachedStravaData();
-  const membersResults: StravaMemberSummary[] = [];
-  const BATCH_SIZE = 3; // Réduit à 3 pour rester sous les radars anti-bot de Cloudflare
+  const membersToSync = limit !== undefined
+    ? fullMembersList.slice(offset, offset + limit)
+    : fullMembersList;
 
-  for (let i = 0; i < membersList.length; i += BATCH_SIZE) {
-    const batch = membersList.slice(i, i + BATCH_SIZE);
+  console.log(
+    `[syncAllMembersStravaStats] Synchronisation via la session Strava : ${sessionCheck.activeLabel} (offset: ${offset}, limit: ${limit ?? fullMembersList.length}, membres traités: ${membersToSync.length}/${fullMembersList.length}) pour :`,
+    effectiveMonths
+  );
+
+  const existingStore = await getCachedStravaData();
+  const membersMap = new Map<string, StravaMemberSummary>();
+
+  // Si on a un store existant, on pré-remplit les membres existants
+  if (existingStore?.members) {
+    for (const m of existingStore.members) {
+      membersMap.set(m.athleteId, m);
+    }
+  }
+
+  // BATCH_SIZE = 12 : débit rapide et stable sous les limites de temps serverless
+  const BATCH_SIZE = 12;
+
+  for (let i = 0; i < membersToSync.length; i += BATCH_SIZE) {
+    const batch = membersToSync.slice(i, i + BATCH_SIZE);
     await Promise.all(
       batch.map(async (m) => {
-        const prevMember = existingStore?.members?.find((em) => em.athleteId === m.athleteId);
+        const prevMember = membersMap.get(m.athleteId);
         // Conserve intégralement les mois passés précédemment collectés (ex: 2026-10)
         const prevMonths = prevMember?.months || {};
         const monthsData: Record<string, StravaMonthStats> = { ...prevMonths };
@@ -565,9 +600,8 @@ export async function syncAllMembersStravaStats(
           monthsData[ym] = await fetchAthleteCalendarMonth(m.athleteId, ym, cookie);
         }
 
-        membersResults.push({
+        membersMap.set(m.athleteId, {
           ...m,
-          // Conserve l'annual précédent s'il existe sans faire d'appel réseau superflu
           annual: prevMember?.annual || { activities: 0, distance_km: 0, elev_gain_m: 0, time: "0h 0m" },
           months: monthsData,
         });
@@ -575,12 +609,22 @@ export async function syncAllMembersStravaStats(
     );
 
     if (onProgress) {
-      onProgress(Math.min(i + BATCH_SIZE, membersList.length), membersList.length);
+      onProgress(Math.min(i + BATCH_SIZE, membersToSync.length), membersToSync.length);
     }
-    // Délai aléatoire furtif (350ms à 750ms) pour casser la régularité d'un robot
-    const jitterMs = 350 + Math.floor(Math.random() * 400);
+    const jitterMs = 120 + Math.floor(Math.random() * 120);
     await new Promise((r) => setTimeout(r, jitterMs));
   }
+
+  // Liste complète des 99 membres
+  const allMembers = fullMembersList.map((m) => {
+    return (
+      membersMap.get(m.athleteId) || {
+        ...m,
+        annual: { activities: 0, distance_km: 0, elev_gain_m: 0, time: "0h 0m" },
+        months: {},
+      }
+    );
+  });
 
   // Calcul des classements mensuels (fusionné avec les mois existants)
   const monthlyLeaders: StravaDataStore["monthlyLeaders"] = existingStore?.monthlyLeaders
@@ -592,7 +636,7 @@ export async function syncAllMembersStravaStats(
     let totalElevation = 0;
     let totalActivities = 0;
 
-    const listWithStats = membersResults.map((m) => {
+    const listWithStats = allMembers.map((m) => {
       const stats = m.months[ym] || { activities: 0, distance_km: 0, elev_gain_m: 0, time: "0h 0m" };
       totalKm += stats.distance_km;
       totalElevation += stats.elev_gain_m;
@@ -655,20 +699,27 @@ export async function syncAllMembersStravaStats(
     };
   }
 
+  const isFinalChunk = limit === undefined || offset + limit >= fullMembersList.length;
+
   // Récupération automatique du segment du mois SPS
-  const segment = await fetchSegmentLeaderboard("42510565", cookie);
+  let segment = existingStore?.segmentOfMonth;
+  if (isFinalChunk) {
+    try {
+      const segResult = await fetchSegmentLeaderboard("42510565", cookie);
+      if (segResult) segment = segResult;
+    } catch {}
+  }
 
   const store: StravaDataStore = {
-    extractedAt: new Date().toISOString(),
-    totalOfficialMembers: membersList.length,
-    totalMatched: membersResults.length,
-    members: membersResults,
+    extractedAt: isFinalChunk ? new Date().toISOString() : existingStore?.extractedAt || new Date().toISOString(),
+    totalOfficialMembers: fullMembersList.length,
+    totalMatched: allMembers.filter((m) => m.months && Object.keys(m.months).length > 0).length,
+    members: allMembers,
     monthlyLeaders,
-    segmentOfMonth: segment || existingStore?.segmentOfMonth,
+    segmentOfMonth: segment,
   };
 
   await saveStravaData(store);
-  return store;
   return store;
 }
 
