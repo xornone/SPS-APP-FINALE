@@ -455,11 +455,12 @@ export async function fetchAthleteCalendarMonth(
     const matches = text.match(/Activity-\d+/g);
     const rawActivities = matches ? new Set(matches).size : 0;
 
-    // Détection et soustraction des activités non-cyclistes (ex: Run, Walk, Hike).
+    // Détection et soustraction des activités non-cyclistes (ex: Run, Walk, Hike, Trail).
     // Strava #totals cumule par défaut tous les sports dans le graphique d'intervalle.
     const CYCLING_TYPES = new Set(["Ride", "VirtualRide", "EBikeRide", "GravelRide", "MountainBikeRide"]);
     const chunks = text.split("&quot;entity&quot;:&quot;Activity&quot;");
     let nonCyclingKm = 0;
+    let nonCyclingElevM = 0;
     let nonCyclingCount = 0;
 
     for (let i = 1; i < chunks.length; i++) {
@@ -467,21 +468,41 @@ export async function fetchAthleteCalendarMonth(
       const typeM = chunk.match(/&quot;type&quot;:&quot;([^&]+)&quot;/);
       const type = typeM ? typeM[1] : "Ride";
       if (!CYCLING_TYPES.has(type)) {
-        const distM = chunk.match(/&quot;key&quot;:&quot;stat_one&quot;,&quot;value&quot;:&quot;([0-9.]+)/);
-        const dist = distM ? parseFloat(distM[1]) || 0 : 0;
+        // Distance de l'activité non-cycliste (supporte virgule et point)
+        const distM = chunk.match(/&quot;key&quot;:&quot;stat_one&quot;,&quot;value&quot;:&quot;([0-9\s\u00a0\u202f,.]+)/);
+        let dist = 0;
+        if (distM) {
+          let cleaned = distM[1].replace(/[\s\u00a0\u202f]/g, "");
+          if (cleaned.includes(",") && !cleaned.includes(".")) {
+            cleaned = cleaned.replace(",", ".");
+          } else if (cleaned.includes(",") && cleaned.includes(".")) {
+            cleaned = cleaned.replace(/,/g, "");
+          }
+          dist = parseFloat(cleaned) || 0;
+        }
         nonCyclingKm += dist;
         nonCyclingCount++;
+
+        // Dénivelé éventuel de l'activité non-cycliste (ex: Trail, Randonnée)
+        if (chunk.includes("&quot;Dénivelé&quot;") || chunk.includes("&quot;Elevation&quot;")) {
+          const elevM = chunk.match(/&quot;key&quot;:&quot;stat_two&quot;,&quot;value&quot;:&quot;([0-9\s\u00a0\u202f,.]+)/);
+          if (elevM) {
+            const elevClean = elevM[1].replace(/[\s\u00a0\u202f,.]/g, "");
+            nonCyclingElevM += parseInt(elevClean, 10) || 0;
+          }
+        }
       }
     }
 
     const cleanDistanceKm = Math.max(0, Math.round((distanceKm - nonCyclingKm) * 10) / 10);
+    const cleanElevGainM = Math.max(0, elevGainM - nonCyclingElevM);
     const cleanActivities = Math.max(0, rawActivities - nonCyclingCount);
     const cleanAvgSpeed = totalHours > 0 ? Math.round((cleanDistanceKm / totalHours) * 10) / 10 : 0;
 
     return {
       activities: cleanActivities,
       distance_km: cleanDistanceKm,
-      elev_gain_m: elevGainM,
+      elev_gain_m: cleanElevGainM,
       time: timeStr,
       avg_speed_kmh: cleanAvgSpeed,
     };
