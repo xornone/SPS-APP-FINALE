@@ -29,11 +29,20 @@ body {
 
 button,
 [role="button"],
+a,
 nav a {
   -webkit-touch-callout: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+a:focus,
+a:focus-visible,
+button:focus,
+button:focus-visible {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body.modal-open .bottom-nav-container,

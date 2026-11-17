@@ -44,12 +44,6 @@ export const FeaturedHero = memo(function FeaturedHero({
         ? "bg-gradient-to-b from-transparent via-[#AA26FF] to-transparent shadow-[3px_0_22px_rgba(170,38,255,1)]"
         : null;
 
-  const groupBtnGradient = detectedGroup === "rouge"
-    ? "bg-gradient-to-r from-red-600 via-[#DC3D3D] to-[#EF4444] shadow-red-600/30 hover:shadow-red-600/40"
-    : detectedGroup === "vert"
-      ? "bg-gradient-to-r from-emerald-600 via-[#1F9D63] to-[#10B981] shadow-emerald-600/30 hover:shadow-emerald-600/40"
-      : "bg-gradient-to-r from-sps-violet600 to-[#AA26FF] shadow-violet-600/30 hover:shadow-violet-600/40";
-
   return (
     <div className="relative isolate group block overflow-hidden rounded-[32px] border-2 border-violet-200/90 bg-white p-5 text-neutral-950 shadow-[0_16px_36px_-6px_rgba(109,40,217,0.12)] ring-1 ring-black/[0.04] transition-all duration-300 hover:border-violet-300 dark:border dark:border-white/20 dark:bg-gradient-to-br dark:from-[#1E0938] dark:via-[#120524] dark:to-[#080210] dark:text-white dark:shadow-[0_24px_50px_-12px_rgba(124,58,237,0.45)] dark:ring-white/10 active:scale-[0.995]">
       {/* Lien englobant pour navigation directe et fluide au toucher de la carte */}
@@ -108,7 +102,7 @@ export const FeaturedHero = memo(function FeaturedHero({
                 onQuickAction(ride);
               }}
               title="S'inscrire rapidement à cette sortie"
-              className={`flex items-center gap-1.5 rounded-full ${groupBtnGradient} px-3 sm:px-3.5 py-1 text-[11px] sm:text-[11.5px] font-black text-white shadow-md transition hover:brightness-110 active:scale-95 whitespace-nowrap flex-shrink-0`}
+              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-3 sm:px-3.5 py-1 text-[11px] sm:text-[11.5px] font-black text-white shadow-md shadow-violet-600/30 outline-none transition hover:brightness-110 active:scale-95 focus:outline-none focus-visible:outline-none whitespace-nowrap flex-shrink-0 select-none"
             >
               <Icon name="plus" size={13} /> Participer
             </button>
@@ -200,9 +194,9 @@ export const FeaturedHero = memo(function FeaturedHero({
       <Link
         href={`${hrefPrefix}/${ride.id}`}
         prefetch={true}
-        className={`group/btn relative z-10 flex w-full items-center justify-center gap-2 rounded-2xl ${groupBtnGradient} px-4.5 py-3 text-sm font-black text-white shadow-lg transition-all duration-200 hover:brightness-105 active:scale-[0.99]`}
+        className="group/btn relative z-10 flex w-full select-none items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-4.5 py-3 text-sm font-black text-white shadow-lg shadow-violet-600/30 outline-none transition-all duration-200 hover:brightness-105 active:scale-[0.99] focus:outline-none focus-visible:outline-none focus:ring-0"
       >
-        <span className="tracking-wide">Voir la sortie</span>
+        <span className="tracking-wide select-none">Voir la sortie</span>
         <Icon
           name="chevR"
           size={15}

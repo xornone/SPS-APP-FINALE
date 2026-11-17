@@ -47,12 +47,6 @@ export const RideCard = memo(function RideCard({
         ? "bg-gradient-to-b from-transparent via-[#AA26FF] to-transparent shadow-[3px_0_22px_rgba(170,38,255,1)]"
         : null;
 
-  const groupBtnGradient = detectedGroup === "rouge"
-    ? "bg-gradient-to-r from-red-600 via-[#DC3D3D] to-[#EF4444] shadow-red-600/30 hover:shadow-red-600/40"
-    : detectedGroup === "vert"
-      ? "bg-gradient-to-r from-emerald-600 via-[#1F9D63] to-[#10B981] shadow-emerald-600/30 hover:shadow-emerald-600/40"
-      : "bg-gradient-to-r from-sps-violet600 to-[#AA26FF] shadow-violet-600/30 hover:shadow-violet-600/40";
-
   return (
     <div className="relative isolate group block overflow-hidden rounded-[32px] border border-neutral-200/90 bg-white p-5 text-neutral-950 shadow-[0_6px_24px_-6px_rgba(0,0,0,0.06)] ring-1 ring-black/[0.04] transition-all duration-300 hover:border-violet-300 dark:border dark:border-white/[0.12] dark:bg-[#130B22]/85 dark:text-white dark:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.55)] dark:ring-white/[0.06] dark:hover:border-white/25 active:scale-[0.995]">
       {/* Lien englobant pour navigation directe et fluide au toucher de la carte */}
@@ -101,7 +95,7 @@ export const RideCard = memo(function RideCard({
                 onQuickAction(ride);
               }}
               title="S'inscrire rapidement à cette sortie"
-              className={`flex items-center gap-1.5 rounded-full ${groupBtnGradient} px-3 sm:px-3.5 py-1 text-[11px] sm:text-[11.5px] font-black text-white shadow-md transition hover:brightness-110 active:scale-95 whitespace-nowrap flex-shrink-0`}
+              className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-sps-violet600 to-[#AA26FF] px-3 sm:px-3.5 py-1 text-[11px] sm:text-[11.5px] font-black text-white shadow-md shadow-violet-600/30 outline-none transition hover:brightness-110 active:scale-95 focus:outline-none focus-visible:outline-none whitespace-nowrap flex-shrink-0 select-none"
             >
               <Icon name="plus" size={13} /> Participer
             </button>
@@ -220,19 +214,13 @@ export const RideCard = memo(function RideCard({
       <Link
         href={`${hrefPrefix}/${ride.id}`}
         prefetch={true}
-        className="group/btn relative z-10 flex w-full items-center justify-center gap-2 rounded-2xl bg-neutral-100 px-4.5 py-3 text-sm font-black text-neutral-900 transition-all duration-200 hover:bg-neutral-200 active:scale-[0.99] dark:border dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:border-white/25 dark:hover:bg-white/[0.12]"
+        className="group/btn relative z-10 flex w-full select-none items-center justify-center gap-2 rounded-2xl bg-neutral-100 px-4.5 py-3 text-sm font-black text-neutral-900 outline-none transition-all duration-200 hover:bg-neutral-200 active:scale-[0.99] focus:outline-none focus-visible:outline-none focus:ring-0 dark:border dark:border-white/15 dark:bg-white/[0.06] dark:text-white dark:hover:border-white/25 dark:hover:bg-white/[0.12]"
       >
-        <span className="tracking-wide">Voir la sortie</span>
+        <span className="tracking-wide select-none">Voir la sortie</span>
         <Icon
           name="chevR"
           size={15}
-          className={`transition-transform duration-200 group-hover/btn:translate-x-1 ${
-            detectedGroup === "rouge"
-              ? "text-red-500 dark:text-red-400"
-              : detectedGroup === "vert"
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-neutral-500 dark:text-violet-300"
-          }`}
+          className="text-neutral-500 transition-transform duration-200 group-hover/btn:translate-x-1 dark:text-violet-300"
         />
       </Link>
     </div>
