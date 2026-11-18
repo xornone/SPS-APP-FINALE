@@ -286,12 +286,17 @@ function assemblePolls(
 }
 
 /**
- * Récupère le premier sondage en cours pour affichage direct côté serveur (SSR) sur l'accueil.
+ * Récupère tous les sondages en cours (non clôturés) pour affichage direct côté serveur (SSR) sur l'accueil.
  * Évite tout clignotement ou retard d'affichage au premier rendu.
  */
-export async function getActivePollForHome(): Promise<Poll | null> {
+export async function getActivePollsForHome(): Promise<Poll[]> {
   const polls = await getAllPolls(false);
-  return polls.find((p) => !p.is_closed) || null;
+  return polls.filter((p) => !p.is_closed);
+}
+
+export async function getActivePollForHome(): Promise<Poll | null> {
+  const active = await getActivePollsForHome();
+  return active[0] || null;
 }
 
 /**

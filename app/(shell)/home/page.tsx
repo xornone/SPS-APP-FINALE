@@ -1,6 +1,6 @@
 import { createPublicClient } from "@/lib/supabase/publicClient";
 import { fetchAllParticipations, fetchRides } from "@/lib/queries";
-import { getActivePollForHome } from "@/lib/pollsStorage";
+import { getActivePollsForHome } from "@/lib/pollsStorage";
 import { checkIsAdminServer } from "@/lib/adminGuard";
 import { HomeRidesSection } from "@/components/HomeRidesSection";
 import { NotificationOptIn } from "@/components/NotificationOptIn";
@@ -17,10 +17,10 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const supabase = createPublicClient();
-  const [rides, participations, activePoll, isAdmin] = await Promise.all([
+  const [rides, participations, activePolls, isAdmin] = await Promise.all([
     fetchRides(supabase),
     fetchAllParticipations(supabase),
-    getActivePollForHome(),
+    getActivePollsForHome(),
     checkIsAdminServer(),
   ]);
 
@@ -95,7 +95,7 @@ export default async function HomePage() {
       <PreorderVisibility>
         <JerseyPreorderBanner />
       </PreorderVisibility>
-      <ActivePollBanner initialPoll={activePoll} initialIsAdmin={isAdmin} />
+      <ActivePollBanner initialPolls={activePolls} initialIsAdmin={isAdmin} />
       <NotificationOptIn />
       <HomeRidesSection
         featured={featured}

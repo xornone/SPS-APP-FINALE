@@ -183,79 +183,79 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
         {poll.question}
       </h3>
 
-      {/* Description / Contexte & Photo dépliable */}
-      {(poll.description || poll.image_url) && (
-        <div className="mt-2.5">
-          <button
-            type="button"
-            onClick={() => {
-              hapticTap();
-              setIsDescriptionOpen((prev) => !prev);
-            }}
-            className="group/desc inline-flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-700 transition-all hover:border-sps-violet600/40 hover:bg-sps-violet600/5 hover:text-sps-violet700 active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.04] dark:text-white/80 dark:hover:border-sps-violet400/40 dark:hover:bg-sps-violet600/10 dark:hover:text-sps-violet300"
-            aria-expanded={isDescriptionOpen}
-          >
-            <span className="flex h-4 w-4 items-center justify-center rounded-md bg-sps-violet600/10 text-sps-violet600 dark:bg-sps-violet600/20 dark:text-sps-violet400">
-              <Icon name={poll.image_url ? "image" : "chat"} size={10} />
-            </span>
-            <span>
-              {isDescriptionOpen
-                ? "Masquer le contexte"
-                : poll.image_url
-                ? poll.description
-                  ? "Lire le contexte & photo"
-                  : "Voir la photo"
-                : "Lire le contexte & explications"}
-            </span>
-            <Icon
-              name="chevDown"
-              size={12}
-              className={`transition-transform duration-200 text-neutral-400 group-hover/desc:text-sps-violet600 dark:text-white/40 dark:group-hover/desc:text-sps-violet300 ${
-                isDescriptionOpen ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+      {/* Photo d'illustration du sondage (affichée fièrement directement si présente) */}
+      {poll.image_url && (
+        <div
+          className="relative group/img overflow-hidden rounded-2xl border border-neutral-200/80 dark:border-white/10 bg-black/5 dark:bg-black/20 cursor-pointer mt-3"
+          onClick={() => {
+            hapticTap();
+            setIsLightboxOpen(true);
+          }}
+          title="Cliquer pour agrandir la photo"
+        >
+          <img
+            src={poll.image_url}
+            alt={poll.question}
+            className="w-full max-h-72 sm:max-h-80 object-cover rounded-2xl transition-transform duration-300 group-hover/img:scale-[1.01]"
+            loading="lazy"
+          />
+          <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1.5 rounded-lg bg-black/70 px-2.5 py-1 text-[10px] font-bold text-white backdrop-blur-sm shadow-md transition group-hover/img:bg-black/85">
+            <Icon name="search" size={11} />
+            <span>Agrandir</span>
+          </div>
+        </div>
+      )}
 
-          {isDescriptionOpen && (
-            <div className="mt-2.5 rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-3.5 text-xs font-medium leading-relaxed text-neutral-700 shadow-xs dark:border-white/10 dark:bg-white/[0.03] dark:text-white/85 space-y-3">
-              {poll.image_url && (
-                <div
-                  className="relative group/img overflow-hidden rounded-xl border border-neutral-200/80 dark:border-white/10 bg-black/5 dark:bg-black/20 cursor-pointer"
-                  onClick={() => {
-                    hapticTap();
-                    setIsLightboxOpen(true);
-                  }}
-                  title="Cliquer pour agrandir la photo"
-                >
-                  <img
-                    src={poll.image_url}
-                    alt="Photo du sondage"
-                    className="w-full max-h-72 object-cover rounded-xl transition-transform duration-300 group-hover/img:scale-[1.01]"
-                    loading="lazy"
-                  />
-                  <div className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-lg bg-black/70 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm shadow-md transition group-hover/img:bg-black/85">
-                    <Icon name="search" size={11} />
-                    <span>Agrandir</span>
+      {/* Description / Contexte */}
+      {poll.description && (
+        <div className="mt-3">
+          {poll.description.length <= 180 ? (
+            <p className="rounded-xl border border-neutral-200/60 bg-neutral-50/60 p-3 text-xs font-medium leading-relaxed text-neutral-700 dark:border-white/10 dark:bg-white/[0.03] dark:text-white/80 whitespace-pre-line">
+              {poll.description}
+            </p>
+          ) : (
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  hapticTap();
+                  setIsDescriptionOpen((prev) => !prev);
+                }}
+                className="group/desc inline-flex items-center gap-1.5 rounded-xl border border-neutral-200/80 bg-neutral-50 px-3 py-1.5 text-xs font-bold text-neutral-700 transition-all hover:border-sps-violet600/40 hover:bg-sps-violet600/5 hover:text-sps-violet700 active:scale-[0.98] dark:border-white/10 dark:bg-white/[0.04] dark:text-white/80 dark:hover:border-sps-violet400/40 dark:hover:bg-sps-violet600/10 dark:hover:text-sps-violet300"
+                aria-expanded={isDescriptionOpen}
+              >
+                <span className="flex h-4 w-4 items-center justify-center rounded-md bg-sps-violet600/10 text-sps-violet600 dark:bg-sps-violet600/20 dark:text-sps-violet400">
+                  <Icon name="chat" size={10} />
+                </span>
+                <span>{isDescriptionOpen ? "Masquer les explications" : "Lire les explications"}</span>
+                <Icon
+                  name="chevDown"
+                  size={12}
+                  className={`transition-transform duration-200 text-neutral-400 group-hover/desc:text-sps-violet600 dark:text-white/40 dark:group-hover/desc:text-sps-violet300 ${
+                    isDescriptionOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {isDescriptionOpen && (
+                <div className="mt-2.5 rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-3.5 text-xs font-medium leading-relaxed text-neutral-700 shadow-xs dark:border-white/10 dark:bg-white/[0.03] dark:text-white/85 whitespace-pre-line">
+                  <div className="space-y-1">
+                    {poll.description}
+                  </div>
+                  <div className="mt-2.5 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        hapticTap();
+                        setIsDescriptionOpen(false);
+                      }}
+                      className="text-[11px] font-bold text-sps-violet600 hover:underline dark:text-sps-violet400"
+                    >
+                      ▲ Replier les explications
+                    </button>
                   </div>
                 </div>
               )}
-              {poll.description && (
-                <div className="space-y-1 whitespace-pre-line">
-                  {poll.description}
-                </div>
-              )}
-              <div className="flex justify-end pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    hapticTap();
-                    setIsDescriptionOpen(false);
-                  }}
-                  className="text-[11px] font-bold text-sps-violet600 hover:underline dark:text-sps-violet400"
-                >
-                  ▲ Replier le contexte
-                </button>
-              </div>
             </div>
           )}
         </div>

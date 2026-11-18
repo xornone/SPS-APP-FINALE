@@ -127,12 +127,13 @@ export function PollsView() {
           </div>
         ) : currentList.length > 0 ? (
           currentList.map((poll) => (
-            <PollCard
-              key={poll.id}
-              poll={poll}
-              isAdmin={isAdmin}
-              onRefresh={fetchPolls}
-            />
+            <div key={poll.id} id={`poll-${poll.id}`} className="scroll-mt-6">
+              <PollCard
+                poll={poll}
+                isAdmin={isAdmin}
+                onRefresh={fetchPolls}
+              />
+            </div>
           ))
         ) : (
           <div className="rounded-3xl border border-dashed border-neutral-300/80 p-8 text-center dark:border-white/15">
