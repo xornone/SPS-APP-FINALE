@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Poll } from "@/lib/pollsStorage";
 import { Icon } from "./Icons";
 import { hapticTap } from "@/lib/haptics";
+import { compressImageFile } from "@/lib/imageUtils";
 
 interface EditPollModalProps {
   isOpen: boolean;
@@ -21,16 +22,22 @@ interface EditableOption {
 export function EditPollModal({ isOpen, poll, onClose, onUpdated }: EditPollModalProps) {
   const [question, setQuestion] = useState(poll.question);
   const [description, setDescription] = useState(poll.description || "");
+  const [imageUrl, setImageUrl] = useState(poll.image_url || "");
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [allowMultiple, setAllowMultiple] = useState(poll.allow_multiple);
   const [options, setOptions] = useState<EditableOption[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Synchronisation lors de l'ouverture
   useEffect(() => {
     if (isOpen && poll) {
       setQuestion(poll.question);
       setDescription(poll.description || "");
+      setImageUrl(poll.image_url || "");
+      setImageError(null);
       setAllowMultiple(poll.allow_multiple);
       setOptions(
         poll.options.map((o) => ({
@@ -44,6 +51,28 @@ export function EditPollModal({ isOpen, poll, onClose, onUpdated }: EditPollModa
   }, [isOpen, poll]);
 
   if (!isOpen) return null;
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageError(null);
+    setIsProcessingImage(true);
+    try {
+      const dataUrl = await compressImageFile(file);
+      setImageUrl(dataUrl);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur lors du traitement de l'image.";
+      setImageError(msg);
+    } finally {
+      setIsProcessingImage(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl("");
+    setImageError(null);
+  };
 
   const handleAddOption = () => {
     if (options.length >= 12) return;
@@ -97,6 +126,7 @@ export function EditPollModal({ isOpen, poll, onClose, onUpdated }: EditPollModa
         body: JSON.stringify({
           question: cleanQuestion,
           description: description.trim() || undefined,
+          image_url: imageUrl.trim() || null,
           allow_multiple: allowMultiple,
           options: cleanOptions,
         }),
@@ -179,6 +209,76 @@ export function EditPollModal({ isOpen, poll, onClose, onUpdated }: EditPollModa
               onChange={(e) => setDescription(e.target.value)}
               className="w-full resize-none rounded-xl border border-neutral-200 bg-neutral-50 px-3.5 py-2 text-xs font-medium text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
             />
+          </div>
+
+          {/* Photo d'illustration / contexte (optionnel) */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                Photo d&apos;illustration (optionnel)
+              </label>
+              {imageUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="text-[11px] font-bold text-red-500 hover:underline"
+                >
+                  Supprimer
+                </button>
+              )}
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageChange}
+            />
+
+            {imageUrl ? (
+              <div className="relative group overflow-hidden rounded-2xl border border-neutral-200 dark:border-white/10 bg-neutral-100 dark:bg-white/5">
+                <img
+                  src={imageUrl}
+                  alt="Aperçu"
+                  className="w-full max-h-48 object-cover rounded-xl"
+                />
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 rounded-xl bg-white/90 hover:bg-white px-3 py-1.5 text-xs font-bold text-neutral-900 shadow-md transition"
+                  >
+                    <Icon name="pencil" size={13} />
+                    <span>Remplacer</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="flex items-center gap-1.5 rounded-xl bg-red-600 hover:bg-red-700 px-3 py-1.5 text-xs font-bold text-white shadow-md transition"
+                  >
+                    <Icon name="trash" size={13} />
+                    <span>Supprimer</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isProcessingImage}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-dashed border-neutral-300 hover:border-sps-violet500 bg-neutral-50/60 hover:bg-sps-violet500/5 transition text-xs font-bold text-neutral-600 dark:border-white/15 dark:bg-white/[0.02] dark:hover:bg-sps-violet600/10 dark:text-neutral-300"
+              >
+                <Icon name="image" size={16} className="text-sps-violet600 dark:text-sps-violet400" />
+                <span>{isProcessingImage ? "Optimisation de l'image..." : "Ajouter une photo (affiche, plan, parcours...)"}</span>
+              </button>
+            )}
+
+            {imageError && (
+              <p className="mt-1.5 text-[11px] font-semibold text-red-500">
+                {imageError}
+              </p>
+            )}
           </div>
 
           {/* Type de choix */}

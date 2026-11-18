@@ -222,4 +222,55 @@ describe("Polls storage & privacy", () => {
     // 5. Nettoyage
     await deletePoll(poll.id);
   });
+
+  it("supports attaching and updating an image_url on polls", async () => {
+    const testImage = "data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+
+    // 1. Création avec photo
+    const poll = await createPoll({
+      question: "Sondage avec photo de parcours",
+      description: "Voici le parcours pour ce dimanche",
+      image_url: testImage,
+      allow_multiple: false,
+      options: ["Oui je viens", "Non pas dispo"],
+      created_by: "admin@sps.cc",
+    });
+
+    expect(poll.id).toBeDefined();
+    expect(poll.image_url).toBe(testImage);
+
+    // 2. Vérification dans getAllPolls
+    let polls = await getAllPolls(false);
+    let found = polls.find((p) => p.id === poll.id);
+    expect(found).toBeDefined();
+    expect(found?.image_url).toBe(testImage);
+
+    // 3. Mise à jour de la photo
+    const newImage = "data:image/jpeg;base64,UPDATED_IMAGE_DATA";
+    await updatePoll({
+      poll_id: poll.id,
+      question: poll.question,
+      image_url: newImage,
+      options: poll.options.map((o) => ({ id: o.id, title: o.title })),
+    });
+
+    polls = await getAllPolls(false);
+    found = polls.find((p) => p.id === poll.id);
+    expect(found?.image_url).toBe(newImage);
+
+    // 4. Suppression de la photo
+    await updatePoll({
+      poll_id: poll.id,
+      question: poll.question,
+      image_url: null,
+      options: poll.options.map((o) => ({ id: o.id, title: o.title })),
+    });
+
+    polls = await getAllPolls(false);
+    found = polls.find((p) => p.id === poll.id);
+    expect(found?.image_url).toBeNull();
+
+    // 5. Nettoyage
+    await deletePoll(poll.id);
+  });
 });

@@ -16,7 +16,7 @@ export async function PUT(
 
     const pollId = params.id;
     const body = await request.json().catch(() => ({}));
-    const { question, description, allow_multiple, options } = body;
+    const { question, description, image_url, allow_multiple, options } = body;
 
     if (!question || typeof question !== "string" || !question.trim()) {
       return NextResponse.json({ error: "La question ne peut pas être vide." }, { status: 400 });
@@ -30,6 +30,7 @@ export async function PUT(
       poll_id: pollId,
       question,
       description,
+      image_url,
       allow_multiple: Boolean(allow_multiple),
       options,
     });
@@ -60,11 +61,12 @@ export async function PATCH(
 
     // Si mise à jour complète passée en PATCH
     if (body.question !== undefined) {
-      const { question, description, allow_multiple, options } = body;
+      const { question, description, image_url, allow_multiple, options } = body;
       const success = await updatePoll({
         poll_id: pollId,
         question,
         description,
+        image_url,
         allow_multiple: Boolean(allow_multiple),
         options: options || [],
       });

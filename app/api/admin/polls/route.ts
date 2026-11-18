@@ -14,6 +14,7 @@ export async function POST(request: Request) {
     const body = await request.json().catch(() => ({}));
     const question = String(body.question || "").trim();
     const description = body.description ? String(body.description).trim() : undefined;
+    const imageUrl = body.image_url ? String(body.image_url).trim() : undefined;
     const allowMultiple = Boolean(body.allow_multiple);
     const options = Array.isArray(body.options)
       ? body.options.map((o: unknown) => String(o || "").trim()).filter(Boolean)
@@ -30,6 +31,7 @@ export async function POST(request: Request) {
     const poll = await createPoll({
       question,
       description,
+      image_url: imageUrl,
       allow_multiple: allowMultiple,
       options,
       created_by: guard.user.email,

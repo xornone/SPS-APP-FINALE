@@ -24,6 +24,7 @@ export interface Poll {
   id: string;
   question: string;
   description: string | null;
+  image_url?: string | null;
   allow_multiple: boolean;
   is_closed: boolean;
   created_at: string;
@@ -49,6 +50,7 @@ interface LocalStoreData {
     id: string;
     question: string;
     description: string | null;
+    image_url?: string | null;
     allow_multiple: boolean;
     is_closed: boolean;
     created_at: string;
@@ -269,6 +271,7 @@ function assemblePolls(
       id: p.id,
       question: p.question,
       description: p.description,
+      image_url: p.image_url || null,
       allow_multiple: p.allow_multiple,
       is_closed: p.is_closed,
       created_at: p.created_at,
@@ -297,12 +300,14 @@ export async function getActivePollForHome(): Promise<Poll | null> {
 export async function createPoll({
   question,
   description,
+  image_url,
   allow_multiple,
   options,
   created_by,
 }: {
   question: string;
   description?: string;
+  image_url?: string;
   allow_multiple: boolean;
   options: string[];
   created_by?: string;
@@ -314,6 +319,7 @@ export async function createPoll({
     id: pollId,
     question: question.trim(),
     description: description ? description.trim() : null,
+    image_url: image_url ? image_url.trim() : null,
     allow_multiple: !!allow_multiple,
     is_closed: false,
     created_at: now,
@@ -339,7 +345,17 @@ export async function createPoll({
     const db = getDbClient();
     if (db) {
       const { error: pollErr } = await db.from("polls").insert(newPoll);
-      if (!pollErr) {
+      if (pollErr && (pollErr.code === "42703" || pollErr.message?.includes("image_url"))) {
+        // Fallback si la colonne image_url n'a pas encore été créée dans Supabase
+        const { image_url: _ignored, ...pollWithoutImg } = newPoll;
+        const { error: retryErr } = await db.from("polls").insert(pollWithoutImg);
+        if (!retryErr) {
+          const { error: optErr } = await db.from("poll_options").insert(newOptions);
+          if (!optErr) {
+            savedToSupabase = true;
+          }
+        }
+      } else if (!pollErr) {
         const { error: optErr } = await db.from("poll_options").insert(newOptions);
         if (!optErr) {
           savedToSupabase = true;
@@ -588,6 +604,7 @@ export interface UpdatePollInput {
   poll_id: string;
   question: string;
   description?: string | null;
+  image_url?: string | null;
   allow_multiple: boolean;
   options: { id?: string; title: string }[];
 }
@@ -600,6 +617,7 @@ export async function updatePoll({
   poll_id,
   question,
   description,
+  image_url,
   allow_multiple,
   options,
 }: UpdatePollInput): Promise<boolean> {
@@ -626,17 +644,32 @@ export async function updatePoll({
   try {
     const db = getDbClient();
     if (db) {
+      const updateData: Record<string, any> = {
+        question: cleanQuestion,
+        description: description?.trim() || null,
+        allow_multiple: Boolean(allow_multiple),
+      };
+      if (image_url !== undefined) {
+        updateData.image_url = image_url?.trim() || null;
+      }
+
       const { data: updatedPolls, error: pollErr } = await db
         .from("polls")
-        .update({
-          question: cleanQuestion,
-          description: description?.trim() || null,
-          allow_multiple: Boolean(allow_multiple),
-        })
+        .update(updateData)
         .eq("id", poll_id)
         .select("id");
 
-      if (!pollErr && updatedPolls && updatedPolls.length > 0) {
+      if (pollErr && (pollErr.code === "42703" || pollErr.message?.includes("image_url"))) {
+        delete updateData.image_url;
+        const { data: retryPolls, error: retryErr } = await db
+          .from("polls")
+          .update(updateData)
+          .eq("id", poll_id)
+          .select("id");
+        if (!retryErr && retryPolls && retryPolls.length > 0) {
+          supabaseUpdated = true;
+        }
+      } else if (!pollErr && updatedPolls && updatedPolls.length > 0) {
         supabaseUpdated = true;
       }
 
@@ -686,6 +719,9 @@ export async function updatePoll({
     localUpdated = true;
     poll.question = cleanQuestion;
     poll.description = description?.trim() || null;
+    if (image_url !== undefined) {
+      poll.image_url = image_url?.trim() || null;
+    }
     poll.allow_multiple = Boolean(allow_multiple);
 
     // Mettre à jour les options locales

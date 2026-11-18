@@ -56,6 +56,7 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
 
   // État de dépliage du contexte / description
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   // Accordéon pour voir les votants par option (réservé admin)
   const [expandedOptionVoters, setExpandedOptionVoters] = useState<Record<string, boolean>>({});
@@ -182,8 +183,8 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
         {poll.question}
       </h3>
 
-      {/* Description / Contexte dépliable */}
-      {poll.description && (
+      {/* Description / Contexte & Photo dépliable */}
+      {(poll.description || poll.image_url) && (
         <div className="mt-2.5">
           <button
             type="button"
@@ -195,9 +196,17 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
             aria-expanded={isDescriptionOpen}
           >
             <span className="flex h-4 w-4 items-center justify-center rounded-md bg-sps-violet600/10 text-sps-violet600 dark:bg-sps-violet600/20 dark:text-sps-violet400">
-              <Icon name="chat" size={10} />
+              <Icon name={poll.image_url ? "image" : "chat"} size={10} />
             </span>
-            <span>{isDescriptionOpen ? "Masquer le contexte" : "Lire le contexte & explications"}</span>
+            <span>
+              {isDescriptionOpen
+                ? "Masquer le contexte"
+                : poll.image_url
+                ? poll.description
+                  ? "Lire le contexte & photo"
+                  : "Voir la photo"
+                : "Lire le contexte & explications"}
+            </span>
             <Icon
               name="chevDown"
               size={12}
@@ -208,11 +217,34 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
           </button>
 
           {isDescriptionOpen && (
-            <div className="mt-2.5 rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-3.5 text-xs font-medium leading-relaxed text-neutral-700 shadow-xs dark:border-white/10 dark:bg-white/[0.03] dark:text-white/85 whitespace-pre-line">
-              <div className="space-y-1">
-                {poll.description}
-              </div>
-              <div className="mt-2.5 flex justify-end">
+            <div className="mt-2.5 rounded-2xl border border-neutral-200/80 bg-neutral-50/70 p-3.5 text-xs font-medium leading-relaxed text-neutral-700 shadow-xs dark:border-white/10 dark:bg-white/[0.03] dark:text-white/85 space-y-3">
+              {poll.image_url && (
+                <div
+                  className="relative group/img overflow-hidden rounded-xl border border-neutral-200/80 dark:border-white/10 bg-black/5 dark:bg-black/20 cursor-pointer"
+                  onClick={() => {
+                    hapticTap();
+                    setIsLightboxOpen(true);
+                  }}
+                  title="Cliquer pour agrandir la photo"
+                >
+                  <img
+                    src={poll.image_url}
+                    alt="Photo du sondage"
+                    className="w-full max-h-72 object-cover rounded-xl transition-transform duration-300 group-hover/img:scale-[1.01]"
+                    loading="lazy"
+                  />
+                  <div className="absolute bottom-2 right-2 flex items-center gap-1.5 rounded-lg bg-black/70 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm shadow-md transition group-hover/img:bg-black/85">
+                    <Icon name="search" size={11} />
+                    <span>Agrandir</span>
+                  </div>
+                </div>
+              )}
+              {poll.description && (
+                <div className="space-y-1 whitespace-pre-line">
+                  {poll.description}
+                </div>
+              )}
+              <div className="flex justify-end pt-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -465,6 +497,33 @@ export function PollCard({ poll, isAdmin, onRefresh }: PollCardProps) {
           onClose={() => setIsEditModalOpen(false)}
           onUpdated={onRefresh}
         />
+      )}
+
+      {/* Lightbox / Plein écran de la photo */}
+      {isLightboxOpen && poll.image_url && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fadeIn"
+          onClick={() => setIsLightboxOpen(false)}
+        >
+          <div
+            className="relative max-w-4xl max-h-[90vh] flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setIsLightboxOpen(false)}
+              className="absolute -top-11 right-0 flex items-center gap-1 rounded-full bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 text-xs font-bold transition backdrop-blur-sm"
+            >
+              <Icon name="x" size={14} />
+              <span>Fermer</span>
+            </button>
+            <img
+              src={poll.image_url}
+              alt="Photo du sondage en grand"
+              className="max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl border border-white/10"
+            />
+          </div>
+        </div>
       )}
     </div>
   );
