@@ -13,6 +13,7 @@ export function PollsView() {
   const [polls, setPolls] = useState<Poll[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"active" | "closed">("active");
 
   const fetchPolls = useCallback(async () => {
     try {
@@ -40,6 +41,7 @@ export function PollsView() {
 
   const activePolls = polls.filter((p) => !p.is_closed);
   const closedPolls = polls.filter((p) => p.is_closed);
+  const currentList = activeTab === "active" ? activePolls : closedPolls;
 
   return (
     <div className="px-4 pt-5 pb-12 sm:px-6">
@@ -75,60 +77,76 @@ export function PollsView() {
         )}
       </div>
 
-      {/* Liste des sondages : ENSEMBLE, pas scindé */}
+      {/* Onglets En cours / Terminés */}
+      <div className="mt-5 flex items-center gap-2 border-b border-neutral-200/80 pb-3 dark:border-white/10">
+        <button
+          type="button"
+          onClick={() => setActiveTab("active")}
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-black transition ${
+            activeTab === "active"
+              ? "bg-sps-violet600 text-white shadow-sm shadow-violet-600/30"
+              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/60 dark:bg-white/10 dark:text-neutral-300"
+          }`}
+        >
+          <span>En cours</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              activeTab === "active" ? "bg-white/20 text-white" : "bg-neutral-200 dark:bg-white/20"
+            }`}
+          >
+            {activePolls.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("closed")}
+          className={`flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-black transition ${
+            activeTab === "closed"
+              ? "bg-sps-violet600 text-white shadow-sm shadow-violet-600/30"
+              : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200/60 dark:bg-white/10 dark:text-neutral-300"
+          }`}
+        >
+          <span>Terminés</span>
+          <span
+            className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+              activeTab === "closed" ? "bg-white/20 text-white" : "bg-neutral-200 dark:bg-white/20"
+            }`}
+          >
+            {closedPolls.length}
+          </span>
+        </button>
+      </div>
+
+      {/* Liste des sondages */}
       <div className="mt-5 space-y-4">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 text-neutral-400">
             <span className="inline-block animate-spin text-2xl mb-2">⏳</span>
             <p className="text-xs font-bold">Chargement des sondages...</p>
           </div>
-        ) : polls.length > 0 ? (
-          <>
-            {/* Sondages en cours */}
-            {activePolls.length > 0 && (
-              <div className="space-y-4">
-                {activePolls.map((poll) => (
-                  <div key={poll.id} id={`poll-${poll.id}`} className="scroll-mt-6">
-                    <PollCard
-                      poll={poll}
-                      isAdmin={isAdmin}
-                      onRefresh={fetchPolls}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Sondages terminés à la suite si existants */}
-            {closedPolls.length > 0 && (
-              <div className="mt-8 space-y-4">
-                <div className="flex items-center gap-2 pt-4 border-t border-neutral-200/80 dark:border-white/10">
-                  <span className="text-xs font-black uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                    🔒 Sondages terminés ({closedPolls.length})
-                  </span>
-                </div>
-                {closedPolls.map((poll) => (
-                  <div key={poll.id} id={`poll-${poll.id}`} className="scroll-mt-6">
-                    <PollCard
-                      poll={poll}
-                      isAdmin={isAdmin}
-                      onRefresh={fetchPolls}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
+        ) : currentList.length > 0 ? (
+          currentList.map((poll) => (
+            <div key={poll.id} id={`poll-${poll.id}`} className="scroll-mt-6">
+              <PollCard
+                poll={poll}
+                isAdmin={isAdmin}
+                onRefresh={fetchPolls}
+              />
+            </div>
+          ))
         ) : (
           <div className="rounded-3xl border border-dashed border-neutral-300/80 p-8 text-center dark:border-white/15">
             <span className="text-3xl">🗳️</span>
             <p className="mt-2 text-sm font-black text-neutral-900 dark:text-white">
-              Aucun sondage pour le moment
+              {activeTab === "active" ? "Aucun sondage en cours" : "Aucun sondage archivé"}
             </p>
             <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 max-w-xs mx-auto">
-              Dès qu&apos;un nouveau vote ou choix de sortie sera proposé par le club, il apparaîtra ici.
+              {activeTab === "active"
+                ? "Dès qu'un nouveau vote ou choix de sortie sera proposé par le club, il apparaîtra ici."
+                : "Les sondages terminés avec leurs résultats finaux s'archiveront ici."}
             </p>
-            {isAdmin && (
+            {isAdmin && activeTab === "active" && (
               <button
                 type="button"
                 onClick={() => setIsModalOpen(true)}

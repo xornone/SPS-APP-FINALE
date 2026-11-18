@@ -94,8 +94,8 @@ export function ActivePollBanner({ initialPoll = null, initialPolls }: ActivePol
         </div>
       )}
 
-      {/* Liste harmonieuse qui s'agrandit au fil des sondages actifs */}
-      <div className="space-y-2.5">
+      {/* Conteneur unifié des sondages : ensemble, pas scindé */}
+      <div className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white/70 shadow-cardSm divide-y divide-neutral-100 dark:border-white/10 dark:bg-[#1A1424]/80 dark:divide-white/5 backdrop-blur-sm">
         {sortedPolls.map((poll) => {
           const hasVoted = Boolean(
             (poll.user_voted_options && poll.user_voted_options.length > 0) ||
@@ -106,21 +106,21 @@ export function ActivePollBanner({ initialPoll = null, initialPolls }: ActivePol
             <Link
               key={poll.id}
               href={`/sondages#poll-${poll.id}`}
-              className={`group relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border p-3 shadow-cardSm transition-all duration-200 active:scale-[0.99] ${
+              className={`group relative flex items-center justify-between gap-3 p-3 transition-all duration-200 active:scale-[0.99] ${
                 hasVoted
-                  ? "border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 via-emerald-400/5 to-emerald-500/10 hover:border-emerald-500/50 hover:bg-emerald-500/15 dark:border-emerald-500/30 dark:from-emerald-500/15 dark:via-emerald-400/10 dark:to-emerald-500/15"
-                  : "border-sps-violet600/30 bg-gradient-to-r from-sps-violet600/10 via-[#AA26FF]/10 to-sps-violet600/10 hover:border-sps-violet600/50 hover:bg-sps-violet600/15 dark:border-sps-violet500/30 dark:from-sps-violet600/20 dark:via-[#AA26FF]/15 dark:to-sps-violet600/20"
+                  ? "hover:bg-emerald-500/10 dark:hover:bg-emerald-500/10"
+                  : "hover:bg-sps-violet600/10 dark:hover:bg-sps-violet600/10"
               }`}
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
                 <span
-                  className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${
+                  className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${
                     hasVoted
                       ? "bg-emerald-600 shadow-emerald-600/30"
                       : "bg-sps-violet600 shadow-violet-600/30"
                   }`}
                 >
-                  <Icon name={hasVoted ? "check" : "poll"} size={16} />
+                  <Icon name={hasVoted ? "check" : "poll"} size={15} />
                 </span>
 
                 <div className="min-w-0 flex-1">
@@ -152,8 +152,8 @@ export function ActivePollBanner({ initialPoll = null, initialPolls }: ActivePol
               <span
                 className={`flex h-7 items-center gap-1 rounded-xl px-2.5 text-[11px] font-bold shadow-xs transition flex-shrink-0 ${
                   hasVoted
-                    ? "bg-white/80 text-emerald-700 group-hover:bg-white dark:bg-white/10 dark:text-emerald-300"
-                    : "bg-white/80 text-sps-violet700 group-hover:bg-white dark:bg-white/10 dark:text-white"
+                    ? "bg-neutral-100 text-emerald-700 group-hover:bg-white dark:bg-white/10 dark:text-emerald-300"
+                    : "bg-neutral-100 text-sps-violet700 group-hover:bg-white dark:bg-white/10 dark:text-white"
                 }`}
               >
                 <span>{hasVoted ? "Résultats" : "Voter"}</span>
