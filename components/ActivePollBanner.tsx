@@ -113,28 +113,15 @@ export function ActivePollBanner({ initialPoll = null, initialPolls }: ActivePol
               }`}
             >
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                {/* Vignette photo si présente ou icône de sondage */}
-                {poll.image_url ? (
-                  <div className="relative h-11 w-11 flex-shrink-0 overflow-hidden rounded-xl border border-black/10 dark:border-white/10 shadow-xs">
-                    <img
-                      src={poll.image_url}
-                      alt={poll.question}
-                      className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-black/5 dark:bg-black/20" />
-                  </div>
-                ) : (
-                  <span
-                    className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${
-                      hasVoted
-                        ? "bg-emerald-600 shadow-emerald-600/30"
-                        : "bg-sps-violet600 shadow-violet-600/30"
-                    }`}
-                  >
-                    <Icon name={hasVoted ? "check" : "poll"} size={16} />
-                  </span>
-                )}
+                <span
+                  className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-white shadow-sm ${
+                    hasVoted
+                      ? "bg-emerald-600 shadow-emerald-600/30"
+                      : "bg-sps-violet600 shadow-violet-600/30"
+                  }`}
+                >
+                  <Icon name={hasVoted ? "check" : "poll"} size={16} />
+                </span>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 mb-0.5">
