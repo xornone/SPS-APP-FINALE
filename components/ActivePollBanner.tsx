@@ -74,25 +74,23 @@ export function ActivePollBanner({ initialPoll = null, initialPolls }: ActivePol
 
   return (
     <div className="px-5 mb-4">
-      {/* En-tête si plusieurs sondages en cours */}
-      {sortedPolls.length > 1 && (
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-1.5">
-            <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-sps-violet600/10 text-sps-violet600 dark:bg-sps-violet600/20 dark:text-sps-violet400">
-              <Icon name="poll" size={12} />
-            </span>
-            <span className="text-[11px] font-black uppercase tracking-wider text-neutral-600 dark:text-neutral-300">
-              Sondages en cours ({sortedPolls.length})
-            </span>
-          </div>
-          <Link
-            href="/sondages"
-            className="text-[11px] font-bold text-sps-violet600 hover:underline dark:text-sps-violet400"
-          >
-            Tout voir →
-          </Link>
+      {/* En-tête de section sondage(s) */}
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center gap-1.5">
+          <span className="flex h-5 w-5 items-center justify-center rounded-lg bg-sps-violet600/10 text-sps-violet600 dark:bg-sps-violet600/20 dark:text-sps-violet400">
+            <Icon name="poll" size={12} />
+          </span>
+          <span className="text-[11px] font-black uppercase tracking-wider text-neutral-600 dark:text-neutral-300">
+            {sortedPolls.length > 1 ? `Sondages en cours (${sortedPolls.length})` : "Sondage en cours"}
+          </span>
         </div>
-      )}
+        <Link
+          href="/sondages"
+          className="text-[11px] font-bold text-sps-violet600 hover:underline dark:text-sps-violet400"
+        >
+          Tout voir →
+        </Link>
+      </div>
 
       {/* Conteneur unifié des sondages : ensemble, pas scindé */}
       <div className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white/70 shadow-cardSm divide-y divide-neutral-100 dark:border-white/10 dark:bg-[#1A1424]/80 dark:divide-white/5 backdrop-blur-sm">
@@ -137,10 +135,10 @@ export function ActivePollBanner({ initialPoll = null, initialPolls }: ActivePol
                           hasVoted ? "bg-emerald-500" : "bg-sps-violet600 animate-pulse"
                         }`}
                       />
-                      {hasVoted ? "Sondage en cours • A voté" : "Sondage en cours"}
+                      {hasVoted ? "Voté" : "À voter"}
                     </span>
-                    <span className="text-[10px] font-bold text-neutral-400 dark:text-white/40">
-                      ({poll.total_voters} votant{poll.total_voters > 1 ? "s" : ""})
+                    <span className="text-[10px] font-bold text-neutral-400 dark:text-white/40 whitespace-nowrap">
+                      • {poll.total_voters} votant{poll.total_voters > 1 ? "s" : ""}
                     </span>
                   </div>
                   <p className="truncate text-xs font-bold text-neutral-900 dark:text-white leading-tight">
