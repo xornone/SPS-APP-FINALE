@@ -22,8 +22,8 @@ export async function PUT(
       return NextResponse.json({ error: "La question ne peut pas être vide." }, { status: 400 });
     }
 
-    if (!Array.isArray(options) || options.length < 2) {
-      return NextResponse.json({ error: "Au moins 2 options sont requises." }, { status: 400 });
+    if (!Array.isArray(options) || options.length < 1) {
+      return NextResponse.json({ error: "Au moins 1 option est requise." }, { status: 400 });
     }
 
     const success = await updatePoll({

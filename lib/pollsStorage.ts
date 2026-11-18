@@ -335,8 +335,8 @@ export async function createPoll({
     }))
     .filter((o) => o.title.length > 0);
 
-  if (newOptions.length < 2) {
-    throw new Error("Un sondage doit comporter au moins 2 options.");
+  if (newOptions.length < 1) {
+    throw new Error("Un sondage doit comporter au moins 1 option.");
   }
 
   // 1. Sauvegarde Supabase
@@ -634,8 +634,8 @@ export async function updatePoll({
     }))
     .filter((o) => o.title.length > 0);
 
-  if (cleanOptions.length < 2) {
-    throw new Error("Un sondage doit comporter au moins 2 options.");
+  if (cleanOptions.length < 1) {
+    throw new Error("Un sondage doit comporter au moins 1 option.");
   }
 
   let supabaseUpdated = false;

@@ -31,7 +31,7 @@ export function CreatePollModal({ isOpen, onClose, onCreated }: CreatePollModalP
   };
 
   const handleRemoveOption = (idx: number) => {
-    if (options.length <= 2) return;
+    if (options.length <= 1) return;
     setOptions(options.filter((_, i) => i !== idx));
   };
 
@@ -74,8 +74,8 @@ export function CreatePollModal({ isOpen, onClose, onCreated }: CreatePollModalP
     }
 
     const cleanOptions = options.map((o) => o.trim()).filter(Boolean);
-    if (cleanOptions.length < 2) {
-      setError("Veuillez fournir au moins 2 réponses possibles.");
+    if (cleanOptions.length < 1) {
+      setError("Veuillez fournir au moins 1 réponse possible.");
       return;
     }
 
@@ -292,13 +292,13 @@ export function CreatePollModal({ isOpen, onClose, onCreated }: CreatePollModalP
                   </span>
                   <input
                     type="text"
-                    required
+                    required={idx === 0}
                     placeholder={`Réponse ${idx + 1}`}
                     value={opt}
                     onChange={(e) => handleOptionChange(idx, e.target.value)}
                     className="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
                   />
-                  {options.length > 2 && (
+                  {options.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemoveOption(idx)}

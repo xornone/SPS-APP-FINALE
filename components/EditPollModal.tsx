@@ -80,7 +80,7 @@ export function EditPollModal({ isOpen, poll, onClose, onUpdated }: EditPollModa
   };
 
   const handleRemoveOption = (idx: number) => {
-    if (options.length <= 2) return;
+    if (options.length <= 1) return;
     const target = options[idx];
     if (target.votes_count && target.votes_count > 0) {
       const confirmDelete = confirm(
@@ -111,8 +111,8 @@ export function EditPollModal({ isOpen, poll, onClose, onUpdated }: EditPollModa
       .map((o) => ({ ...o, title: o.title.trim() }))
       .filter((o) => o.title.length > 0);
 
-    if (cleanOptions.length < 2) {
-      setError("Le sondage doit comporter au moins 2 choix de réponses.");
+    if (cleanOptions.length < 1) {
+      setError("Le sondage doit comporter au moins 1 choix de réponse.");
       return;
     }
 
@@ -325,7 +325,7 @@ export function EditPollModal({ isOpen, poll, onClose, onUpdated }: EditPollModa
                   </span>
                   <input
                     type="text"
-                    required
+                    required={idx === 0}
                     value={opt.title}
                     onChange={(e) => handleOptionTitleChange(idx, e.target.value)}
                     className="flex-1 rounded-xl border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs font-semibold text-neutral-900 outline-none transition focus:border-sps-violet500 dark:border-white/10 dark:bg-white/[0.04] dark:text-white"
@@ -335,7 +335,7 @@ export function EditPollModal({ isOpen, poll, onClose, onUpdated }: EditPollModa
                       {opt.votes_count} vote{opt.votes_count > 1 ? "s" : ""}
                     </span>
                   )}
-                  {options.length > 2 && (
+                  {options.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemoveOption(idx)}

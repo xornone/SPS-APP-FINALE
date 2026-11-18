@@ -273,4 +273,41 @@ describe("Polls storage & privacy", () => {
     // 5. Nettoyage
     await deletePoll(poll.id);
   });
+
+  it("allows creating and voting on a poll with only 1 option (e.g. RSVP / Présence)", async () => {
+    // 1. Création d'un sondage avec 1 seule option
+    const poll = await createPoll({
+      question: "Qui sera présent au repas de fin de saison ?",
+      description: "Confirmez votre présence ci-dessous",
+      allow_multiple: false,
+      options: ["Je serai présent ✋"],
+      created_by: "admin@sps.cc",
+    });
+
+    expect(poll.id).toBeDefined();
+    expect(poll.options).toHaveLength(1);
+    const optId = poll.options[0].id;
+    expect(poll.options[0].title).toBe("Je serai présent ✋");
+
+    // 2. Vote de l'adhérent
+    const voteRes = await submitPollVote({
+      poll_id: poll.id,
+      voter_name: "Marc Antoine",
+      voter_token: "token_marc",
+      selected_option_ids: [optId],
+    });
+    expect(voteRes.ok).toBe(true);
+
+    // 3. Vérification des résultats
+    const polls = await getAllPolls(true);
+    const found = polls.find((p) => p.id === poll.id)!;
+    expect(found).toBeDefined();
+    expect(found.total_voters).toBe(1);
+    expect(found.total_votes).toBe(1);
+    expect(found.options[0].votes_count).toBe(1);
+    expect(found.options[0].voters?.[0].name).toBe("Marc Antoine");
+
+    // 4. Nettoyage
+    await deletePoll(poll.id);
+  });
 });

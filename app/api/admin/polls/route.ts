@@ -24,8 +24,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "La question du sondage est obligatoire." }, { status: 400 });
     }
 
-    if (options.length < 2) {
-      return NextResponse.json({ error: "Indiquez au moins 2 options de réponse." }, { status: 400 });
+    if (options.length < 1) {
+      return NextResponse.json({ error: "Indiquez au moins 1 option de réponse." }, { status: 400 });
     }
 
     const poll = await createPoll({
