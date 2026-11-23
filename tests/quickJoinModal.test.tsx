@@ -19,12 +19,17 @@ const mockRide: Ride = {
   place: "Corum",
   distance_km: 80,
   elevation_gain_m: 600,
-  gpx_url: null,
+  gpx_path: null,
   route_points: null,
   description: "Test description",
   created_at: "2026-11-01T10:00:00Z",
+  updated_at: "2026-11-01T10:00:00Z",
+  created_by: null,
+  place_url: null,
+  strava_url: null,
+  show_safety_notice: false,
   ride_groups: [
-    { id: "g1", ride_id: "ride-1", group_level: "violet", meeting_time: "08:45:00" },
+    { ride_id: "ride-1", group_level: "violet", target_speed: "28+ km/h" },
   ],
 };
 
@@ -39,6 +44,9 @@ describe("QuickJoinModal", () => {
         ride={mockRide}
         isOpen={true}
         onClose={vi.fn()}
+        onJoinSuccess={vi.fn()}
+        onLeaveSuccess={vi.fn()}
+        onChangeGroupSuccess={vi.fn()}
       />
     );
 

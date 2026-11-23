@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { submitPollVote, deletePollVote } from "@/lib/pollsStorage";
+import { logActivity } from "@/lib/activityLogger";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,20 @@ export async function POST(
       selected_option_ids: selectedOptionIds,
     });
 
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: "member",
+      actorName: voterName,
+      clientToken: voterToken,
+      action: "poll_vote",
+      targetType: "poll",
+      targetId: pollId,
+      details: {
+        selected_option_ids: selectedOptionIds,
+      },
+      request,
+    });
+
     return NextResponse.json(result);
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -70,6 +85,17 @@ export async function DELETE(
       poll_id: pollId,
       voter_name: voterName || undefined,
       voter_token: voterToken || undefined,
+    });
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: "member",
+      actorName: voterName || "Membre",
+      clientToken: voterToken || null,
+      action: "poll_unvote",
+      targetType: "poll",
+      targetId: pollId,
+      request,
     });
 
     return NextResponse.json(result);

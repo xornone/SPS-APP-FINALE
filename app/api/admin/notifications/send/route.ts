@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/adminGuard";
 import { isNotificationAdmin } from "@/lib/notificationAdmins";
 import { sendPushToAll } from "@/lib/webpush";
+import { logActivity } from "@/lib/activityLogger";
 
 // Envoi manuel d'une notification push a tous les abonnes, depuis l'onglet
 // Admin (AdminNotificationComposer). Protege comme les autres routes
@@ -29,6 +30,26 @@ export async function POST(request: Request) {
     }
 
     await sendPushToAll({ title: title || "SPS", body: message, url: "/home" });
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: "admin",
+      actorName:
+        guard.user.user_metadata?.full_name ||
+        guard.user.user_metadata?.name ||
+        guard.user.email ||
+        "Admin",
+      actorEmail: guard.user.email,
+      actorId: guard.user.id,
+      action: "admin_send_notification",
+      targetType: "notification",
+      targetTitle: title || "Notification manuelle",
+      details: {
+        title,
+        message,
+      },
+      request,
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err: any) {

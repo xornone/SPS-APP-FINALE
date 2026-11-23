@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logActivity } from "@/lib/activityLogger";
 
 // Poste un message sous une sortie — aucun compte requis, comme pour les
 // participations. Le serveur genere un client_token qu'il renvoie une
@@ -47,6 +48,20 @@ export async function POST(request: Request) {
       .select("id, client_token")
       .single();
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: "member",
+      actorName: name,
+      clientToken: data.client_token,
+      action: "comment_add",
+      targetType: "ride",
+      targetId: rideId,
+      details: {
+        message_preview: message.slice(0, 120),
+      },
+      request,
+    });
 
     return NextResponse.json({ id: data.id, client_token: data.client_token });
   } catch (err: any) {

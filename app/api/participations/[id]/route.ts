@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logActivity } from "@/lib/activityLogger";
 
 const GROUPS = ["vert", "rouge", "violet"];
 
@@ -24,19 +25,36 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     const { data: row, error: rowError } = await admin
       .from("participations")
-      .select("id, ride_id, participant_name, client_token")
+      .select("id, ride_id, participant_name, group_level, client_token")
       .eq("id", params.id)
       .maybeSingle();
     if (rowError) return NextResponse.json({ error: `Erreur serveur : ${rowError.message}` }, { status: 500 });
     if (!row) return NextResponse.json({ error: "Inscription introuvable." }, { status: 404 });
 
     const ownToken = typeof body.client_token === "string" && body.client_token === row.client_token;
-    if (!ownToken && !(await isAdminSession())) {
+    const isSessionAdmin = await isAdminSession();
+    if (!ownToken && !isSessionAdmin) {
       return NextResponse.json({ error: "Non autorisé." }, { status: 403 });
     }
 
     const { error } = await admin.from("participations").delete().eq("id", params.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: ownToken ? "member" : "admin",
+      actorName: row.participant_name,
+      clientToken: ownToken ? row.client_token : null,
+      action: ownToken ? "ride_leave" : "admin_delete_participant",
+      targetType: "ride",
+      targetId: row.ride_id,
+      details: {
+        participant_name: row.participant_name,
+        group_level: row.group_level,
+        deleted_by: ownToken ? "member" : "admin",
+      },
+      request,
+    });
 
     // Meme logique que sur l'inscription : purge immediate du cache
     // d'Accueil/Sorties/fiche sortie pour que le retrait s'y reflete tout
@@ -63,7 +81,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     const admin = createAdminClient();
     const { data: row, error: rowError } = await admin
       .from("participations")
-      .select("id, ride_id, client_token")
+      .select("id, ride_id, participant_name, group_level, client_token")
       .eq("id", params.id)
       .maybeSingle();
     if (rowError) return NextResponse.json({ error: `Erreur serveur : ${rowError.message}` }, { status: 500 });
@@ -73,8 +91,24 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({ error: "Non autorisé." }, { status: 403 });
     }
 
+    const previousGroup = row.group_level;
     const { error } = await admin.from("participations").update({ group_level: group }).eq("id", params.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: "member",
+      actorName: row.participant_name,
+      clientToken: row.client_token,
+      action: "ride_change_group",
+      targetType: "ride",
+      targetId: row.ride_id,
+      details: {
+        from_group: previousGroup,
+        to_group: group,
+      },
+      request,
+    });
 
     // Le groupe n'affecte pas le nombre de participants (Accueil/Sorties),
     // mais la repartition par groupe affichee sur la fiche sortie, elle,

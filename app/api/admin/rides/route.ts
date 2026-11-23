@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminGuard";
 import { sendPushToAll } from "@/lib/webpush";
 import { fmtDateShort, fmtTime } from "@/lib/format";
+import { logActivity } from "@/lib/activityLogger";
 
 const GROUP_SPEED: Record<string, string> = {
   vert: "24–26 km/h",
@@ -69,6 +70,25 @@ export async function POST(request: Request) {
     // sans attendre une revalidation ISR (voir la meme logique sur les
     // routes /api/participations).
     revalidatePath("/home");
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: "admin",
+      actorName: user.user_metadata?.full_name || user.email || "Admin",
+      actorEmail: user.email,
+      actorId: user.id,
+      action: "admin_create_ride",
+      targetType: "ride",
+      targetId: ride.id,
+      targetTitle: ride.title,
+      details: {
+        date: ride.ride_date,
+        time: ride.ride_time,
+        distance_km: ride.distance_km,
+        groups,
+      },
+      request,
+    });
 
     // Best-effort : une erreur d'envoi (cles VAPID absentes, abonnes
     // perimes...) ne doit jamais faire echouer la creation de la sortie. Sauf si skip_notification est demandé.

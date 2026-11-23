@@ -82,6 +82,12 @@ export function ParticipantsList({
   async function handleToggleCaptain(name: string) {
     const isCurrent = isCaptain(name);
     const targetName = isCurrent ? "" : name;
+
+    const confirmMsg = isCurrent
+      ? `Retirer le rôle de Groupe Leader à ${name} ?`
+      : `Désigner ${name} comme Groupe Leader pour cette sortie ?`;
+    if (!window.confirm(confirmMsg)) return;
+
     setCaptainPending(name);
     setError("");
 

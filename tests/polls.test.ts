@@ -251,6 +251,7 @@ describe("Polls storage & privacy", () => {
       poll_id: poll.id,
       question: poll.question,
       image_url: newImage,
+      allow_multiple: false,
       options: poll.options.map((o) => ({ id: o.id, title: o.title })),
     });
 
@@ -263,6 +264,7 @@ describe("Polls storage & privacy", () => {
       poll_id: poll.id,
       question: poll.question,
       image_url: null,
+      allow_multiple: false,
       options: poll.options.map((o) => ({ id: o.id, title: o.title })),
     });
 

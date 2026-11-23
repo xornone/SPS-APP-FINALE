@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logActivity } from "@/lib/activityLogger";
 
 async function isAdminSession(): Promise<boolean> {
   const supabase = createClient();
@@ -20,19 +21,35 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
 
     const { data: row, error: rowError } = await admin
       .from("ride_comments")
-      .select("id, client_token")
+      .select("id, ride_id, author_name, client_token")
       .eq("id", params.id)
       .maybeSingle();
     if (rowError) return NextResponse.json({ error: `Erreur serveur : ${rowError.message}` }, { status: 500 });
     if (!row) return NextResponse.json({ error: "Message introuvable." }, { status: 404 });
 
     const ownToken = typeof body.client_token === "string" && body.client_token === row.client_token;
-    if (!ownToken && !(await isAdminSession())) {
+    const isSessionAdmin = await isAdminSession();
+    if (!ownToken && !isSessionAdmin) {
       return NextResponse.json({ error: "Non autorisé." }, { status: 403 });
     }
 
     const { error } = await admin.from("ride_comments").delete().eq("id", params.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: ownToken ? "member" : "admin",
+      actorName: row.author_name,
+      clientToken: ownToken ? row.client_token : null,
+      action: ownToken ? "comment_delete" : "admin_delete_comment",
+      targetType: "ride",
+      targetId: row.ride_id,
+      details: {
+        comment_id: params.id,
+      },
+      request,
+    });
+
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Erreur serveur inattendue." }, { status: 500 });

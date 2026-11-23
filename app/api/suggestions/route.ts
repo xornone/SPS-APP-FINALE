@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { addSuggestion } from "@/lib/suggestionsStorage";
 import { sendPushToAdmins } from "@/lib/webpush";
+import { logActivity } from "@/lib/activityLogger";
 
 // Route publique de soumission d'une idée (sans e-mail, sans pièce jointe)
 export async function POST(request: NextRequest) {
@@ -44,6 +45,23 @@ export async function POST(request: NextRequest) {
       authorName,
       isAnonymous,
       email,
+    });
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: "member",
+      actorName: isAnonymous ? "Membre anonyme" : (authorName || "Membre"),
+      actorEmail: email || null,
+      action: "suggestion_add",
+      targetType: "suggestion",
+      targetId: suggestion.id,
+      targetTitle: category,
+      details: {
+        category,
+        message_preview: message.slice(0, 120),
+        is_anonymous: isAnonymous,
+      },
+      request,
     });
 
     // Envoi de la notification push aux seuls appareils des administrateurs

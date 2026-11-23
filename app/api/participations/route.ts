@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isAdminName } from "@/lib/admins";
+import { logActivity } from "@/lib/activityLogger";
 
 const GROUPS = ["vert", "rouge", "violet"];
 
@@ -158,6 +159,22 @@ export async function POST(request: Request) {
     // attendre la fenetre de revalidation (15-20s).
     revalidatePath("/home");
     revalidatePath(`/rides/${rideId}`);
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: isAdminName(name) ? "admin" : "member",
+      actorName: name,
+      clientToken: data.client_token,
+      action: body.transfer_from ? "ride_change_group" : "ride_join",
+      targetType: "ride",
+      targetId: rideId,
+      targetTitle: ride.title,
+      details: {
+        group_level: group,
+        transferred_from_ride_id: body.transfer_from?.ride_id || null,
+      },
+      request,
+    });
 
     return NextResponse.json({ id: data.id, client_token: data.client_token, is_admin: isAdminName(name) });
   } catch (err: any) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/adminGuard";
 import { sendPushToAll } from "@/lib/webpush";
+import { logActivity } from "@/lib/activityLogger";
 
 const GROUP_SPEED: Record<string, string> = {
   vert: "24–26 km/h",
@@ -68,6 +69,30 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     revalidatePath("/home");
     revalidatePath(`/rides/${params.id}`);
 
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: "admin",
+      actorName:
+        guard.user.user_metadata?.full_name ||
+        guard.user.user_metadata?.name ||
+        guard.user.email ||
+        "Admin",
+      actorEmail: guard.user.email,
+      actorId: guard.user.id,
+      action: "admin_update_ride",
+      targetType: "ride",
+      targetId: params.id,
+      targetTitle: title || "Sortie",
+      details: {
+        title,
+        ride_date,
+        ride_time,
+        distance_km,
+        groups,
+      },
+      request,
+    });
+
     // Best-effort, comme a la creation : ne doit jamais faire echouer la
     // modification de la sortie. Sauf si le bouton discret (sans notification) a été choisi.
     if (!skip_notification) {
@@ -88,14 +113,38 @@ export async function PATCH(request: Request, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
     const guard = await requireAdmin();
     if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: guard.status });
     const { supabase } = guard;
 
+    // Récupérer le titre de la sortie avant suppression
+    const { data: ride } = await supabase
+      .from("rides")
+      .select("title")
+      .eq("id", params.id)
+      .maybeSingle();
+
     const { error } = await supabase.from("rides").delete().eq("id", params.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+    // Journal d'activité SPS
+    await logActivity({
+      actorType: "admin",
+      actorName:
+        guard.user.user_metadata?.full_name ||
+        guard.user.user_metadata?.name ||
+        guard.user.email ||
+        "Admin",
+      actorEmail: guard.user.email,
+      actorId: guard.user.id,
+      action: "admin_delete_ride",
+      targetType: "ride",
+      targetId: params.id,
+      targetTitle: ride?.title || "Sortie supprimée",
+      request,
+    });
 
     revalidatePath("/home");
 
