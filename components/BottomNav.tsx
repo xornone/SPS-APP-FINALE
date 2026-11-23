@@ -4,13 +4,10 @@ import { useEffect, useState, useTransition, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Icon } from "./Icons";
-import { useIsAdmin } from "@/lib/useIsAdmin";
-import { isPreorderOpenToPublic } from "@/lib/preorder";
 import { hapticTap } from "@/lib/haptics";
 
 const TABS = [
   { href: "/home", label: "Accueil", icon: "home" as const },
-  { href: "/precommandes", label: "Pré-commandes", icon: "shirt" as const, preorderTab: true },
   { href: "/classement", label: "Stats SPS", icon: "trophy" as const },
   { href: "/sondages", label: "Sondages", icon: "poll" as const },
   { href: "/admin", label: "Admin", icon: "gear" as const },
@@ -67,7 +64,6 @@ export function BottomNav() {
     router = null;
   }
 
-  const isAdmin = useIsAdmin();
   const [modalOpen, setModalOpen] = useState(false);
   const [optimisticPath, setOptimisticPath] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -170,11 +166,7 @@ export function BottomNav() {
 
   if (modalOpen) return null;
 
-  const isPreorderOpen = isPreorderOpenToPublic();
-  const visibleTabs = TABS.filter((t) => {
-    if (t.preorderTab && !isAdmin && !isPreorderOpen) return false;
-    return true;
-  });
+  const visibleTabs = TABS;
   const activePath = optimisticPath || pathname;
 
   return (

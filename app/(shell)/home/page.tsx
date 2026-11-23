@@ -4,8 +4,6 @@ import { getActivePollsForHome } from "@/lib/pollsStorage";
 import { checkIsAdminServer } from "@/lib/adminGuard";
 import { HomeRidesSection } from "@/components/HomeRidesSection";
 import { NotificationOptIn } from "@/components/NotificationOptIn";
-import { JerseyPreorderBanner } from "@/components/JerseyPreorderBanner";
-import { PreorderVisibility } from "@/components/PreorderVisibility";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SuggestionButton } from "@/components/SuggestionButton";
 import { ActivePollBanner } from "@/components/ActivePollBanner";
@@ -92,9 +90,6 @@ export default async function HomePage() {
           <ThemeToggle />
         </div>
       </div>
-      <PreorderVisibility>
-        <JerseyPreorderBanner />
-      </PreorderVisibility>
       <ActivePollBanner initialPolls={activePolls} initialIsAdmin={isAdmin} />
       <NotificationOptIn />
       <HomeRidesSection
