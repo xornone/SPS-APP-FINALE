@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/ride-reminders",
-      "schedule": "0 18 * * 4"
+      "schedule": "0 18 * * *"
     },
     {
       "path": "/api/cron/strava-sync",

@@ -187,8 +187,15 @@ export async function sendTomorrowRidesReminders(targetDate?: string): Promise<R
 /**
  * Date au format YYYY-MM-DD pour demain (heure de Paris).
  */
-export function getTomorrowDateString(): string {
-  const now = new Date();
-  now.setDate(now.getDate() + 1);
-  return now.toISOString().slice(0, 10);
+export function getTomorrowDateString(baseDate: Date = new Date()): string {
+  const parisTodayStr = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Paris",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(baseDate);
+
+  const [y, m, d] = parisTodayStr.split("-").map(Number);
+  const tomorrow = new Date(Date.UTC(y, m - 1, d + 1));
+  return tomorrow.toISOString().slice(0, 10);
 }
