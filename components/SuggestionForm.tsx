@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./Icons";
 import { getLastUsedName } from "@/lib/myParticipations";
+import { getOrCreateVoterToken, getInitialVoterName } from "@/lib/pollClient";
 
 const CATEGORIES = [
   { id: "💡 Idée / Suggestion", label: "💡 Idée", desc: "Une proposition pour le club" },
@@ -55,15 +56,23 @@ export function SuggestionForm({ onSubmitted }: { onSubmitted?: () => void }) {
     setLoading(true);
 
     try {
+      const clientToken = getOrCreateVoterToken();
+      const deviceAuthor = getInitialVoterName() || trimmedName || undefined;
+
       const res = await fetch("/api/suggestions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-client-token": clientToken,
+        },
         body: JSON.stringify({
           message: trimmedMsg,
           category,
           isAnonymous,
           authorName: !isAnonymous ? trimmedName : undefined,
           email: email.trim() || undefined,
+          clientToken,
+          deviceAuthor,
         }),
       });
 

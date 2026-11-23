@@ -48,6 +48,8 @@ const memberFilter = getArg("--member");
 const actionFilter = getArg("--action");
 const rideFilter = getArg("--ride");
 const ipFilter = getArg("--ip");
+const tokenFilter = getArg("--token");
+const suggestionFilter = getArg("--suggestion");
 
 async function run() {
   let query = supabase
@@ -67,6 +69,12 @@ async function run() {
   }
   if (ipFilter) {
     query = query.eq("ip_address", ipFilter);
+  }
+  if (tokenFilter) {
+    query = query.eq("client_token", tokenFilter);
+  }
+  if (suggestionFilter) {
+    query = query.eq("target_id", suggestionFilter);
   }
 
   const { data, error } = await query;
