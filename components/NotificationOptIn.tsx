@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Icon } from "./Icons";
+import { getLastUsedName } from "@/lib/myParticipations";
+import { syncPushSubscriptionName } from "@/lib/pushClient";
 
 const DISMISSED_KEY = "sps_push_dismissed";
 
@@ -50,6 +52,10 @@ export function NotificationOptIn() {
         if (cancelled) return;
         if (existing) {
           setStatus("on");
+          const knownName = getLastUsedName();
+          if (knownName) {
+            syncPushSubscriptionName(knownName).catch(() => {});
+          }
           return;
         }
       } catch {
@@ -86,10 +92,16 @@ export function NotificationOptIn() {
         applicationServerKey: urlBase64ToUint8Array(publicKey),
       });
 
+      const knownName = getLastUsedName();
+      const payload: Record<string, any> = subscription.toJSON();
+      if (knownName) {
+        payload.participant_name = knownName;
+      }
+
       const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(subscription.toJSON()),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error("Échec de l'enregistrement de l'abonnement.");
 

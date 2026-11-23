@@ -1,6 +1,6 @@
 import { createAdminClient } from "./supabase/admin";
 import { fetchRideWeather, getRideCoordinates, type RideWeather } from "./weather";
-import { sendPushToAll, type PushPayload } from "./webpush";
+import { sendPushToParticipants, type PushPayload } from "./webpush";
 import { fmtTime } from "./format";
 import type { GroupLevel, Ride } from "./types";
 
@@ -125,17 +125,18 @@ export async function sendRideReminder(ride: Ride): Promise<{
   payload: PushPayload;
 }> {
   const supabase = createAdminClient();
-  const { count } = await supabase
+  const { data: participations, count } = await supabase
     .from("participations")
-    .select("*", { count: "exact", head: true })
+    .select("participant_name", { count: "exact" })
     .eq("ride_id", ride.id);
 
-  const participantCount = count ?? 0;
+  const participantCount = count ?? (participations?.length || 0);
   const payload = await buildReminderMessage(ride);
 
-  // Si aucun inscrit sur la sortie, pas d'envoi inutile
-  if (participantCount > 0) {
-    await sendPushToAll(payload);
+  // Envoi ciblé exclusivement aux personnes inscrites sur cette sortie
+  if (participantCount > 0 && participations && participations.length > 0) {
+    const names = participations.map((p) => p.participant_name).filter(Boolean);
+    await sendPushToParticipants(names, payload);
   }
 
   return { success: true, participantCount, payload };

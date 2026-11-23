@@ -1,6 +1,7 @@
 "use client";
 
 import { saveRegisteredRide, removeRegisteredRide, syncAllRegisteredRides } from "./indexedDbRides";
+import { syncPushSubscriptionName } from "./pushClient";
 
 // Suivi cote navigateur des inscriptions faites depuis cet appareil — sans
 // compte, c'est le seul moyen de savoir "c'est moi" et de proposer un
@@ -44,6 +45,9 @@ export function setMyParticipation(rideId: string, value: MyParticipation) {
   store[rideId] = value;
   writeStore(store);
   saveRegisteredRide(rideId).catch(() => {});
+  if (value.participant_name) {
+    syncPushSubscriptionName(value.participant_name).catch(() => {});
+  }
 }
 
 export function clearMyParticipation(rideId: string) {

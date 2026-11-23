@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { sendPushToAdmins } from "@/lib/webpush";
+import { sendPushToAdmins, sendPushToParticipants } from "@/lib/webpush";
 
 const mockSendNotification = vi.fn();
 const mockDelete = vi.fn();
@@ -19,7 +19,29 @@ vi.mock("@/lib/supabase/admin", () => ({
     from: () => ({
       select: (...args: any[]) => {
         mockSelect(...args);
-        return {
+        const queryPromise = Promise.resolve({
+          data: [
+            {
+              id: "sub-1",
+              endpoint: "https://push.example.com/1",
+              p256dh: "key1",
+              auth: "auth1",
+              is_admin: true,
+              participant_name: "Florian Sicard-Baux",
+            },
+            {
+              id: "sub-2",
+              endpoint: "https://push.example.com/2",
+              p256dh: "key2",
+              auth: "auth2",
+              is_admin: false,
+              participant_name: "Thomas Trégaro",
+            },
+          ],
+          error: null,
+        });
+
+        return Object.assign(queryPromise, {
           eq: (...eqArgs: any[]) => {
             mockEq(...eqArgs);
             return Promise.resolve({
@@ -34,7 +56,7 @@ vi.mock("@/lib/supabase/admin", () => ({
               error: null,
             });
           },
-        };
+        });
       },
       delete: () => ({
         eq: (...args: any[]) => {
@@ -66,5 +88,23 @@ describe("sendPushToAdmins", () => {
     expect(mockSendNotification).toHaveBeenCalledTimes(1);
     expect(result.success).toBe(true);
     expect(result.count).toBe(1);
+  });
+
+  it("targets only matching participants using canonical matching", async () => {
+    const result = await sendPushToParticipants(["Florian Sicard-Baux"], {
+      title: "Rappel SPS",
+      body: "Groupe Rouge demain",
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.count).toBe(1);
+    expect(mockSendNotification).toHaveBeenCalledTimes(1);
+    expect(mockSendNotification).toHaveBeenCalledWith(
+      {
+        endpoint: "https://push.example.com/1",
+        keys: { p256dh: "key1", auth: "auth1" },
+      },
+      expect.stringContaining("Groupe Rouge demain")
+    );
   });
 });

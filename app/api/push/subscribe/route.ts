@@ -13,6 +13,9 @@ export async function POST(request: Request) {
     const endpoint = String(body?.endpoint || "");
     const p256dh = String(body?.keys?.p256dh || "");
     const auth = String(body?.keys?.auth || "");
+    const participantName = body?.participant_name
+      ? String(body.participant_name).trim().replace(/\s+/g, " ")
+      : null;
 
     if (!endpoint || !p256dh || !auth) {
       return NextResponse.json({ error: "Abonnement push invalide." }, { status: 400 });
@@ -37,41 +40,60 @@ export async function POST(request: Request) {
 
     const admin = createAdminClient();
 
-    // Verifier si cet endpoint etait deja marque admin dans la base
+    // Verifier si cet endpoint etait deja marque admin ou avait deja un participant dans la base
     let alreadyAdmin = false;
+    let existingParticipantName: string | null = null;
     try {
       const { data: existing } = await admin
         .from("push_subscriptions")
-        .select("is_admin")
+        .select("is_admin, participant_name")
         .eq("endpoint", endpoint)
         .maybeSingle();
       alreadyAdmin = Boolean(existing?.is_admin);
+      existingParticipantName = existing?.participant_name || null;
     } catch {
       // Si la colonne n'existe pas encore
     }
 
     const shouldBeAdmin = isAdmin || alreadyAdmin;
+    const finalParticipantName = participantName || existingParticipantName;
 
-    // Tentative d'upsert avec is_admin
+    // Tentative d'upsert avec participant_name et is_admin
+    const upsertData: Record<string, any> = {
+      endpoint,
+      p256dh,
+      auth,
+      is_admin: shouldBeAdmin,
+    };
+    if (finalParticipantName) {
+      upsertData.participant_name = finalParticipantName;
+    }
+
     let upsertRes = await admin
       .from("push_subscriptions")
-      .upsert(
-        { endpoint, p256dh, auth, is_admin: shouldBeAdmin },
-        { onConflict: "endpoint" }
-      );
+      .upsert(upsertData, { onConflict: "endpoint" });
+
+    // Si la colonne participant_name n'a pas encore ete appliquee dans Supabase, repli gracieux
+    if (upsertRes.error && upsertRes.error.message?.includes("participant_name")) {
+      delete upsertData.participant_name;
+      upsertRes = await admin
+        .from("push_subscriptions")
+        .upsert(upsertData, { onConflict: "endpoint" });
+    }
 
     // Si la colonne is_admin n'a pas encore ete appliquee dans Supabase, repli gracieux
     if (upsertRes.error && upsertRes.error.message?.includes("is_admin")) {
+      delete upsertData.is_admin;
       upsertRes = await admin
         .from("push_subscriptions")
-        .upsert({ endpoint, p256dh, auth }, { onConflict: "endpoint" });
+        .upsert(upsertData, { onConflict: "endpoint" });
     }
 
     if (upsertRes.error) {
       return NextResponse.json({ error: upsertRes.error.message }, { status: 400 });
     }
 
-    return NextResponse.json({ ok: true, is_admin: shouldBeAdmin });
+    return NextResponse.json({ ok: true, is_admin: shouldBeAdmin, participant_name: finalParticipantName });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Erreur serveur inattendue." }, { status: 500 });
   }

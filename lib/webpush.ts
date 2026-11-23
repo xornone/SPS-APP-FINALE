@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { createAdminClient } from "./supabase/admin";
+import { isSameVoter } from "./voterCanonical";
 
 function configureWebPush() {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -109,4 +110,59 @@ export async function sendPushToAdmins(
 
   await sendPushToSubscribers(list, payload);
   return { success: true, count: list.length };
+}
+
+/**
+ * Envoie une notification push ciblée UNIQUEMENT aux participants inscrits
+ * sur une sortie (selon leur nom, avec réconciliation canonique).
+ * Si un abonné n'a pas encore de nom associé, il reçoit la notification
+ * et son service worker filtre localement via registered_rides.
+ */
+export async function sendPushToParticipants(
+  participantNames: string[],
+  payload: PushPayload
+): Promise<{ success: boolean; count: number }> {
+  try {
+    configureWebPush();
+  } catch (err) {
+    console.error("[push] configuration manquante :", err);
+    return { success: false, count: 0 };
+  }
+
+  if (!participantNames || participantNames.length === 0) {
+    return { success: true, count: 0 };
+  }
+
+  const admin = createAdminClient();
+  const { data: subs, error } = await admin
+    .from("push_subscriptions")
+    .select("id, endpoint, p256dh, auth, participant_name");
+
+  if (error) {
+    // Si la colonne participant_name n'existe pas encore (fallback)
+    const fallbackRes = await admin.from("push_subscriptions").select("id, endpoint, p256dh, auth");
+    if (!fallbackRes.error && fallbackRes.data) {
+      await sendPushToSubscribers(fallbackRes.data, payload);
+      return { success: true, count: fallbackRes.data.length };
+    }
+    console.error("[push] impossible de lire les abonnements :", error.message);
+    return { success: false, count: 0 };
+  }
+
+  const list = (subs || []) as Array<{ id: string; endpoint: string; p256dh: string; auth: string; participant_name?: string | null }>;
+
+  // Filtrer les abonnés :
+  // - Si le nom du participant est renseigné, on vérifie la correspondance avec l'un des inscrits (isSameVoter)
+  // - Si pas de nom renseigné (ancien abonné avant migration), on l'inclut pour que son SW filtre via IndexedDB
+  const targetedSubs = list.filter((sub) => {
+    if (!sub.participant_name) return true; // repli vers le filtrage SW local
+    return participantNames.some((name) => isSameVoter(sub.participant_name!, name));
+  });
+
+  if (targetedSubs.length === 0) {
+    return { success: true, count: 0 };
+  }
+
+  await sendPushToSubscribers(targetedSubs, payload);
+  return { success: true, count: targetedSubs.length };
 }
