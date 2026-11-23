@@ -91,7 +91,17 @@ async function run() {
     const emailStr = item.actor_email ? ` (${item.actor_email})` : "";
     const ipStr = item.ip_address ? ` [IP: ${item.ip_address}]` : "";
 
-    console.log(`• [${date}] ${actorBadge} ${item.actor_name}${emailStr}${ipStr}`);
+    let device = "Inconnu";
+    if (item.user_agent) {
+      if (/iPhone/i.test(item.user_agent)) device = "iPhone";
+      else if (/iPad/i.test(item.user_agent)) device = "iPad";
+      else if (/Android/i.test(item.user_agent)) device = "Android";
+      else if (/Macintosh|Mac OS/i.test(item.user_agent)) device = "Mac";
+      else if (/Windows/i.test(item.user_agent)) device = "Windows";
+      else if (/Linux/i.test(item.user_agent)) device = "Linux";
+    }
+
+    console.log(`• [${date}] ${actorBadge} ${item.actor_name}${emailStr}${ipStr} — Appareil : ${device}`);
     console.log(`  Action : ${item.action} | Cible : ${item.target_type} ${item.target_title || item.target_id || ""}`);
     if (item.details && Object.keys(item.details).length > 0) {
       console.log(`  Détails : ${JSON.stringify(item.details)}`);
