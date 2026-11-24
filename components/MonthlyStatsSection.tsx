@@ -306,7 +306,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
     return rankedTopAttendance.slice(3, 10);
   }, [rankedTopAttendance]);
 
-  // 2. Maillot à pois du mois (TOP 10 D+) : Strava si dispo, sinon fallback App SPS
+  // 2. Maillot à pois du mois (TOP 10 D+) : EXCLUSIVEMENT Strava (aucun fallback App SPS)
   const top10Elevation = useMemo<LeaderDisplayItem[]>(() => {
     if (hasStravaMonthData && stravaMonthLeaders?.topElevation) {
       return stravaMonthLeaders.topElevation
@@ -321,21 +321,14 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           isStrava: true,
         }));
     }
-    return stats.topElevation.slice(0, 10).map((m, idx) => ({
-      rank: idx + 1,
-      display: m.display,
-      ridesCount: m.ridesCount,
-      statFormatted: fmtM(m.totalElevation),
-      statLabel: "D+ cumulé",
-      isStrava: false,
-    }));
-  }, [hasStravaMonthData, stravaMonthLeaders, stats.topElevation]);
+    return [];
+  }, [hasStravaMonthData, stravaMonthLeaders]);
 
   const topElevationLeader = top10Elevation[0] || null;
   const elevationPodiumRest = top10Elevation.slice(1, 3);
   const elevationRestTop10 = top10Elevation.slice(3, 10);
 
-  // 3. Rouleur du mois (TOP 10 Km) : Strava si dispo, sinon fallback App SPS
+  // 3. Rouleur du mois (TOP 10 Km) : EXCLUSIVEMENT Strava (aucun fallback App SPS)
   const top10Distance = useMemo<LeaderDisplayItem[]>(() => {
     if (hasStravaMonthData && stravaMonthLeaders?.topDistance) {
       return stravaMonthLeaders.topDistance
@@ -350,15 +343,12 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
           isStrava: true,
         }));
     }
-    return stats.topDistance.slice(0, 10).map((m, idx) => ({
-      rank: idx + 1,
-      display: m.display,
-      ridesCount: m.ridesCount,
-      statFormatted: fmtKm(m.totalKm),
-      statLabel: "distance",
-      isStrava: false,
-    }));
-  }, [hasStravaMonthData, stravaMonthLeaders, stats.topDistance]);
+    return [];
+  }, [hasStravaMonthData, stravaMonthLeaders]);
+
+  const topDistanceLeader = top10Distance[0] || null;
+  const distancePodiumRest = top10Distance.slice(1, 3);
+  const distanceRestTop10 = top10Distance.slice(3, 10);
 
   const topDistanceLeader = top10Distance[0] || null;
   const distancePodiumRest = top10Distance.slice(1, 3);
@@ -978,11 +968,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                     <TrophyCard
                       title="Maillot à pois du mois"
                       emoji="🔴"
-                      sourceBadge={
-                        topElevationLeader?.isStrava
-                          ? { label: "Strava", color: "bg-[#FC5200]/15 text-[#FC5200]" }
-                          : undefined
-                      }
+                      sourceBadge={{ label: "Strava", color: "bg-[#FC5200]/15 text-[#FC5200]" }}
                       badgeText="TOP 3 D+"
                       subtitle="Top dénivelé positif cumulé du mois"
                       podiumFirst={elevationPodiumFirst}
@@ -992,7 +978,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                       restList={elevationRestTop10}
                       showRest={showElevationRest}
                       onToggleRest={() => setShowElevationRest((v) => !v)}
-                      emptyMessage="Aucune donnée enregistrée"
+                      emptyMessage="Données Strava non disponibles pour ce mois"
                     />
                   )}
 
@@ -1001,11 +987,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                     <TrophyCard
                       title="Rouleur du mois"
                       emoji="🚴"
-                      sourceBadge={
-                        topDistanceLeader?.isStrava
-                          ? { label: "Strava", color: "bg-[#FC5200]/15 text-[#FC5200]" }
-                          : undefined
-                      }
+                      sourceBadge={{ label: "Strava", color: "bg-[#FC5200]/15 text-[#FC5200]" }}
                       badgeText="TOP 3 Km"
                       subtitle="Top distance cumulée du mois"
                       podiumFirst={distancePodiumFirst}
@@ -1015,7 +997,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                       restList={distanceRestTop10}
                       showRest={showDistanceRest}
                       onToggleRest={() => setShowDistanceRest((v) => !v)}
-                      emptyMessage="Aucune donnée enregistrée"
+                      emptyMessage="Données Strava non disponibles pour ce mois"
                     />
                   )}
 
@@ -1024,11 +1006,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                     <TrophyCard
                       title="Le plus rapide du mois"
                       emoji="⚡"
-                      sourceBadge={
-                        topSpeedLeader?.isStrava
-                          ? { label: "Strava", color: "bg-[#FC5200]/15 text-[#FC5200]" }
-                          : undefined
-                      }
+                      sourceBadge={{ label: "Strava", color: "bg-[#FC5200]/15 text-[#FC5200]" }}
                       badgeText="TOP 3 Vitesse"
                       subtitle="Top vitesse moyenne du mois (min. 30 km)"
                       podiumFirst={speedPodiumFirst}
@@ -1038,7 +1016,7 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
                       restList={speedRestTop10}
                       showRest={showSpeedRest}
                       onToggleRest={() => setShowSpeedRest((v) => !v)}
-                      emptyMessage="Aucune donnée enregistrée"
+                      emptyMessage="Données Strava non disponibles pour ce mois"
                     />
                   )}
                 </div>
