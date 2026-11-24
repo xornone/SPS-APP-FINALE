@@ -350,10 +350,6 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   const distancePodiumRest = top10Distance.slice(1, 3);
   const distanceRestTop10 = top10Distance.slice(3, 10);
 
-  const topDistanceLeader = top10Distance[0] || null;
-  const distancePodiumRest = top10Distance.slice(1, 3);
-  const distanceRestTop10 = top10Distance.slice(3, 10);
-
   // 4. Le plus rapide du mois (TOP 10 Vitesse moyenne) : Strava (min. 30 km)
   const top10Speed = useMemo<LeaderDisplayItem[]>(() => {
     if (hasStravaMonthData && stravaMonthLeaders) {

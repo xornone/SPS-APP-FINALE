@@ -6,6 +6,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createClient } from "@supabase/supabase-js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, "..");
@@ -40,7 +41,7 @@ async function resolveActiveCookie() {
 }
 
 // 99 membres officiels SPS avec leurs correspondances Strava validées
-import { SPS_MEMBER_STRAVA_MAPPINGS } from "../lib/stravaScraper.ts";
+import { SPS_MEMBER_STRAVA_MAPPINGS } from "../lib/stravaMappings.ts";
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -204,9 +205,59 @@ async function fetchSegmentLeaderboard(segmentId = "42510565") {
   }
 }
 
+function loadEnv() {
+  const envPath = path.join(ROOT_DIR, ".env.local");
+  if (fs.existsSync(envPath)) {
+    const lines = fs.readFileSync(envPath, "utf8").split("\n");
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#")) continue;
+      const idx = trimmed.indexOf("=");
+      if (idx > 0) {
+        const k = trimmed.substring(0, idx).trim();
+        const v = trimmed.substring(idx + 1).trim();
+        if (!process.env[k]) {
+          process.env[k] = v;
+        }
+      }
+    }
+  }
+}
+
+async function syncToSupabase(store) {
+  loadEnv();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key =
+    serviceKey && serviceKey.length > 20 && serviceKey !== "eyJ..."
+      ? serviceKey
+      : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !key) {
+    console.log("ℹ️ Supabase non configuré pour le cache distant.");
+    return;
+  }
+
+  try {
+    const supabase = createClient(url, key);
+    const { error } = await supabase
+      .from("strava_cache")
+      .upsert({ key: "latest", data: store, updated_at: new Date().toISOString() });
+
+    if (error) {
+      console.warn("⚠️ Impossible de mettre à jour le cache Supabase :", error.message);
+    } else {
+      console.log("☁️ Données synchronisées avec succès dans Supabase (table strava_cache, clé: latest) !");
+    }
+  } catch (err) {
+    console.warn("⚠️ Erreur lors de la synchronisation Supabase :", err.message);
+  }
+}
+
 async function main() {
+  loadEnv();
   const args = process.argv.slice(2);
-  const targetMonths = ["2026-10", "2026-11"];
+  const targetMonths = args.length > 0 ? args : ["2026-09", "2026-10", "2026-11"];
 
   console.log("=========================================================");
   console.log("       STATISTIQUES OFFICIELLES STRAVA - CLUB SPS       ");
@@ -214,6 +265,20 @@ async function main() {
 
   // Sélection automatique du token actif (failover transparent)
   await resolveActiveCookie();
+
+  const outPath = path.join(ROOT_DIR, "data/strava_sps_stats.json");
+  let existingStore = null;
+  if (fs.existsSync(outPath)) {
+    try {
+      existingStore = JSON.parse(fs.readFileSync(outPath, "utf8"));
+    } catch {}
+  }
+  const existingMembersMap = new Map();
+  if (existingStore?.members) {
+    for (const m of existingStore.members) {
+      existingMembersMap.set(m.athleteId, m);
+    }
+  }
 
   const membersList = Object.entries(SPS_MEMBER_STRAVA_MAPPINGS).map(([officialName, info]) => ({
     officialName,
@@ -223,7 +288,7 @@ async function main() {
 
   console.log(`👥 Adhérents officiels SPS : ${membersList.length}`);
   console.log(`📅 Mois calendaires à scraper : ${targetMonths.join(", ")}`);
-  console.log(`⏳ Récupération en cours (Annuel + Mois calendaires)...`);
+  console.log(`⏳ Récupération en cours...`);
 
   const membersResults = [];
   const BATCH_SIZE = 5;
@@ -232,8 +297,14 @@ async function main() {
     const batch = membersList.slice(i, i + BATCH_SIZE);
     await Promise.all(
       batch.map(async (m) => {
-        const annual = await fetchAthleteAnnualStats(m.athleteId);
-        const monthsData = {};
+        const prevMember = existingMembersMap.get(m.athleteId);
+        // Conserve les mois passés déjà enregistrés
+        const monthsData = { ...(prevMember?.months || {}) };
+
+        let annual = prevMember?.annual;
+        if (!annual || annual.distance_km === 0) {
+          annual = await fetchAthleteAnnualStats(m.athleteId);
+        }
 
         for (const ym of targetMonths) {
           monthsData[ym] = await fetchAthleteCalendarMonth(m.athleteId, ym);
@@ -241,7 +312,7 @@ async function main() {
 
         membersResults.push({
           ...m,
-          annual,
+          annual: annual || { activities: 0, distance_km: 0, elev_gain_m: 0, time: "0h 0m" },
           months: monthsData,
         });
       })
@@ -252,10 +323,25 @@ async function main() {
   }
   console.log("\n   Données Strava récupérées avec succès !\n");
 
-  // Calcul des classements mensuels
-  const monthlyLeaders = {};
+  // Déterminer tous les mois disponibles pour le calcul des classements
+  const allMonthsSet = new Set(targetMonths);
+  if (existingStore?.monthlyLeaders) {
+    for (const k of Object.keys(existingStore.monthlyLeaders)) {
+      allMonthsSet.add(k);
+    }
+  }
+  for (const m of membersResults) {
+    for (const k of Object.keys(m.months || {})) {
+      allMonthsSet.add(k);
+    }
+  }
 
-  for (const ym of targetMonths) {
+  const allMonths = Array.from(allMonthsSet).sort();
+
+  // Calcul des classements mensuels
+  const monthlyLeaders = existingStore?.monthlyLeaders ? { ...existingStore.monthlyLeaders } : {};
+
+  for (const ym of allMonths) {
     let totalKm = 0;
     let totalElevation = 0;
     let totalActivities = 0;
@@ -325,10 +411,13 @@ async function main() {
 
   // Récupération automatique du segment du mois SPS
   console.log("🚴 Récupération du segment du mois SPS (42510565)...");
-  const segment = await fetchSegmentLeaderboard("42510565");
-  if (segment) {
-    console.log(`✅ Segment récupéré : ${segment.name} (${segment.leaderboard.length} coureurs classés)`);
-  }
+  let segment = null;
+  try {
+    segment = await fetchSegmentLeaderboard("42510565");
+    if (segment) {
+      console.log(`✅ Segment récupéré : ${segment.name} (${segment.leaderboard.length} coureurs classés)`);
+    }
+  } catch {}
 
   // Sauvegarde des données
   const store = {
@@ -340,42 +429,36 @@ async function main() {
     segmentOfMonth: segment || existingStore?.segmentOfMonth,
   };
 
-  const outPath = path.join(ROOT_DIR, "data/strava_sps_stats.json");
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, JSON.stringify(store, null, 2));
+  console.log(`📁 Fichier JSON complet sauvegardé dans : ${outPath}`);
 
-  // Affichage Octobre 2026 (Mois calendaire strict)
-  const octStats = monthlyLeaders["2026-10"];
-  if (octStats) {
+  // Synchro Supabase
+  await syncToSupabase(store);
+
+  // Affichage synthétique des mois
+  for (const ym of allMonths) {
+    const mStats = monthlyLeaders[ym];
+    if (!mStats) continue;
     console.log("==========================================================================================");
-    console.log("                 🏆 CLASSEMENT MENSUEL CALENDAIRE : OCTOBRE 2026                          ");
+    console.log(`                 🏆 CLASSEMENT MENSUEL CALENDAIRE : ${ym}                                 `);
     console.log("==========================================================================================");
     console.log(
-      `Cumul Octobre 2026 : ${octStats.totalKm.toLocaleString("fr-FR")} km | ${octStats.totalActivities} sorties | ${octStats.totalElevation.toLocaleString(
+      `Cumul ${ym} : ${mStats.totalKm.toLocaleString("fr-FR")} km | ${mStats.totalActivities} sorties | ${mStats.totalElevation.toLocaleString(
         "fr-FR"
       )} m D+`
     );
-    console.log("\n--- TOP 10 ROULEURS DU MOIS (OCTOBRE 2026 - DISTANCE) ---");
-    octStats.topDistance.slice(0, 10).forEach((m) => {
-      console.log(
-        `${String(m.rank).padStart(2)}. ${m.officialName.padEnd(25)} : ${m.distance_km.toLocaleString(
-          "fr-FR"
-        )} km (${m.activities} sorties)`
-      );
-    });
-
-    console.log("\n--- TOP 10 GRIMPEURS DU MOIS (OCTOBRE 2026 - D+) ---");
-    octStats.topElevation.slice(0, 10).forEach((m) => {
-      console.log(
-        `${String(m.rank).padStart(2)}. ${m.officialName.padEnd(25)} : ${m.elev_gain_m.toLocaleString(
-          "fr-FR"
-        )} m D+ (${m.activities} sorties)`
-      );
-    });
-    console.log("==========================================================================================\n");
+    if (mStats.topDistance[0]) {
+      console.log(`🚴 Top Rouleur : ${mStats.topDistance[0].officialName} (${mStats.topDistance[0].distance_km} km)`);
+    }
+    if (mStats.topElevation[0]) {
+      console.log(`⛰️ Top Grimpeur : ${mStats.topElevation[0].officialName} (${mStats.topElevation[0].elev_gain_m} m D+)`);
+    }
+    if (mStats.topSpeed[0]) {
+      console.log(`⚡ Top Vitesse : ${mStats.topSpeed[0].officialName} (${mStats.topSpeed[0].avg_speed_kmh} km/h)`);
+    }
   }
-
-  console.log(`📁 Fichier JSON complet sauvegardé dans : ${outPath}`);
+  console.log("==========================================================================================\n");
 }
 
 main().catch(console.error);
