@@ -90,7 +90,7 @@ export default async function RideDetailPage({ params }: { params: { id: string 
       {isChristmas && (
         <>
           <ChristmasSnow count={22} className="!fixed inset-0 z-30 pointer-events-none" />
-          <ChristmasSleigh className="!top-3" />
+          <ChristmasSleigh className="!fixed inset-0 z-30" />
         </>
       )}
 

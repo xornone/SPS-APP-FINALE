@@ -1,6 +1,42 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useEffect, useState } from "react";
+
+// Trajectoires de vol en diagonale à travers l'onglet
+interface SleighTrajectory {
+  startY: number; // en % de la hauteur de la carte
+  endY: number;   // en % de la hauteur de la carte
+  angle: number;  // inclinaison aérodynamique en degrés
+  duration: number; // durée du passage en secondes
+}
+
+const FLIGHT_PATTERNS: SleighTrajectory[] = [
+  // 1. Grande montée diagonale (bas-gauche -> haut-droite)
+  { startY: 82, endY: 10, angle: -20, duration: 6.8 },
+  // 2. Descente plongeante (haut-gauche -> bas-droite)
+  { startY: 15, endY: 78, angle: 17, duration: 6.2 },
+  // 3. Montée centrale (centre-gauche -> haut-droite)
+  { startY: 55, endY: 14, angle: -18, duration: 6.5 },
+  // 4. Traversée rasante basse en douce ascension
+  { startY: 86, endY: 52, angle: -14, duration: 7.0 },
+  // 5. Piqué depuis le haut vers le centre
+  { startY: 14, endY: 54, angle: 15, duration: 6.4 },
+  // 6. Montée douce traversante (centre-bas -> centre-haut)
+  { startY: 70, endY: 30, angle: -16, duration: 6.6 },
+];
+
+function getRandomFlight(): SleighTrajectory {
+  const pattern = FLIGHT_PATTERNS[Math.floor(Math.random() * FLIGHT_PATTERNS.length)];
+  const jitterY = (Math.random() - 0.5) * 6;
+  const jitterAngle = (Math.random() - 0.5) * 3;
+  const jitterDur = (Math.random() - 0.5) * 0.6;
+  return {
+    startY: Math.max(8, Math.min(88, pattern.startY + jitterY)),
+    endY: Math.max(8, Math.min(88, pattern.endY + jitterY)),
+    angle: pattern.angle + jitterAngle,
+    duration: Math.max(5.5, pattern.duration + jitterDur),
+  };
+}
 
 // Particules de flocons avec positions, tailles et cadences variées
 const SNOWFLAKES = [
@@ -82,189 +118,216 @@ export const ChristmasSnow = memo(function ChristmasSnow({
 });
 
 /**
- * Silhouette animée du Père Noël et de ses rennes qui volent DANS LE BON SENS :
- * Les rennes sont en tête à droite et mènent l'attelage vers l'avant (de gauche à droite),
- * le traîneau suit derrière avec le sillage d'étoiles magiques ✨.
+ * Silhouette animée du Père Noël et de ses rennes qui volent DANS LE BON SENS
+ * et traversent TOUT L'ONGLET EN DIAGONALE aléatoire (grandes montées, piqués, traversées centrales)
+ * avec inclinaison aérodynamique et sillage d'étoiles magiques ✨.
  */
 export const ChristmasSleigh = memo(function ChristmasSleigh({
   className = "",
 }: {
   className?: string;
 }) {
+  const [flight, setFlight] = useState<SleighTrajectory | null>(null);
+  const [flightId, setFlightId] = useState(0);
+
+  useEffect(() => {
+    // Premier vol après 1 seconde
+    const timer = setTimeout(() => {
+      setFlight(getRandomFlight());
+      setFlightId((id) => id + 1);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  function handleAnimationEnd() {
+    // Prochain vol après une pause aléatoire de 5 à 10 secondes
+    const pauseMs = 5000 + Math.random() * 5000;
+    setTimeout(() => {
+      setFlight(getRandomFlight());
+      setFlightId((id) => id + 1);
+    }, pauseMs);
+  }
+
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none absolute inset-x-0 top-1.5 h-10 overflow-hidden z-25 select-none ${className}`}
+      className={`pointer-events-none absolute inset-0 overflow-hidden z-25 select-none ${className}`}
     >
       <style>{`
-        @keyframes spsFlySleigh {
+        @keyframes spsDiagonalFly {
           0% {
-            left: -40%;
+            left: -150px;
+            top: var(--start-y, 80%);
             opacity: 0;
-            transform: translateY(0) scale(0.92);
+            transform: rotate(var(--flight-angle, -18deg)) scale(0.9);
           }
-          3% {
+          4% {
             opacity: 1;
           }
-          18% {
-            transform: translateY(-4px) scale(0.96);
+          20% {
+            transform: rotate(calc(var(--flight-angle, -18deg) + 2deg)) scale(0.96);
           }
-          32% {
-            transform: translateY(3px) scale(0.98);
+          45% {
+            transform: rotate(calc(var(--flight-angle, -18deg) - 2deg)) scale(0.98);
           }
-          46% {
-            transform: translateY(-3px) scale(0.96);
+          75% {
+            transform: rotate(calc(var(--flight-angle, -18deg) + 1deg)) scale(0.96);
           }
-          52% {
+          88% {
             opacity: 1;
-          }
-          56% {
-            left: 108%;
-            opacity: 0;
-            transform: translateY(0) scale(0.92);
           }
           100% {
             left: 108%;
+            top: var(--end-y, 15%);
             opacity: 0;
+            transform: rotate(var(--flight-angle, -18deg)) scale(0.9);
           }
         }
       `}</style>
 
-      <div
-        className="absolute top-0 flex items-center gap-1 text-amber-300 dark:text-amber-200"
-        style={{
-          width: "140px",
-          animation: "spsFlySleigh 17s cubic-bezier(0.25, 0.1, 0.25, 1) infinite",
-        }}
-      >
-        {/* Traîneau + Père Noël + Rennes : Rennes devant (à droite), Père Noël derrière (à gauche) */}
-        <svg
-          viewBox="0 0 170 42"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-7 w-auto drop-shadow-[0_2px_8px_rgba(245,158,11,0.6)]"
+      {flight && (
+        <div
+          key={flightId}
+          onAnimationEnd={handleAnimationEnd}
+          className="absolute flex items-center gap-1 text-amber-300 dark:text-amber-200"
+          style={{
+            width: "140px",
+            "--start-y": `${flight.startY}%`,
+            "--end-y": `${flight.endY}%`,
+            "--flight-angle": `${flight.angle}deg`,
+            animation: `spsDiagonalFly ${flight.duration}s cubic-bezier(0.25, 0.1, 0.25, 1) forwards`,
+          } as React.CSSProperties}
         >
-          {/* Étoiles magiques dans le sillage (derrière le traîneau à gauche) */}
-          <g className="text-amber-300">
-            <path
-              d="M6 18L7.5 13L9 18L14 19.5L9 21L7.5 26L6 21L1 19.5L6 18Z"
-              fill="currentColor"
-              className="animate-pulse opacity-90"
-            />
-            <circle cx="16" cy="14" r="1.5" fill="#FFE082" />
-            <circle cx="21" cy="22" r="1.2" fill="#FFFFFF" />
-            <circle cx="26" cy="17" r="1.5" fill="#FFE082" />
-          </g>
+          {/* Traîneau + Père Noël + Rennes : Rennes devant (à droite), Père Noël derrière (à gauche) */}
+          <svg
+            viewBox="0 0 170 42"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-7 w-auto drop-shadow-[0_2px_8px_rgba(245,158,11,0.6)]"
+          >
+            {/* Étoiles magiques dans le sillage (derrière le traîneau à gauche) */}
+            <g className="text-amber-300">
+              <path
+                d="M6 18L7.5 13L9 18L14 19.5L9 21L7.5 26L6 21L1 19.5L6 18Z"
+                fill="currentColor"
+                className="animate-pulse opacity-90"
+              />
+              <circle cx="16" cy="14" r="1.5" fill="#FFE082" />
+              <circle cx="21" cy="22" r="1.2" fill="#FFFFFF" />
+              <circle cx="26" cy="17" r="1.5" fill="#FFE082" />
+            </g>
 
-          {/* Ligne d'attelage / rênes reliant le traîneau aux rennes */}
-          <path
-            d="M48 24 C 65 25, 90 22, 115 19 M 115 19 C 130 18, 142 16, 155 14"
-            stroke="#F59E0B"
-            strokeWidth="0.8"
-            strokeDasharray="2 1"
-            opacity="0.85"
-          />
-
-          {/* Traîneau du Père Noël (suit les rennes) */}
-          <g transform="translate(24, 10)">
-            {/* Patin du traîneau doré avec boucle relevée */}
+            {/* Ligne d'attelage / rênes reliant le traîneau aux rennes */}
             <path
-              d="M2 19 C 10 19, 28 19, 32 19 C 35 19, 37 16, 35 13 C 33 11, 30 14, 32 16"
+              d="M48 24 C 65 25, 90 22, 115 19 M 115 19 C 130 18, 142 16, 155 14"
               stroke="#F59E0B"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            />
-            {/* Montants du patin */}
-            <path d="M8 19 L11 15 M22 19 L20 15" stroke="#F59E0B" strokeWidth="1.2" />
-
-            {/* Corps du traîneau rouge velours */}
-            <path
-              d="M6 14 C 6 14, 4 8, 12 7 C 18 7, 24 9, 28 11 C 30 12, 29 15, 27 15 L 7 15 Z"
-              fill="#E11D48"
-              stroke="#BE123C"
               strokeWidth="0.8"
+              strokeDasharray="2 1"
+              opacity="0.85"
             />
 
-            {/* Sac de cadeaux à l'arrière */}
-            <path
-              d="M7 11 C 6 6, 12 3, 15 7 C 17 5, 21 8, 19 12 Z"
-              fill="#F59E0B"
-              opacity="0.95"
-            />
+            {/* Traîneau du Père Noël (suit les rennes) */}
+            <g transform="translate(24, 10)">
+              {/* Patin du traîneau doré avec boucle relevée */}
+              <path
+                d="M2 19 C 10 19, 28 19, 32 19 C 35 19, 37 16, 35 13 C 33 11, 30 14, 32 16"
+                stroke="#F59E0B"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+              {/* Montants du patin */}
+              <path d="M8 19 L11 15 M22 19 L20 15" stroke="#F59E0B" strokeWidth="1.2" />
 
-            {/* Père Noël */}
-            <circle cx="20" cy="8" r="4.5" fill="#E11D48" />
-            <path d="M19 8 C 19 11, 23 11, 23 8 Z" fill="#FFFFFF" />
-            <circle cx="21" cy="5.5" r="2.2" fill="#FCD34D" />
-            <path d="M19 5 C 20 2, 24 2, 23 5 Z" fill="#E11D48" />
-            <circle cx="24" cy="2.5" r="1.1" fill="#FFFFFF" />
-            {/* Bras levé qui salue vers l'avant */}
-            <path
-              d="M20 7 C 23 5, 25 3, 25 1"
-              stroke="#E11D48"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-            <circle cx="25" cy="1" r="1" fill="#FFFFFF" />
-          </g>
+              {/* Corps du traîneau rouge velours */}
+              <path
+                d="M6 14 C 6 14, 4 8, 12 7 C 18 7, 24 9, 28 11 C 30 12, 29 15, 27 15 L 7 15 Z"
+                fill="#E11D48"
+                stroke="#BE123C"
+                strokeWidth="0.8"
+              />
 
-          {/* Renne 1 (milieu) */}
-          <g transform="translate(95, 6)">
-            <path
-              d="M5 14 C 7 11, 14 11, 17 13 L 20 10 L 21 7 L 23 7 L 22 11 L 18 15 C 16 16, 8 16, 5 14 Z"
-              fill="#D97706"
-            />
-            <circle cx="22.5" cy="7.5" r="2.2" fill="#D97706" />
-            <circle cx="24.2" cy="7.8" r="0.8" fill="#EF4444" />
-            <path
-              d="M21 5.5 L 19 2 M 20 3.5 L 22 2 M 21 4 L 20 1"
-              stroke="#78350F"
-              strokeWidth="0.9"
-              strokeLinecap="round"
-            />
-            <path
-              d="M17 14 L 21 17 M 18 13 L 23 15"
-              stroke="#D97706"
-              strokeWidth="1.3"
-              strokeLinecap="round"
-            />
-            <path
-              d="M7 14 L 2 17 M 6 13 L 1 14"
-              stroke="#D97706"
-              strokeWidth="1.3"
-              strokeLinecap="round"
-            />
-          </g>
+              {/* Sac de cadeaux à l'arrière */}
+              <path
+                d="M7 11 C 6 6, 12 3, 15 7 C 17 5, 21 8, 19 12 Z"
+                fill="#F59E0B"
+                opacity="0.95"
+              />
 
-          {/* Renne 2 (renne de tête avec Rudolph au nez rouge) */}
-          <g transform="translate(132, 2)">
-            <path
-              d="M5 14 C 7 11, 14 11, 17 13 L 20 10 L 21 7 L 23 7 L 22 11 L 18 15 C 16 16, 8 16, 5 14 Z"
-              fill="#D97706"
-            />
-            <circle cx="22.5" cy="7.5" r="2.2" fill="#D97706" />
-            <circle cx="24.4" cy="7.8" r="1.1" fill="#DC2626" />
-            <path
-              d="M21 5.5 L 19 2 M 20 3.5 L 22 2 M 21 4 L 20 1"
-              stroke="#78350F"
-              strokeWidth="0.9"
-              strokeLinecap="round"
-            />
-            <path
-              d="M17 14 L 22 17 M 18 13 L 24 14"
-              stroke="#D97706"
-              strokeWidth="1.3"
-              strokeLinecap="round"
-            />
-            <path
-              d="M7 14 L 2 18 M 6 13 L 1 15"
-              stroke="#D97706"
-              strokeWidth="1.3"
-              strokeLinecap="round"
-            />
-          </g>
-        </svg>
-      </div>
+              {/* Père Noël */}
+              <circle cx="20" cy="8" r="4.5" fill="#E11D48" />
+              <path d="M19 8 C 19 11, 23 11, 23 8 Z" fill="#FFFFFF" />
+              <circle cx="21" cy="5.5" r="2.2" fill="#FCD34D" />
+              <path d="M19 5 C 20 2, 24 2, 23 5 Z" fill="#E11D48" />
+              <circle cx="24" cy="2.5" r="1.1" fill="#FFFFFF" />
+              {/* Bras levé qui salue vers l'avant */}
+              <path
+                d="M20 7 C 23 5, 25 3, 25 1"
+                stroke="#E11D48"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              />
+              <circle cx="25" cy="1" r="1" fill="#FFFFFF" />
+            </g>
+
+            {/* Renne 1 (milieu) */}
+            <g transform="translate(95, 6)">
+              <path
+                d="M5 14 C 7 11, 14 11, 17 13 L 20 10 L 21 7 L 23 7 L 22 11 L 18 15 C 16 16, 8 16, 5 14 Z"
+                fill="#D97706"
+              />
+              <circle cx="22.5" cy="7.5" r="2.2" fill="#D97706" />
+              <circle cx="24.2" cy="7.8" r="0.8" fill="#EF4444" />
+              <path
+                d="M21 5.5 L 19 2 M 20 3.5 L 22 2 M 21 4 L 20 1"
+                stroke="#78350F"
+                strokeWidth="0.9"
+                strokeLinecap="round"
+              />
+              <path
+                d="M17 14 L 21 17 M 18 13 L 23 15"
+                stroke="#D97706"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+              />
+              <path
+                d="M7 14 L 2 17 M 6 13 L 1 14"
+                stroke="#D97706"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+              />
+            </g>
+
+            {/* Renne 2 (renne de tête avec Rudolph au nez rouge) */}
+            <g transform="translate(132, 2)">
+              <path
+                d="M5 14 C 7 11, 14 11, 17 13 L 20 10 L 21 7 L 23 7 L 22 11 L 18 15 C 16 16, 8 16, 5 14 Z"
+                fill="#D97706"
+              />
+              <circle cx="22.5" cy="7.5" r="2.2" fill="#D97706" />
+              <circle cx="24.4" cy="7.8" r="1.1" fill="#DC2626" />
+              <path
+                d="M21 5.5 L 19 2 M 20 3.5 L 22 2 M 21 4 L 20 1"
+                stroke="#78350F"
+                strokeWidth="0.9"
+                strokeLinecap="round"
+              />
+              <path
+                d="M17 14 L 22 17 M 18 13 L 24 14"
+                stroke="#D97706"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+              />
+              <path
+                d="M7 14 L 2 18 M 6 13 L 1 15"
+                stroke="#D97706"
+                strokeWidth="1.3"
+                strokeLinecap="round"
+              />
+            </g>
+          </svg>
+        </div>
+      )}
     </div>
   );
 });
