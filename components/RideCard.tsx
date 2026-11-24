@@ -11,7 +11,7 @@ import { PlaceLink } from "@/components/PlaceLink";
 import { RideWeatherBadge } from "@/components/RideWeatherBadge";
 import { cleanRideTitle, detectRideGroup, formatRideDisplayTitle, getRideEffectiveGroups } from "@/lib/rideGroup";
 import { isChristmasRide } from "@/lib/christmas";
-import { ChristmasSnow, ChristmasSleigh, ChristmasSnowCap } from "@/components/ChristmasEffects";
+import { ChristmasSnow, ChristmasSleigh, ChristmasSnowCap, ChristmasGarland } from "@/components/ChristmasEffects";
 import { fmtDateShort, fmtKm, fmtM, fmtTime } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import type { RideWeather } from "@/lib/weather";
@@ -63,6 +63,7 @@ export const RideCard = memo(function RideCard({
       {/* Effets spéciaux pour la sortie de Noël */}
       {isChristmas && (
         <>
+          <ChristmasGarland />
           <ChristmasSnowCap />
           <ChristmasSnow count={14} />
           <ChristmasSleigh />
