@@ -97,14 +97,16 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
   // Filtre d'onglet de trophée : commence directement par "attendance" (Plus Assidu)
   const [trophyFilter, setTrophyFilter] = useState<"attendance" | "elevation" | "distance" | "speed">("attendance");
 
-  // Fusionne les mois disponibles des sorties app et les mois présents dans Strava
+  // Fusionne les mois disponibles des sorties app et les mois présents dans Strava (ne dépasse JAMAIS le mois actuel)
   const months = useMemo(() => {
-    const baseMonths = getAvailableMonths(rides);
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    const baseMonths = getAvailableMonths(rides, now);
     const existingKeys = new Set(baseMonths.map((m) => m.key));
 
     if (stravaData?.monthlyLeaders) {
       for (const key of Object.keys(stravaData.monthlyLeaders)) {
-        if (!existingKeys.has(key)) {
+        if (!existingKeys.has(key) && key <= currentMonthKey) {
           baseMonths.push({ key, label: formatMonthLabel(key) });
           existingKeys.add(key);
         }
@@ -114,7 +116,19 @@ export function MonthlyStatsSection({ rides, participations, stravaData }: Month
     return baseMonths.sort((a, b) => b.key.localeCompare(a.key));
   }, [rides, stravaData]);
 
-  const [selectedMonth, setSelectedMonth] = useState<string>(months[0]?.key || "2026-11");
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    return months[0]?.key || currentMonthKey;
+  });
+
+  useEffect(() => {
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+    if (selectedMonth > currentMonthKey && months.length > 0) {
+      setSelectedMonth(months[0].key);
+    }
+  }, [months, selectedMonth]);
   const [showAttendanceRest, setShowAttendanceRest] = useState(false);
   const [showElevationRest, setShowElevationRest] = useState(false);
   const [showDistanceRest, setShowDistanceRest] = useState(false);

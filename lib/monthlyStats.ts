@@ -38,17 +38,44 @@ export function formatMonthLabel(monthKey: string): string {
 }
 
 /**
- * Retourne la liste ordonnée des mois disponibles (décroissant).
+ * Détermine si une sortie est passée (déjà réalisée).
+ * Vérifie la date et, si disponible, l'heure de départ.
  */
-export function getAvailableMonths(rides: Ride[]): { key: string; label: string }[] {
-  const now = new Date();
+export function isRidePast(
+  ride: { ride_date: string; ride_time?: string | null },
+  now: Date = new Date()
+): boolean {
+  if (!ride.ride_date) return false;
+  const [y, m, d] = ride.ride_date.split("-").map(Number);
+  if (!y || !m || !d) return false;
+
+  let hours = 0;
+  let minutes = 0;
+  if (ride.ride_time) {
+    const [h, min] = ride.ride_time.split(":").map(Number);
+    if (!isNaN(h)) hours = h;
+    if (!isNaN(min)) minutes = min;
+  }
+
+  const rideDateTime = new Date(y, m - 1, d, hours, minutes, 0, 0);
+  return rideDateTime <= now;
+}
+
+/**
+ * Retourne la liste ordonnée des mois disponibles (décroissant).
+ * Règle stricte : ne dépasse JAMAIS le mois actuel et n'inclut que les sorties passées.
+ */
+export function getAvailableMonths(rides: Ride[], now: Date = new Date()): { key: string; label: string }[] {
   const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const keysSet = new Set<string>();
   keysSet.add(currentKey);
 
   for (const r of rides) {
     if (r.ride_date && r.ride_date.length >= 7) {
-      keysSet.add(r.ride_date.slice(0, 7));
+      const monthKey = r.ride_date.slice(0, 7);
+      if (monthKey <= currentKey && isRidePast(r, now)) {
+        keysSet.add(monthKey);
+      }
     }
   }
 
@@ -61,24 +88,28 @@ export function getAvailableMonths(rides: Ride[]): { key: string; label: string 
 
 /**
  * Calcule les statistiques complètes d'un mois donné.
+ * Règle stricte : ne prend en compte QUE les sorties déjà passées et ne dépasse jamais le mois actuel.
  */
 export function computeMonthlyStats(
   rides: Ride[],
   participations: Participation[],
-  targetMonthKey?: string
+  targetMonthKey?: string,
+  now: Date = new Date()
 ): MonthlySummary {
-  const now = new Date();
-  const monthKey =
-    targetMonthKey ||
-    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const requestedKey = targetMonthKey || currentMonthKey;
+  // Ne jamais dépasser le mois actuel
+  const monthKey = requestedKey > currentMonthKey ? currentMonthKey : requestedKey;
 
   const monthLabel = formatMonthLabel(monthKey);
 
-  // 1. Filtrer les sorties du mois
-  const monthRides = rides.filter((r) => r.ride_date && r.ride_date.startsWith(monthKey));
+  // 1. Filtrer les sorties du mois QUI SONT DÉJÀ PASSÉES (aucune sortie future dans les stats)
+  const monthRides = rides.filter(
+    (r) => r.ride_date && r.ride_date.startsWith(monthKey) && isRidePast(r, now)
+  );
   const monthRidesById = new Map<string, Ride>(monthRides.map((r) => [r.id, r]));
 
-  // 2. Filtrer les participations associées à ces sorties
+  // 2. Filtrer les participations associées à ces sorties passées
   const monthParticipations = participations.filter((p) => monthRidesById.has(p.ride_id));
 
   // 3. Totaux globaux du mois

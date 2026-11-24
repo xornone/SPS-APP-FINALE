@@ -5,6 +5,7 @@ import { Icon } from "@/components/Icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { MemberAssiduityRanking } from "@/components/MemberAssiduityRanking";
 import { MonthlyStatsSection } from "@/components/MonthlyStatsSection";
+import { isRidePast } from "@/lib/monthlyStats";
 import { buildAssiduityRankingFromParticipations, normalizeMemberName } from "@/lib/assiduity";
 import { fmtKm, fmtM, isPastDate } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
@@ -26,41 +27,44 @@ export default async function ClassementPage() {
     getCachedStravaData(),
   ]);
 
-  const ridesById = new Map(rides.map((r) => [r.id, r]));
+  const now = new Date();
+  const pastRides = rides.filter((r) => isRidePast(r, now));
+  const pastRidesById = new Map(pastRides.map((r) => [r.id, r]));
+
+  // Participations strictement associées aux sorties déjà passées
   const past = participations
-    .map((p) => ({ ...p, ride: ridesById.get(p.ride_id) }))
-    .filter((p) => p.ride && isPastDate(p.ride.ride_date));
+    .map((p) => ({ ...p, ride: pastRidesById.get(p.ride_id) }))
+    .filter((p): p is typeof p & { ride: Ride } => Boolean(p.ride));
 
-  // Km et D+ cumules parcourus par l'ensemble des membres : chaque
-  // inscription a une sortie passee ajoute la distance / le denivele de
+  // Km et D+ cumules parcourus par l'ensemble des membres (sorties déjà passées) :
+  // chaque inscription a une sortie passee ajoute la distance / le denivele de
   // cette sortie au total (une sortie avec 8 participants compte 8 fois).
-  const totalKm = past.reduce((sum, p) => sum + (p.ride?.distance_km || 0), 0);
-  const totalElevation = past.reduce((sum, p) => sum + (p.ride?.elevation_gain_m || 0), 0);
-  const totalRidesOrganized = rides.length;
+  const totalKm = past.reduce((sum, p) => sum + (p.ride.distance_km || 0), 0);
+  const totalElevation = past.reduce((sum, p) => sum + (p.ride.elevation_gain_m || 0), 0);
+  const totalRidesOrganized = pastRides.length;
 
-  // Participation moyenne par sortie proposee (toutes les sorties, passees
-  // et a venir, inscriptions en cours comprises).
-  const avgParticipants = totalRidesOrganized > 0 ? participations.length / totalRidesOrganized : 0;
+  // Participation moyenne par sortie effectuée
+  const avgParticipants = totalRidesOrganized > 0 ? past.length / totalRidesOrganized : 0;
 
-  // Repartition des inscriptions par groupe de niveau (toutes les sorties) :
+  // Repartition des inscriptions par groupe de niveau (sorties passées uniquement) :
   // donne le profil du club, jamais un classement de membres.
   const groupCounts: Record<GroupLevel, number> = { vert: 0, rouge: 0, violet: 0 };
-  participations.forEach((p) => groupCounts[p.group_level]++);
-  const totalGroupCounts = participations.length;
+  past.forEach((p) => groupCounts[p.group_level]++);
+  const totalGroupCounts = past.length;
 
-  // Statistiques de participants uniques par groupe de niveau
+  // Statistiques de participants uniques par groupe de niveau (sorties passées uniquement)
   const uniqueParticipantsByGroup: Record<GroupLevel, number> = {
-    vert: new Set(participations.filter((p) => p.group_level === "vert").map((p) => normalizeMemberName(p.participant_name))).size,
-    rouge: new Set(participations.filter((p) => p.group_level === "rouge").map((p) => normalizeMemberName(p.participant_name))).size,
-    violet: new Set(participations.filter((p) => p.group_level === "violet").map((p) => normalizeMemberName(p.participant_name))).size,
+    vert: new Set(past.filter((p) => p.group_level === "vert").map((p) => normalizeMemberName(p.participant_name))).size,
+    rouge: new Set(past.filter((p) => p.group_level === "rouge").map((p) => normalizeMemberName(p.participant_name))).size,
+    violet: new Set(past.filter((p) => p.group_level === "violet").map((p) => normalizeMemberName(p.participant_name))).size,
   };
   const totalUniqueParticipants = new Set(
-    participations.map((p) => normalizeMemberName(p.participant_name))
+    past.map((p) => normalizeMemberName(p.participant_name))
   ).size;
 
-  // Nombre de sorties ayant proposé chaque groupe
+  // Nombre de sorties ayant proposé chaque groupe (sorties passées uniquement)
   const ridesOfferingGroup: Record<GroupLevel, number> = { vert: 0, rouge: 0, violet: 0 };
-  rides.forEach((r) => {
+  pastRides.forEach((r) => {
     const list = (r.ride_groups || []).map((g) => g.group_level);
     (["vert", "rouge", "violet"] as GroupLevel[]).forEach((g) => {
       if (list.includes(g)) ridesOfferingGroup[g]++;
@@ -73,22 +77,22 @@ export default async function ClassementPage() {
   };
 
   // Records du club : sortie la plus longue, plus gros denivele, la plus
-  // suivie — des records de sorties, jamais de membres.
+  // suivie — uniquement sur les sorties passées.
   const participantCountByRide = new Map<string, number>();
-  participations.forEach((p) => participantCountByRide.set(p.ride_id, (participantCountByRide.get(p.ride_id) || 0) + 1));
-  const longestRide = rides.reduce<Ride | null>((max, r) => (!max || r.distance_km > max.distance_km ? r : max), null);
-  const hilliestRide = rides.reduce<Ride | null>(
+  past.forEach((p) => participantCountByRide.set(p.ride_id, (participantCountByRide.get(p.ride_id) || 0) + 1));
+  const longestRide = pastRides.reduce<Ride | null>((max, r) => (!max || r.distance_km > max.distance_km ? r : max), null);
+  const hilliestRide = pastRides.reduce<Ride | null>(
     (max, r) => (!max || r.elevation_gain_m > max.elevation_gain_m ? r : max),
     null
   );
-  const mostAttendedRide = rides.reduce<Ride | null>((max, r) => {
+  const mostAttendedRide = pastRides.reduce<Ride | null>((max, r) => {
     const count = participantCountByRide.get(r.id) || 0;
     const maxCount = max ? participantCountByRide.get(max.id) || 0 : -1;
     return count > maxCount ? r : max;
   }, null);
   const mostAttendedCount = mostAttendedRide ? participantCountByRide.get(mostAttendedRide.id) || 0 : 0;
 
-  // Sorties proposees par le club, par annee et par groupe de niveau
+  // Sorties realisees par le club, par annee et par groupe de niveau
   interface YearStats {
     total: number;
     vert: number;
@@ -96,7 +100,7 @@ export default async function ClassementPage() {
     violet: number;
   }
   const perYear = new Map<number, YearStats>();
-  rides.forEach((r) => {
+  pastRides.forEach((r) => {
     const year = Number(r.ride_date.slice(0, 4));
     if (!Number.isNaN(year)) {
       if (!perYear.has(year)) {
@@ -118,7 +122,6 @@ export default async function ClassementPage() {
   const maxYearTotal = Math.max(...yearRows.map(([, s]) => s.total), 1);
 
   // Activite club (km cumules, tous participants, 6 derniers mois)
-  const now = new Date();
   const MONTHS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
   const buckets: { label: string; km: number }[] = [];
   for (let i = 5; i >= 0; i--) {

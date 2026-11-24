@@ -3,6 +3,7 @@ import {
   computeMonthlyStats,
   formatMonthLabel,
   getAvailableMonths,
+  isRidePast,
 } from "@/lib/monthlyStats";
 import type { Participation, Ride } from "@/lib/types";
 
@@ -19,8 +20,30 @@ describe("monthlyStats", () => {
     });
   });
 
+  describe("isRidePast", () => {
+    const fixedNow = new Date("2026-11-24T10:30:00");
+
+    it("considère une sortie antérieure comme passée", () => {
+      expect(isRidePast({ ride_date: "2026-11-20", ride_time: "09:00:00" }, fixedNow)).toBe(true);
+      expect(isRidePast({ ride_date: "2026-10-15" }, fixedNow)).toBe(true);
+    });
+
+    it("considère une sortie future comme non passée", () => {
+      expect(isRidePast({ ride_date: "2026-11-28", ride_time: "09:00:00" }, fixedNow)).toBe(false);
+      expect(isRidePast({ ride_date: "2026-12-19", ride_time: "09:00:00" }, fixedNow)).toBe(false);
+    });
+
+    it("prend en compte l'heure pour les sorties du jour même", () => {
+      // Départ à 09h00 (passé à 10h30)
+      expect(isRidePast({ ride_date: "2026-11-24", ride_time: "09:00:00" }, fixedNow)).toBe(true);
+      // Départ à 14h00 (futur à 10h30)
+      expect(isRidePast({ ride_date: "2026-11-24", ride_time: "14:00:00" }, fixedNow)).toBe(false);
+    });
+  });
+
   describe("getAvailableMonths", () => {
     it("extracts unique months and sorts descending", () => {
+      const fixedNow = new Date("2026-11-24T10:30:00");
       const mockRides = [
         { ride_date: "2026-11-01" },
         { ride_date: "2026-11-08" },
@@ -28,15 +51,37 @@ describe("monthlyStats", () => {
         { ride_date: "2026-09-15" },
       ] as Ride[];
 
-      const months = getAvailableMonths(mockRides);
+      const months = getAvailableMonths(mockRides, fixedNow);
       expect(months.length).toBeGreaterThanOrEqual(3);
       expect(months.map((m) => m.key)).toContain("2026-11");
       expect(months.map((m) => m.key)).toContain("2026-10");
       expect(months.map((m) => m.key)).toContain("2026-09");
     });
+
+    it("ne retourne JAMAIS de mois futurs qui dépassent la date actuelle", () => {
+      const fixedNow = new Date("2026-11-24T10:30:00");
+      const mockRidesWithFuture = [
+        { ride_date: "2026-11-01" },
+        { ride_date: "2026-11-08" },
+        // Sortie de Noël en décembre 2026
+        { ride_date: "2026-12-19" },
+        // Sortie en janvier 2027
+        { ride_date: "2027-01-15" },
+      ] as Ride[];
+
+      const months = getAvailableMonths(mockRidesWithFuture, fixedNow);
+      const keys = months.map((m) => m.key);
+
+      // Décembre 2026 et Janvier 2027 ne doivent JAMAIS apparaître
+      expect(keys).not.toContain("2026-12");
+      expect(keys).not.toContain("2027-01");
+      // Le mois le plus récent doit être au maximum le mois actuel (Novembre 2026)
+      expect(keys[0]).toBe("2026-11");
+    });
   });
 
   describe("computeMonthlyStats", () => {
+    const fixedNow = new Date("2026-11-24T10:30:00");
     const mockRides: Ride[] = [
       {
         id: "ride-1",
@@ -71,6 +116,42 @@ describe("monthlyStats", () => {
         created_by: null,
         created_at: "2026-11-05T08:00:00Z",
         updated_at: "2026-11-05T08:00:00Z",
+      },
+      // Sortie FUTURE dans le mois courant (le 28 novembre alors qu'on est le 24)
+      {
+        id: "ride-future-nov",
+        title: "Sortie fin novembre",
+        description: "Pas encore passée",
+        ride_date: "2026-11-28",
+        ride_time: "09:00:00",
+        place: "Corum",
+        place_url: null,
+        distance_km: 100,
+        elevation_gain_m: 1500,
+        strava_url: null,
+        show_safety_notice: false,
+        gpx_path: null,
+        created_by: null,
+        created_at: "2026-11-20T08:00:00Z",
+        updated_at: "2026-11-20T08:00:00Z",
+      },
+      // Sortie FUTURE en décembre
+      {
+        id: "ride-noel",
+        title: "Sortie de Noël",
+        description: "En décembre",
+        ride_date: "2026-12-19",
+        ride_time: "09:00:00",
+        place: "Corum",
+        place_url: null,
+        distance_km: 60,
+        elevation_gain_m: 500,
+        strava_url: null,
+        show_safety_notice: false,
+        gpx_path: null,
+        created_by: null,
+        created_at: "2026-11-20T08:00:00Z",
+        updated_at: "2026-11-20T08:00:00Z",
       },
       {
         id: "ride-oct",
@@ -131,6 +212,22 @@ describe("monthlyStats", () => {
         created_at: "2026-11-05T08:15:00Z",
       },
 
+      // Ride FUTURE du 28 nov (inscriptions faites mais sortie pas encore passée)
+      {
+        id: "p-fut-1",
+        ride_id: "ride-future-nov",
+        participant_name: "Aymeric",
+        group_level: "violet",
+        created_at: "2026-11-21T08:00:00Z",
+      },
+      {
+        id: "p-fut-2",
+        ride_id: "ride-future-nov",
+        participant_name: "Thomas",
+        group_level: "rouge",
+        created_at: "2026-11-21T08:30:00Z",
+      },
+
       // Octobre (ignoré pour novembre)
       {
         id: "p6",
@@ -141,17 +238,27 @@ describe("monthlyStats", () => {
       },
     ];
 
-    it("correctly filters rides and participations for November 2026", () => {
-      const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-11");
+    it("ne comptabilise QUE les sorties passées et exclut les sorties futures du mois", () => {
+      const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-11", fixedNow);
 
       expect(stats.monthKey).toBe("2026-11");
       expect(stats.monthLabel).toBe("Novembre 2026");
+      // Seules ride-1 et ride-2 sont passées (ride-future-nov du 28 nov est exclue)
       expect(stats.totalRidesInMonth).toBe(2);
       expect(stats.totalParticipationsInMonth).toBe(5);
       expect(stats.uniqueActiveMembersInMonth).toBe(3); // Aymeric, Marion, Thomas
       expect(stats.groupDistribution.vert).toBe(1);
       expect(stats.groupDistribution.rouge).toBe(2);
       expect(stats.groupDistribution.violet).toBe(2);
+      // Distance totale : 70*3 (ride-1) + 90*2 (ride-2) = 210 + 180 = 390 km
+      expect(stats.totalKmInMonth).toBe(390);
+    });
+
+    it("bloque les requêtes de mois futurs en repliant sur le mois actuel", () => {
+      // Si quelqu'un demande décembre 2026 alors qu'on est en novembre 2026
+      const stats = computeMonthlyStats(mockRides, mockParticipations, "2026-12", fixedNow);
+      expect(stats.monthKey).toBe("2026-11");
+      expect(stats.monthLabel).toBe("Novembre 2026");
     });
 
     it("ranks top attendance with Top 10 strictly based on ridesCount", () => {
