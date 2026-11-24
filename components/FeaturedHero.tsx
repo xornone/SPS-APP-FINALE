@@ -9,6 +9,8 @@ import { AdminOnly } from "@/components/AdminOnly";
 import { PlaceLink } from "@/components/PlaceLink";
 import { RideWeatherBadge } from "@/components/RideWeatherBadge";
 import { cleanRideTitle, detectRideGroup, formatRideDisplayTitle, getRideEffectiveGroups } from "@/lib/rideGroup";
+import { isChristmasRide } from "@/lib/christmas";
+import { ChristmasSnow, ChristmasSleigh, ChristmasSnowCap } from "@/components/ChristmasEffects";
 import { daysUntil, fmtDateLong, fmtKm, fmtM, fmtTime } from "@/lib/format";
 import { GROUP_INFO, type GroupLevel, type Ride } from "@/lib/types";
 import type { RideWeather } from "@/lib/weather";
@@ -35,17 +37,35 @@ export const FeaturedHero = memo(function FeaturedHero({
   const detectedGroup = detectRideGroup(ride);
   const effectiveGroups = getRideEffectiveGroups(ride);
   const displayTitle = formatRideDisplayTitle(ride);
+  const isChristmas = isChristmasRide(ride);
 
-  const groupSpeedline = detectedGroup === "rouge"
-    ? "bg-gradient-to-b from-transparent via-[#DC3D3D] to-transparent shadow-[3px_0_16px_rgba(220,61,61,0.8)]"
-    : detectedGroup === "vert"
-      ? "bg-gradient-to-b from-transparent via-[#1F9D63] to-transparent shadow-[3px_0_18px_rgba(31,157,99,0.9)]"
-      : detectedGroup === "violet"
-        ? "bg-gradient-to-b from-transparent via-[#AA26FF] to-transparent shadow-[3px_0_22px_rgba(170,38,255,1)]"
-        : null;
+  const groupSpeedline = isChristmas
+    ? "bg-gradient-to-b from-[#DC2626] via-[#F59E0B] to-[#7C3AED] shadow-[3px_0_20px_rgba(220,38,38,0.85)]"
+    : detectedGroup === "rouge"
+      ? "bg-gradient-to-b from-transparent via-[#DC3D3D] to-transparent shadow-[3px_0_16px_rgba(220,61,61,0.8)]"
+      : detectedGroup === "vert"
+        ? "bg-gradient-to-b from-transparent via-[#1F9D63] to-transparent shadow-[3px_0_18px_rgba(31,157,99,0.9)]"
+        : detectedGroup === "violet"
+          ? "bg-gradient-to-b from-transparent via-[#AA26FF] to-transparent shadow-[3px_0_22px_rgba(170,38,255,1)]"
+          : null;
 
   return (
-    <div className="relative isolate group block overflow-hidden rounded-[32px] border-2 border-violet-200/90 bg-white p-5 text-neutral-950 shadow-[0_16px_36px_-6px_rgba(109,40,217,0.12)] ring-1 ring-black/[0.04] transition-all duration-300 hover:border-violet-300 dark:border dark:border-white/20 dark:bg-gradient-to-br dark:from-[#1E0938] dark:via-[#120524] dark:to-[#080210] dark:text-white dark:shadow-[0_24px_50px_-12px_rgba(124,58,237,0.45)] dark:ring-white/10 active:scale-[0.995]">
+    <div
+      className={`relative isolate group block overflow-hidden rounded-[32px] p-5 transition-all duration-300 active:scale-[0.995] ${
+        isChristmas
+          ? "border-2 border-rose-300/80 bg-gradient-to-br from-white via-rose-50/30 to-violet-50/40 text-neutral-950 shadow-[0_16px_40px_-6px_rgba(225,29,72,0.22)] ring-1 ring-rose-500/20 hover:border-rose-400 dark:border-rose-400/40 dark:bg-gradient-to-br dark:from-[#240A34] dark:via-[#160626] dark:to-[#0D0316] dark:text-white dark:shadow-[0_24px_54px_-10px_rgba(225,29,72,0.4)] dark:ring-rose-400/30 dark:hover:border-rose-300/60"
+          : "border-2 border-violet-200/90 bg-white text-neutral-950 shadow-[0_16px_36px_-6px_rgba(109,40,217,0.12)] ring-1 ring-black/[0.04] hover:border-violet-300 dark:border dark:border-white/20 dark:bg-gradient-to-br dark:from-[#1E0938] dark:via-[#120524] dark:to-[#080210] dark:text-white dark:shadow-[0_24px_50px_-12px_rgba(124,58,237,0.45)] dark:ring-white/10"
+      }`}
+    >
+      {/* Effets spéciaux pour la sortie de Noël */}
+      {isChristmas && (
+        <>
+          <ChristmasSnowCap />
+          <ChristmasSnow count={16} />
+          <ChristmasSleigh />
+        </>
+      )}
+
       {/* Lien englobant pour navigation directe et fluide au toucher de la carte */}
       <Link
         href={`${hrefPrefix}/${ride.id}`}
@@ -71,13 +91,20 @@ export const FeaturedHero = memo(function FeaturedHero({
 
       {/* Header status bar */}
       <div className="relative z-10 flex items-center justify-between gap-2">
-        <span className="inline-flex items-center rounded-full border border-violet-300/80 bg-violet-100/90 px-3 sm:px-3.5 py-1 text-[10.5px] sm:text-[11px] font-black uppercase tracking-wider text-violet-950 shadow-xs dark:border-white/25 dark:bg-white/10 dark:text-white whitespace-nowrap flex-shrink-0">
-          {daysUntil(ride.ride_date) === 0
-            ? "Aujourd'hui"
-            : daysUntil(ride.ride_date) === 1
-              ? "Demain"
-              : fmtDateLong(ride.ride_date)}
-        </span>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="inline-flex items-center rounded-full border border-violet-300/80 bg-violet-100/90 px-3 sm:px-3.5 py-1 text-[10.5px] sm:text-[11px] font-black uppercase tracking-wider text-violet-950 shadow-xs dark:border-white/25 dark:bg-white/10 dark:text-white whitespace-nowrap flex-shrink-0">
+            {daysUntil(ride.ride_date) === 0
+              ? "Aujourd'hui"
+              : daysUntil(ride.ride_date) === 1
+                ? "Demain"
+                : fmtDateLong(ride.ride_date)}
+          </span>
+          {isChristmas && (
+            <span className="inline-flex items-center gap-1 rounded-full border border-rose-300/80 bg-rose-100/90 px-2.5 py-1 text-[10px] sm:text-[10.5px] font-black uppercase tracking-wider text-rose-900 shadow-xs dark:border-rose-400/40 dark:bg-rose-500/20 dark:text-rose-200 whitespace-nowrap flex-shrink-0 animate-pulse">
+              🎅 Social Ride Noël
+            </span>
+          )}
+        </div>
 
         {onQuickAction && (
           isJoined ? (

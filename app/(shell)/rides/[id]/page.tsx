@@ -12,6 +12,8 @@ import { buildRideShareMessage } from "@/lib/shareMessage";
 import { shortRideCode } from "@/lib/shortLink";
 import { GROUP_INFO, type GroupLevel } from "@/lib/types";
 import { cleanRideTitle, getRideEffectiveGroups } from "@/lib/rideGroup";
+import { isChristmasRide } from "@/lib/christmas";
+import { ChristmasSnow, ChristmasSleigh, ChristmasDetailBanner } from "@/components/ChristmasEffects";
 import { getRideCaptain } from "@/lib/captain";
 import { getRegisteredAdmins } from "@/lib/admins";
 import { fmtDateDimNov, fmtKm, fmtM, fmtTime, isPastDate } from "@/lib/format";
@@ -80,8 +82,18 @@ export default async function RideDetailPage({ params }: { params: { id: string 
   const arrivalTime =
     weather?.estimatedArrivalTime ?? addMinutesToTimeString(departureTime, durationMin);
 
+  const isChristmas = isChristmasRide(ride);
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="relative flex flex-col gap-4">
+      {/* Effets immersifs pour le Social Ride de Noël */}
+      {isChristmas && (
+        <>
+          <ChristmasSnow count={22} className="!fixed inset-0 z-30 pointer-events-none" />
+          <ChristmasSleigh className="!top-3" />
+        </>
+      )}
+
       {/* Top Header Bar */}
       <div className="flex items-center justify-between px-5 pb-1 pt-5">
         <Link
@@ -150,6 +162,9 @@ export default async function RideDetailPage({ params }: { params: { id: string 
           </span>
         </div>
       </div>
+
+      {/* Bannière festive dédiée pour le Social Ride de Noël */}
+      {isChristmas && <ChristmasDetailBanner />}
 
       {/* Interactive Track */}
       <InteractiveRideTrack
