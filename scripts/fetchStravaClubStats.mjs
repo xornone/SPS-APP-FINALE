@@ -307,6 +307,11 @@ async function main() {
         }
 
         for (const ym of targetMonths) {
+          // Si le mois passé est déjà collecté pour ce coureur, on évite les requêtes inutiles
+          const currentMonth = "2026-11";
+          if (ym < currentMonth && prevMember && monthsData[ym] && typeof monthsData[ym].distance_km === "number") {
+            continue;
+          }
           monthsData[ym] = await fetchAthleteCalendarMonth(m.athleteId, ym);
         }
 

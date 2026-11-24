@@ -82,7 +82,7 @@ export const SPS_MEMBER_STRAVA_MAPPINGS: Record<string, { id: string; stravaName
   "Hester van Wachem": { id: "140819779", stravaName: "Hester van Wachem" },
   "Audrey Mignon": { id: "116500109", stravaName: "Audrey Mignon" },
   "Maurizio Agnino": { id: "88079015", stravaName: "Maurizio  Agnino" },
-  "Richard Planchon": { id: "16841100", stravaName: "Planchon  Richard" },
+  "Richard Planchon": { id: "1135652562", stravaName: "Richard Pô" },
   "Lucas Nesta": { id: "140685600", stravaName: "Lucas Nesta" },
   "Anthony Capelotar": { id: "140819782", stravaName: "Anthony Capelotar" },
   "Tom Garrandaux": { id: "140819784", stravaName: "Tom Garrandaux" },
