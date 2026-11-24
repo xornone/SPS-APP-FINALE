@@ -1,6 +1,6 @@
 "use client";
 
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 // Trajectoires de vol en diagonale à travers l'onglet
 interface SleighTrajectory {
@@ -12,29 +12,29 @@ interface SleighTrajectory {
 
 const FLIGHT_PATTERNS: SleighTrajectory[] = [
   // 1. Grande montée diagonale (bas-gauche -> haut-droite)
-  { startY: 82, endY: 10, angle: -20, duration: 6.8 },
+  { startY: 82, endY: 10, angle: -20, duration: 5.5 },
   // 2. Descente plongeante (haut-gauche -> bas-droite)
-  { startY: 15, endY: 78, angle: 17, duration: 6.2 },
+  { startY: 15, endY: 78, angle: 17, duration: 5.2 },
   // 3. Montée centrale (centre-gauche -> haut-droite)
-  { startY: 55, endY: 14, angle: -18, duration: 6.5 },
+  { startY: 55, endY: 14, angle: -18, duration: 5.4 },
   // 4. Traversée rasante basse en douce ascension
-  { startY: 86, endY: 52, angle: -14, duration: 7.0 },
+  { startY: 86, endY: 52, angle: -14, duration: 5.6 },
   // 5. Piqué depuis le haut vers le centre
-  { startY: 14, endY: 54, angle: 15, duration: 6.4 },
+  { startY: 14, endY: 54, angle: 15, duration: 5.2 },
   // 6. Montée douce traversante (centre-bas -> centre-haut)
-  { startY: 70, endY: 30, angle: -16, duration: 6.6 },
+  { startY: 70, endY: 30, angle: -16, duration: 5.4 },
 ];
 
 function getRandomFlight(): SleighTrajectory {
   const pattern = FLIGHT_PATTERNS[Math.floor(Math.random() * FLIGHT_PATTERNS.length)];
   const jitterY = (Math.random() - 0.5) * 6;
   const jitterAngle = (Math.random() - 0.5) * 3;
-  const jitterDur = (Math.random() - 0.5) * 0.6;
+  const jitterDur = (Math.random() - 0.5) * 0.4;
   return {
     startY: Math.max(8, Math.min(88, pattern.startY + jitterY)),
     endY: Math.max(8, Math.min(88, pattern.endY + jitterY)),
     angle: pattern.angle + jitterAngle,
-    duration: Math.max(5.5, pattern.duration + jitterDur),
+    duration: Math.max(4.8, pattern.duration + jitterDur),
   };
 }
 
@@ -129,24 +129,27 @@ export const ChristmasSleigh = memo(function ChristmasSleigh({
 }) {
   const [flight, setFlight] = useState<SleighTrajectory | null>(null);
   const [flightId, setFlightId] = useState(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    // Premier vol après 1 seconde
-    const timer = setTimeout(() => {
+    // Premier vol quasi immédiat (300ms)
+    timeoutRef.current = setTimeout(() => {
       setFlight(getRandomFlight());
       setFlightId((id) => id + 1);
-    }, 1000);
+    }, 300);
 
-    return () => clearTimeout(timer);
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
   }, []);
 
   function handleAnimationEnd() {
-    // Prochain vol après une pause aléatoire de 5 à 10 secondes
-    const pauseMs = 5000 + Math.random() * 5000;
-    setTimeout(() => {
+    // Repasse en continu : délai quasi immédiat de 1 seconde exactement
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
       setFlight(getRandomFlight());
       setFlightId((id) => id + 1);
-    }, pauseMs);
+    }, 1000);
   }
 
   return (
