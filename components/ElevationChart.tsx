@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { ActiveScrub } from "@/lib/scrub";
 import { weatherCodeInfo } from "@/lib/weather";
 import { Icon } from "./Icons";
@@ -20,6 +20,7 @@ export function ElevationChart({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const isPointerDownRef = useRef(false);
+  const [isInteractive, setIsInteractive] = useState(false);
 
   const handlePointer = useCallback(
     (clientX: number) => {
@@ -35,9 +36,9 @@ export function ElevationChart({
   const w = 300;
   const h = 70;
 
-  const { line, area, min, max, span } = useMemo(() => {
+  const { line, area, min, max, span, rawMin } = useMemo(() => {
     if (!elevations || elevations.length < 2) {
-      return { line: "", area: "", min: 0, max: 0, span: 1 };
+      return { line: "", area: "", min: 0, max: 0, span: 1, rawMin: 0 };
     }
     let minVal = elevations[0];
     let maxVal = elevations[0];
@@ -53,13 +54,31 @@ export function ElevationChart({
     });
     const l = "M " + pts.join(" L ");
     const a = `${l} L ${w},${h} L 0,${h} Z`;
-    return { line: l, area: a, min: minVal, max: maxVal, span: s };
+    return {
+      line: l,
+      area: a,
+      min: Math.round(minVal),
+      max: Math.round(maxVal),
+      span: s,
+      rawMin: minVal,
+    };
   }, [elevations]);
 
-  if (!elevations || elevations.length < 2) return null;
-
-  // Le survol actif est prioritaire ; sinon repli immédiat sur km 0
-  const currentScrub = activeScrub || defaultScrub;
+  // Le survol actif est prioritaire ; sinon defaultScrub ou repli km 0
+  const currentScrub = useMemo(() => {
+    if (activeScrub) return activeScrub;
+    if (defaultScrub) return defaultScrub;
+    return {
+      progress: 0,
+      index: 0,
+      distanceKm: 0,
+      elevationM: min,
+      slopePercent: 0,
+      point: null,
+      mapLabel: "",
+      weather: null,
+    };
+  }, [activeScrub, defaultScrub, min]);
 
   // Position du curseur actif
   let cursorX: number | null = null;
@@ -67,10 +86,14 @@ export function ElevationChart({
   if (activeScrub && activeScrub.progress !== undefined) {
     cursorX = activeScrub.progress * w;
     const ele = activeScrub.elevationM;
-    cursorY = h - 4 - ((ele - min) / span) * (h - 8);
+    cursorY = h - 4 - ((ele - rawMin) / span) * (h - 8);
   }
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Sur touch mobile / tablette : on n'intercepte pas si le mode interactif n'est pas actif
+    if (e.pointerType !== "mouse" && !isInteractive) {
+      return;
+    }
     isPointerDownRef.current = true;
     try {
       e.currentTarget.setPointerCapture(e.pointerId);
@@ -79,8 +102,11 @@ export function ElevationChart({
   };
 
   const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    // Sur desktop, survol direct ; sur mobile / tactile, appui actif
-    if (e.pointerType === "mouse" || isPointerDownRef.current) {
+    // Sur desktop souris : survol direct sans bloquer le scroll
+    // Sur mobile / tactile : actif uniquement si isInteractive et appui en cours
+    if (e.pointerType === "mouse") {
+      handlePointer(e.clientX);
+    } else if (isInteractive && isPointerDownRef.current) {
       handlePointer(e.clientX);
     }
   };
@@ -94,24 +120,38 @@ export function ElevationChart({
 
   const onPointerCancel = () => {
     isPointerDownRef.current = false;
-    if (onScrub) onScrub(null);
   };
 
-  const onMouseLeave = (e: React.MouseEvent) => {
-    // Si la souris quitte sans clic maintenu, on réinitialise
-    if (!isPointerDownRef.current && onScrub) {
+  const onMouseLeave = () => {
+    // Si la souris quitte sans mode interactif verrouillé, on réinitialise
+    if (!isInteractive && onScrub) {
       onScrub(null);
     }
   };
 
+  const handleToggleInteractive = () => {
+    if (isInteractive) {
+      setIsInteractive(false);
+      if (onScrub) onScrub(null);
+    } else {
+      setIsInteractive(true);
+      if (!activeScrub && onScrub) {
+        onScrub(0);
+      }
+    }
+  };
+
+  if (!elevations || elevations.length < 2) return null;
+
   const scrubWeather = currentScrub?.weather;
   const sky = scrubWeather ? weatherCodeInfo(scrubWeather.weatherCode) : null;
+  const isExploring = isInteractive || (activeScrub !== null && activeScrub !== undefined);
 
   return (
     <div className="flex flex-col gap-1.5">
-      {/* Barre d'informations interactive (HUD) : affiche directement km 0 par défaut */}
-      <div className="flex items-center justify-between min-h-[22px] px-1 text-[11px]">
-        {currentScrub ? (
+      {/* Barre d'informations interactive (HUD) */}
+      <div className="flex items-center justify-between min-h-[26px] px-1 text-[11px]">
+        {isExploring && currentScrub ? (
           <div className="flex flex-wrap items-center justify-between w-full gap-2 animate-fadeIn">
             {/* Alt & distance & pente */}
             <div className="flex items-center gap-2">
@@ -132,46 +172,73 @@ export function ElevationChart({
               >
                 {currentScrub.slopePercent >= 0 ? `+${currentScrub.slopePercent}%` : `${currentScrub.slopePercent}%`}
               </span>
+
+              {/* Météo au point de passage si disponible */}
+              {scrubWeather && sky && (
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-black/70 dark:text-white/80">
+                  <span className="text-black/30 dark:text-white/30">·</span>
+                  <span className="font-bold text-sps-violet600 dark:text-sps-violet400">
+                    ~{scrubWeather.time}
+                  </span>
+                  <Icon name={sky.icon} size={13} className="text-sps-violet600 dark:text-sps-violet400" />
+                  <span className="font-black">{scrubWeather.temperatureC}°</span>
+                  <span className="hidden sm:inline text-[10px] text-black/45 dark:text-white/45">
+                    {scrubWeather.precipitationProbability}% 🌧️ · {scrubWeather.windSpeedKmh} km/h 💨
+                  </span>
+                </div>
+              )}
             </div>
 
-            {/* Météo au point de passage */}
-            {scrubWeather && sky ? (
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-black/70 dark:text-white/80">
-                <span className="text-black/40 dark:text-white/40">·</span>
-                <span className="font-bold text-sps-violet600 dark:text-sps-violet400">
-                  ~{scrubWeather.time}
-                </span>
-                <Icon name={sky.icon} size={13} className="text-sps-violet600 dark:text-sps-violet400" />
-                <span className="font-black">{scrubWeather.temperatureC}°</span>
-                <span className="text-[10px] text-black/45 dark:text-white/45">
-                  {scrubWeather.precipitationProbability}% 🌧️ · {scrubWeather.windSpeedKmh} km/h 💨
-                </span>
-              </div>
-            ) : (
-              <span className="text-[10px] font-semibold text-black/40 dark:text-white/40">
-                Min {min} m · Max {max} m
-              </span>
-            )}
+            {/* Bouton de contrôle en mode actif */}
+            <button
+              type="button"
+              onClick={handleToggleInteractive}
+              className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold transition active:scale-95 ${
+                isInteractive
+                  ? "bg-sps-violet600 text-white shadow-xs hover:bg-sps-violet700"
+                  : "bg-sps-violet500/10 text-sps-violet600 dark:bg-sps-violet400/15 dark:text-sps-violet300 hover:bg-sps-violet500/20"
+              }`}
+            >
+              <Icon name={isInteractive ? "check" : "route"} size={12} />
+              <span>{isInteractive ? "Terminer" : "Explorer"}</span>
+            </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between w-full text-black/40 dark:text-white/40">
-            <span className="text-[10px] font-semibold">
-              Min {min} m · Max {max} m
-            </span>
+          <div className="flex items-center justify-between w-full text-black/60 dark:text-white/60">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold">
+              <Icon name="mountain" size={13} className="text-sps-violet600 dark:text-sps-violet400" />
+              <span>
+                Min {min} m · Max {max} m
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleToggleInteractive}
+              className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sps-violet500/10 text-sps-violet600 dark:bg-sps-violet400/15 dark:text-sps-violet300 hover:bg-sps-violet500/20 active:scale-95 transition"
+            >
+              <Icon name="route" size={12} />
+              <span>Explorer le profil</span>
+            </button>
           </div>
         )}
       </div>
 
-      {/* Surface SVG interactive */}
+      {/* Surface SVG : défilement vertical libre par défaut (pan-y), exploration sur activation */}
       <div
         ref={containerRef}
+        data-testid="elevation-chart-container"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
         onMouseLeave={onMouseLeave}
-        className="relative touch-none select-none cursor-ew-resize rounded-xl bg-black/[0.02] p-1 transition dark:bg-white/[0.02]"
-        style={{ touchAction: "none" }}
+        className={`relative select-none rounded-xl p-1 transition ${
+          isInteractive
+            ? "touch-none cursor-ew-resize ring-2 ring-sps-violet500/50 bg-sps-violet500/[0.04] dark:bg-sps-violet500/[0.08]"
+            : "touch-pan-y cursor-default bg-black/[0.02] dark:bg-white/[0.02]"
+        }`}
+        style={{ touchAction: isInteractive ? "none" : "pan-y" }}
       >
         <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-[74px] w-full overflow-visible">
           <defs>
@@ -206,6 +273,13 @@ export function ElevationChart({
           )}
         </svg>
       </div>
+
+      {/* Indication discrète lorsque l'exploration tactile est active */}
+      {isInteractive && (
+        <div className="flex items-center justify-center gap-1.5 pt-0.5 text-[10.5px] text-sps-violet600 dark:text-sps-violet400 font-medium animate-fadeIn">
+          <span>👆 Glissez horizontalement pour naviguer sur le parcours</span>
+        </div>
+      )}
     </div>
   );
 }
