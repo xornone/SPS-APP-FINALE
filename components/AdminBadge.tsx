@@ -20,7 +20,9 @@ export function AdminBadge({
    * uniforme plutot que la couleur du groupe, illisible sur ce fond. */
   onDark?: boolean;
 }) {
-  const firstName = name.trim().split(" ")[0];
+  const rawFirst = name.trim().split(" ")[0];
+  const capitalized = rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1);
+  const firstName = capitalized.toLowerCase() === "francks" ? "Franck" : capitalized;
   return (
     <span
       className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10.5px] font-bold whitespace-nowrap ${

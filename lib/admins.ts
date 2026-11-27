@@ -14,7 +14,11 @@ export const ADMIN_NAMES = [
   "Tanguy Delacôte",
   "Aymeric Closier",
   "Franck Georges",
-  "Martin Lemmens",
+  "Francks Georges",
+  "Franck George",
+  "Francks George",
+  "Georges Franck",
+  "Georges Francks",
 ];
 
 // Comparaison tolerante a la casse et aux accents, puisque le nom d'un

@@ -21,9 +21,14 @@ describe("isAdminName", () => {
     expect(isAdminName("  Tanguy   Delacôte  ")).toBe(true);
     expect(isAdminName("tanguy delacote")).toBe(true);
     expect(isAdminName("Franck Georges")).toBe(true);
+    expect(isAdminName("Francks Georges")).toBe(true);
+    expect(isAdminName("Francks georges")).toBe(true);
+    expect(isAdminName("Franck George")).toBe(true);
+    expect(isAdminName("Georges Franck")).toBe(true);
   });
 
   it("rejette un nom qui n'est pas dans la liste des admins", () => {
+    expect(isAdminName("Martin Lemmens")).toBe(false);
     expect(isAdminName("Jean Dupont")).toBe(false);
     expect(isAdminName("Thomas")).toBe(false);
     expect(isAdminName("Margaux Dirat")).toBe(false);
